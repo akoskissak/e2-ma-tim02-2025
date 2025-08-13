@@ -1,0 +1,65 @@
+# Built application files
+*.apk
+*.ap_
+*.aab
+
+# Files for the ART/Dalvik VM
+*.dex
+
+# Java class files
+*.class
+
+# Generated files
+bin/
+gen/
+out/
+
+# Gradle files
+.gradle/
+build/
+!gradle-wrapper.jar
+
+# Local configuration file (SDK path, etc)
+local.properties
+
+# Log files
+*.log
+
+# Android Studio Navigation editor temp files
+.navigation/
+
+# Android Studio captures
+captures/
+
+# IntelliJ
+*.iml
+.idea/
+*.iws
+*.ipr
+
+# Keystore files
+*.jks
+*.keystore
+
+# Firebase generated files (do not commit)
+google-services.json
+
+# Misc
+.DS_Store
+*.orig
+*.swp
+*.swo
+
+# Crashlytics / Fabric
+fabric.properties
+
+# Kotlin specific (if using)
+*.kotlin_module
+
+# SQLite DB files (local development)
+*.db
+*.sqlite
+*.sqlite-journal
+
+# Lottie JSON animations (optional, only if downloaded locally)
+*.json
