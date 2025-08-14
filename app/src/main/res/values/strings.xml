@@ -1,3 +1,13 @@
 <resources>
     <string name="app_name">HabitMaster</string>
+    <string name="register_title">Registracija</string>
+    <string name="hint_email">Email</string>
+    <string name="hint_password">Lozinka</string>
+    <string name="hint_confirm_password">Ponovljena lozinka</string>
+    <string name="hint_username">Korisničko ime</string>
+    <string name="btn_register">Registruj se</string>
+    <string name="logout_title">Odjavi se</string>
+    <string name="btn_login">Prijava</string>
+    <string name="no_account_register">Nemas nalog? Registruj se</string>
+    <string name="account_login">Vec imas nalog? Prijavi se</string>
 </resources>

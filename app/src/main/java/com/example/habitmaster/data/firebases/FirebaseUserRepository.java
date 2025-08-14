@@ -25,6 +25,10 @@ public class FirebaseUserRepository {
         auth.createUserWithEmailAndPassword(email, password).addOnCompleteListener(listener);
     }
 
+    public void loginAuthUser(String email, String password, OnCompleteListener<AuthResult> listener) {
+        auth.signInWithEmailAndPassword(email, password).addOnCompleteListener(listener);
+    }
+
     public void sendVerification() {
         if (auth.getCurrentUser() != null) auth.getCurrentUser().sendEmailVerification();
     }
@@ -46,5 +50,12 @@ public class FirebaseUserRepository {
         doc.put("activated",u.isActivated());
         doc.put("createdAt",u.getCreatedAt());
         return doc;
+    }
+
+    public void updateActivatedFlag(String uid, boolean activated, OnCompleteListener<Void> listener) {
+        db.collection("users").document(uid)
+                .update("activated", activated)
+                .addOnCompleteListener(listener);
+
     }
 }

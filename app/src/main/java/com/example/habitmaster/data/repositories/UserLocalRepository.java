@@ -49,4 +49,17 @@ public class UserLocalRepository {
         u.setCreatedAt(c.getLong(c.getColumnIndexOrThrow("createdAt")));
         return u;
     }
+
+    public void updateActivateFlag(String uid) {
+        SQLiteDatabase db = helper.getWritableDatabase();
+        ContentValues values = new ContentValues();
+        values.put("activated", 1);
+        db.update(DatabaseHelper.T_USERS, values, "id = ?", new String[]{uid});
+    }
+
+    public void delete(String userId) {
+        SQLiteDatabase db = helper.getWritableDatabase();
+        db.delete(DatabaseHelper.T_USERS, "id = ?", new String[]{userId});
+        db.close();
+    }
 }
