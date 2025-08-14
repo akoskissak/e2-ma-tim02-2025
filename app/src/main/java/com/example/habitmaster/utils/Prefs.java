@@ -16,7 +16,11 @@ public class Prefs {
     }
 
     public void setUid(String uid) {
-        sp.edit().putString(KEY_UID, uid).apply();
+        if(uid == null){
+            sp.edit().remove(KEY_UID).apply();
+        } else {
+            sp.edit().putString(KEY_UID, uid).apply();
+        }
     }
 
     public String getUid() {

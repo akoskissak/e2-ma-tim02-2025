@@ -1,18 +1,17 @@
 package com.example.habitmaster.ui.activities;
 
 import android.content.Intent;
-import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ProgressBar;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.example.habitmaster.R;
-import com.example.habitmaster.data.database.DatabaseHelper;
 import com.example.habitmaster.domain.models.User;
 import com.example.habitmaster.domain.usecases.RegisterUserUseCase;
 import com.example.habitmaster.services.UserService;
@@ -20,17 +19,9 @@ import com.example.habitmaster.ui.fragments.AvatarPickerFragment;
 
 public class RegisterActivity extends AppCompatActivity implements AvatarPickerFragment.OnAvatarSelectedListener {
     private EditText etEmail, etPassword, etConfirmPassword, etUsername;
-    private Button btnRegister;
+    private Button registerButton;
     private ProgressBar progressBar;
     private String selectedAvatarName;
-
-    int[] avatars = {
-            R.drawable.avatar1,
-            R.drawable.avatar2,
-            R.drawable.avatar3,
-            R.drawable.avatar4,
-            R.drawable.avatar5
-    };
 
     private UserService userService;
 
@@ -39,8 +30,6 @@ public class RegisterActivity extends AppCompatActivity implements AvatarPickerF
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_register);
 
-        DatabaseHelper helper = new DatabaseHelper(this);
-        SQLiteDatabase db = helper.getReadableDatabase(); // Force open
 
         userService = new UserService(this);
 
@@ -49,15 +38,21 @@ public class RegisterActivity extends AppCompatActivity implements AvatarPickerF
                 .replace(R.id.avatarFragmentContainer, new AvatarPickerFragment())
                 .commit();
 
-        etEmail = findViewById(R.id.etEmail);
-        etPassword = findViewById(R.id.etPassword);
-        etConfirmPassword = findViewById(R.id.etConfirmPassword);
-        etUsername = findViewById(R.id.etUsername);
-        btnRegister = findViewById(R.id.btnRegister);
+        etEmail = findViewById(R.id.registerEmail);
+        etPassword = findViewById(R.id.registerPassword);
+        etConfirmPassword = findViewById(R.id.registerConfirmPassword);
+        etUsername = findViewById(R.id.registerUsername);
+        registerButton = findViewById(R.id.btnRegister);
         progressBar = findViewById(R.id.progressBar);
+        TextView tvGoToLogin = findViewById(R.id.tvGoToLogin);
+        tvGoToLogin.setOnClickListener(v -> {
+            Intent intent = new Intent(RegisterActivity.this, LoginActivity.class);
+            startActivity(intent);
+            finish();
+        });
 
 
-        btnRegister.setOnClickListener(v -> register());
+        registerButton.setOnClickListener(v -> register());
     }
 
     private void register() {
@@ -79,7 +74,7 @@ public class RegisterActivity extends AppCompatActivity implements AvatarPickerF
                     public void onSuccess(User user) {
                         progressBar.setVisibility(View.GONE);
                         Toast.makeText(RegisterActivity.this, "Registracija uspesna! Proverite email za aktivaciju.", Toast.LENGTH_LONG).show();
-                        startActivity(new Intent(RegisterActivity.this, MainActivity.class));
+                        startActivity(new Intent(RegisterActivity.this, LoginActivity.class));
                         finish();
                     }
 

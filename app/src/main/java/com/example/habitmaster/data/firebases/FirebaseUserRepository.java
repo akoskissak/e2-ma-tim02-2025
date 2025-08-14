@@ -25,6 +25,10 @@ public class FirebaseUserRepository {
         auth.createUserWithEmailAndPassword(email, password).addOnCompleteListener(listener);
     }
 
+    public void loginAuthUser(String email, String password, OnCompleteListener<AuthResult> listener) {
+        auth.signInWithEmailAndPassword(email, password).addOnCompleteListener(listener);
+    }
+
     public void sendVerification() {
         if (auth.getCurrentUser() != null) auth.getCurrentUser().sendEmailVerification();
     }

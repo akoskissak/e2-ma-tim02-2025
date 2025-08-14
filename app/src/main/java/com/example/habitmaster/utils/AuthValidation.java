@@ -4,7 +4,7 @@ import android.text.TextUtils;
 
 import java.util.regex.Pattern;
 
-public class RegisterValidation {
+public class AuthValidation {
     private static final Pattern EMAIL_REGEX = Pattern.compile("^[A-Z0-9._%+-]+@[A-Z0-9.-]+\\.[A-Z]{2,}$", Pattern.CASE_INSENSITIVE);
 
     public static boolean notEmpty(String s) {

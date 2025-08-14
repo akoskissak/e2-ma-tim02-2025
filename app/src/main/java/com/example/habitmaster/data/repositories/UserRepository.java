@@ -1,6 +1,7 @@
 package com.example.habitmaster.data.repositories;
 
 import android.content.Context;
+import android.database.sqlite.SQLiteDatabase;
 
 import com.example.habitmaster.data.firebases.FirebaseUserRepository;
 import com.example.habitmaster.domain.models.User;
@@ -15,6 +16,10 @@ public class UserRepository {
 
     public void createAuthUser(String email, String password, OnCompleteListener<AuthResult> listener) {
         firebaseRepo.createAuthUser(email, password, listener);
+    }
+
+    public void loginAuthUser(String email, String password, OnCompleteListener<AuthResult> listener) {
+        firebaseRepo.loginAuthUser(email, password, listener);
     }
 
     public void sendVerification(){
