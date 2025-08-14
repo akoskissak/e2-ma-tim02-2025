@@ -51,4 +51,11 @@ public class FirebaseUserRepository {
         doc.put("createdAt",u.getCreatedAt());
         return doc;
     }
+
+    public void updateActivatedFlag(String uid, boolean activated, OnCompleteListener<Void> listener) {
+        db.collection("users").document(uid)
+                .update("activated", activated)
+                .addOnCompleteListener(listener);
+
+    }
 }

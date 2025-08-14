@@ -4,6 +4,7 @@ import android.content.Context;
 
 import com.example.habitmaster.data.repositories.UserRepository;
 import com.example.habitmaster.domain.models.User;
+import com.example.habitmaster.services.ICallback;
 import com.example.habitmaster.utils.Prefs;
 import com.example.habitmaster.utils.AuthValidation;
 import com.google.android.gms.tasks.Task;
@@ -13,17 +14,12 @@ public class RegisterUserUseCase {
     private final UserRepository repo;
     private final Context context;
 
-    public interface Callback {
-        void onSuccess(User user);
-        void onError(String errorMessage);
-    }
-
     public RegisterUserUseCase(Context ctx){
         this.context = ctx.getApplicationContext();
         this.repo = new UserRepository(ctx);
     }
 
-    public void execute(String email, String password, String confirm, String username, String avatarName, Callback callback) {
+    public void execute(String email, String password, String confirm, String username, String avatarName, ICallback callback) {
         if (!AuthValidation.isValidEmail(email)) {
             callback.onError("Neispravan email");
             return;
@@ -47,7 +43,7 @@ public class RegisterUserUseCase {
         repo.createAuthUser(email, password, task -> onAuthCreated(task, email, username, avatarName, callback));
     }
 
-    private void onAuthCreated(Task<AuthResult> task, String email, String username, String avatarName, Callback callback) {
+    private void onAuthCreated(Task<AuthResult> task, String email, String username, String avatarName, ICallback callback) {
         if (!task.isSuccessful()) {
             callback.onError("Greska: " + (task.getException() != null ? task.getException().getMessage() : ""));
             return;

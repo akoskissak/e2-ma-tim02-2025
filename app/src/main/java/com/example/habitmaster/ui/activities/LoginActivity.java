@@ -11,7 +11,7 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import com.example.habitmaster.R;
 import com.example.habitmaster.domain.models.User;
-import com.example.habitmaster.domain.usecases.LoginUserUseCase;
+import com.example.habitmaster.services.ICallback;
 import com.example.habitmaster.services.UserService;
 
 public class LoginActivity extends AppCompatActivity {
@@ -46,7 +46,7 @@ public class LoginActivity extends AppCompatActivity {
         userService.login(
                 email,
                 password,
-                new LoginUserUseCase.Callback() {
+                new ICallback() {
                     @Override
                     public void onSuccess(User user) {
                         Toast.makeText(LoginActivity.this, "Dobrodosao " + user.getUsername(), Toast.LENGTH_SHORT).show();

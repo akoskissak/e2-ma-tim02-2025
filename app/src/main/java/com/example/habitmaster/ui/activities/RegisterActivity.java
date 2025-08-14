@@ -13,7 +13,7 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import com.example.habitmaster.R;
 import com.example.habitmaster.domain.models.User;
-import com.example.habitmaster.domain.usecases.RegisterUserUseCase;
+import com.example.habitmaster.services.ICallback;
 import com.example.habitmaster.services.UserService;
 import com.example.habitmaster.ui.fragments.AvatarPickerFragment;
 
@@ -69,7 +69,7 @@ public class RegisterActivity extends AppCompatActivity implements AvatarPickerF
                 confirmPassword,
                 username,
                 selectedAvatarName,
-                new RegisterUserUseCase.Callback() {
+                new ICallback() {
                     @Override
                     public void onSuccess(User user) {
                         progressBar.setVisibility(View.GONE);
