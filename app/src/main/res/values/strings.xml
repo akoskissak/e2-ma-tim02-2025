@@ -1,3 +1,32 @@
 <resources>
     <string name="app_name">HabitMaster</string>
+
+    <string-array name="task_categories">
+        <item>Zdravlje</item>
+        <item>Ucenje</item>
+        <item>Zabava</item>
+        <item>Sredjivanje</item>
+        <item>Sport</item>
+    </string-array>
+
+    <string-array name="task_difficulties">
+        <item>Very easy</item>
+        <item>Easy</item>
+        <item>Hard</item>
+        <item>Extremely hard</item>
+    </string-array>
+
+    <string-array name="task_importances">
+        <item>Normal</item>
+        <item>Important</item>
+        <item>Extremely important</item>
+        <item>Special</item>
+    </string-array>
+
+    <string-array name="task_frequency">
+        <item>Daily</item>
+        <item>Weekly</item>
+        <item>Monthly</item>
+        <item>Yearly</item>
+    </string-array>
 </resources>

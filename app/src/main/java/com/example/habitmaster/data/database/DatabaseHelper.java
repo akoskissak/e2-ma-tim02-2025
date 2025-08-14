@@ -9,6 +9,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     public static final int DB_VERSION = 1;
 
     public static final String T_USERS = "users";
+    public static final String T_TASKS = "tasks";
 
     public DatabaseHelper(Context context) {
         super(context, DB_NAME, null, DB_VERSION);
@@ -24,11 +25,26 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 "activated INTEGER NOT NULL DEFAULT 0, " +
                 "createdAt INTEGER NOT NULL" +
                 ")");
+
+        db.execSQL("CREATE TABLE " + T_TASKS + " (" +
+                "id TEXT PRIMARY KEY, " +
+                "name TEXT NOT NULL, " +
+                "description TEXT, " +
+                "categoryId INTEGER NOT NULL, " +
+                "frequency TEXT NOT NULL, " +
+                "repeatInterval INTEGER NOT NULL, " +
+                "startDate TEXT NOT NULL, " +
+                "endDate TEXT, " +
+                "difficulty TEXT NOT NULL, " +
+                "importance TEXT NOT NULL, " +
+                "xpValue INTEGER NOT NULL" +
+                ")");
     }
 
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
         db.execSQL("DROP TABLE IF EXISTS " + T_USERS);
+        db.execSQL("DROP TABLE IF EXISTS " + T_TASKS);
         onCreate(db);
     }
 }
