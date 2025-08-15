@@ -1,6 +1,7 @@
 package com.example.habitmaster.domain.models;
 
 import java.time.LocalDate;
+import java.time.LocalTime;
 
 public class Task {
     private String id;
@@ -12,6 +13,7 @@ public class Task {
     private int repeatInterval;
     private LocalDate startDate;
     private LocalDate endDate;
+    private LocalTime executionTime;
     private TaskDifficulty difficulty;
     private TaskImportance importance;
     private int xpValue; // difficulty + importance
@@ -19,7 +21,7 @@ public class Task {
     public Task() {
     }
 
-    public Task(String id, String userId, String name, String description, int categoryId, TaskFrequency frequency, int repeatInterval, LocalDate startDate, LocalDate endDate, TaskDifficulty difficulty, TaskImportance importance) {
+    public Task(String id, String userId, String name, String description, int categoryId, TaskFrequency frequency, int repeatInterval, LocalDate startDate, LocalDate endDate, LocalTime executionTime, TaskDifficulty difficulty, TaskImportance importance) {
         this.id = id;
         this.userId = userId;
         this.name = name;
@@ -29,6 +31,7 @@ public class Task {
         this.repeatInterval = repeatInterval;
         this.startDate = startDate;
         this.endDate = endDate;
+        this.executionTime = executionTime;
         this.difficulty = difficulty;
         this.importance = importance;
     }
@@ -131,5 +134,13 @@ public class Task {
 
     public void calculateXp() {
         this.xpValue = this.difficulty.getXpValue() + this.importance.getXpValue();
+    }
+
+    public LocalTime getExecutionTime() {
+        return executionTime;
+    }
+
+    public void setExecutionTime(LocalTime executionTime) {
+        this.executionTime = executionTime;
     }
 }

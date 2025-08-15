@@ -1,6 +1,7 @@
 package com.example.habitmaster.ui.activities;
 
 import android.app.DatePickerDialog;
+import android.app.TimePickerDialog;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
@@ -22,6 +23,8 @@ import com.example.habitmaster.R;
 import com.example.habitmaster.services.TaskService;
 import com.example.habitmaster.utils.HorizontalNumberPicker;
 
+import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
 import java.util.Calendar;
 import android.util.Log;
 
@@ -31,11 +34,12 @@ public class CreateTaskActivity extends AppCompatActivity {
     private Spinner categorySpinner, difficultySpinner, importanceSpinner, repeatFrequencySpinner;
     private RadioGroup repeatRadioGroup;
     private LinearLayout taskDatePickerLayout, oneTimeDatePickerLayout;
-    private Button startDateButton, endDateButton, oneTimeDateButton, btnCreateTask;
+    private Button startDateButton, endDateButton, oneTimeDateButton, btnCreateTask, btnTaskExecutionTime;
     private HorizontalNumberPicker repeatingIntervalNumberPicker;
 
     private int startYear, startMonth, startDay;
     private int endYear, endMonth, endDay;
+    private LocalTime executionTime;
     private boolean isRepeating;
 
     private TaskService taskService;
@@ -63,6 +67,7 @@ public class CreateTaskActivity extends AppCompatActivity {
         endDateButton = findViewById(R.id.endDateButton);
         oneTimeDateButton = findViewById(R.id.btnOneTimeDate);
         btnCreateTask = findViewById(R.id.btnCreateTask);
+        btnTaskExecutionTime = findViewById(R.id.btnSelectTaskExecutionTime);
         repeatFrequencySpinner = findViewById(R.id.taskFrequencySpinner);
         repeatingIntervalNumberPicker = findViewById(R.id.repeatingIntervalNumberPicker);
 
@@ -98,6 +103,25 @@ public class CreateTaskActivity extends AppCompatActivity {
         startDateButton.setOnClickListener(view -> showDatePicker(true));
         endDateButton.setOnClickListener(view -> showDatePicker(false));
         oneTimeDateButton.setOnClickListener(view -> showDatePicker(true));
+
+        btnTaskExecutionTime.setOnClickListener(view -> {
+            LocalTime currentTime = LocalTime.now();
+            int hour = currentTime.getHour();
+            int minute = currentTime.getMinute();
+
+            TimePickerDialog timePickerDialog = new TimePickerDialog(
+                    this,
+                    (v, hourOfDay, minuteOfHour) -> {
+                        executionTime = LocalTime.of(hourOfDay, minuteOfHour);
+                        btnTaskExecutionTime.setText(executionTime.format(DateTimeFormatter.ofPattern("HH:mm")));
+                    },
+                    hour,
+                    minute,
+                    true
+            );
+
+            timePickerDialog.show();
+        });
 
         btnCreateTask.setOnClickListener(view -> createTask());
     }
@@ -151,9 +175,13 @@ public class CreateTaskActivity extends AppCompatActivity {
         }
         String startDate = String.format("%04d-%02d-%02d", startYear, startMonth + 1, startDay);
         String endDate = String.format("%04d-%02d-%02d", endYear, endMonth + 1, endDay);
+        if (executionTime == null) {
+            executionTime = LocalTime.now();
+        }
+        String executionTimeStr = executionTime.format(DateTimeFormatter.ISO_LOCAL_TIME);
 
         Log.d("CreateTask", "startDate=" + startDate + ", endDate=" + endDate);
-        taskService.createTask(name, description, categoryId, repeatingFrequency, repeatingInterval, startDate, endDate, difficulty, importance,
+        taskService.createTask(name, description, categoryId, repeatingFrequency, repeatingInterval, startDate, endDate, executionTimeStr, difficulty, importance,
             new TaskService.Callback() {
                 @Override
                 public void onSuccess() {

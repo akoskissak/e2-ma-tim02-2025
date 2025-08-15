@@ -1,5 +1,6 @@
 package com.example.habitmaster.ui.fragments;
 
+import android.content.Intent;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
@@ -13,8 +14,9 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import com.example.habitmaster.R;
-import com.example.habitmaster.domain.models.Task;
+import com.example.habitmaster.data.dtos.TaskInstanceDTO;
 import com.example.habitmaster.services.TaskService;
+import com.example.habitmaster.ui.activities.TaskDetailActivity;
 import com.example.habitmaster.ui.adapters.TasksAdapter;
 
 import java.util.List;
@@ -55,14 +57,20 @@ public class TaskTabFragment extends Fragment {
 
     private void loadTasks() {
         new Thread(() -> {
-            List<Task> tasks;
+            List<TaskInstanceDTO> tasks;
             if (repeating) {
                 tasks = taskService.getRepeatingTasks();
             } else {
                 tasks = taskService.getOneTimeTasks();
             }
+
             getActivity().runOnUiThread(() -> {
-                adapter = new TasksAdapter(tasks);
+                adapter = new TasksAdapter(tasks, task -> {
+                    // Launch TaskDetailActivity with taskId
+                    Intent intent = new Intent(getContext(), TaskDetailActivity.class);
+                    intent.putExtra(TaskDetailActivity.EXTRA_TASK_ID, task.getTaskId());
+                    startActivity(intent);
+                });
                 recyclerView.setAdapter(adapter);
             });
         }).start();

@@ -1,6 +1,7 @@
 package com.example.habitmaster.ui.fragments;
 
 import android.content.Context;
+import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.drawable.BitmapDrawable;
@@ -20,8 +21,9 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.applandeo.materialcalendarview.CalendarDay;
 import com.applandeo.materialcalendarview.CalendarView;
 import com.example.habitmaster.R;
-import com.example.habitmaster.domain.models.Task;
+import com.example.habitmaster.data.dtos.TaskInstanceDTO;
 import com.example.habitmaster.services.TaskService;
+import com.example.habitmaster.ui.activities.TaskDetailActivity;
 import com.example.habitmaster.ui.adapters.TasksAdapter;
 
 import java.time.LocalDate;
@@ -36,8 +38,8 @@ public class TaskCalendarFragment extends Fragment {
     private CalendarView calendarView;
     private RecyclerView recyclerView;
     private TasksAdapter tasksAdapter;
-    private List<Task> allTasks = new ArrayList<>();
-    private List<Task> filteredTasks = new ArrayList<>();
+    private List<TaskInstanceDTO> allTasks = new ArrayList<>();
+    private List<TaskInstanceDTO> filteredTasks = new ArrayList<>();
     private TaskService taskService;
 
     @Nullable
@@ -49,101 +51,78 @@ public class TaskCalendarFragment extends Fragment {
         recyclerView = view.findViewById(R.id.recyclerViewTasks);
 
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
-        tasksAdapter = new TasksAdapter(filteredTasks);
+        tasksAdapter = new TasksAdapter(filteredTasks, task -> {
+            Intent intent = new Intent(getContext(), TaskDetailActivity.class);
+            intent.putExtra(TaskDetailActivity.EXTRA_TASK_ID, task.getTaskId());
+            startActivity(intent);
+        });
         recyclerView.setAdapter(tasksAdapter);
 
         taskService = new TaskService(getContext());
-        loadTasksFromDatabase();
 
         calendarView.setOnDayClickListener(eventDay -> {
             Calendar clickedDayCalendar = eventDay.getCalendar();
-
             LocalDate selectedDate = LocalDate.of(
-                clickedDayCalendar.get(Calendar.YEAR),
-                clickedDayCalendar.get(Calendar.MONTH) + 1, // Month is 0-based
-                clickedDayCalendar.get(Calendar.DAY_OF_MONTH)
+                    clickedDayCalendar.get(Calendar.YEAR),
+                    clickedDayCalendar.get(Calendar.MONTH) + 1,
+                    clickedDayCalendar.get(Calendar.DAY_OF_MONTH)
             );
-
             filterTasksByDate(selectedDate);
         });
-
 
         return view;
     }
 
+    @Override
+    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
+        loadTasksFromDatabase();
+    }
+
     private void loadTasksFromDatabase() {
         new Thread(() -> {
-            allTasks = taskService.getAllTasks();
+            allTasks = taskService.getAllTasks(); // Now returns List<TaskInstanceDTO>
             requireActivity().runOnUiThread(() -> {
                 LocalDate today = LocalDate.now();
                 filterTasksByDate(today);
-
-                AddTasksToCalendar();
+                addTasksToCalendar();
             });
         }).start();
     }
 
     private void filterTasksByDate(LocalDate date) {
         filteredTasks.clear();
-        for (Task task : allTasks) {
-            LocalDate start = task.getStartDate();
-            LocalDate end = task.getEndDate();
-
-            if (start == null || end == null) {
-                continue; // skip incomplete tasks
-            }
-
-            if ((date.isEqual(start) || date.isAfter(start)) &&
-                    (date.isEqual(end) || date.isBefore(end))) {
+        for (TaskInstanceDTO task : allTasks) {
+            LocalDate taskDate = task.getDate();
+            if (taskDate != null && taskDate.isEqual(date)) {
                 filteredTasks.add(task);
             }
         }
         tasksAdapter.notifyDataSetChanged();
     }
 
-    private void AddTasksToCalendar() {
-        Map<LocalDate, List<Task>> tasksByDate = new HashMap<>();
-        for (Task task : allTasks) {
-            if (task.getStartDate() != null) {
-                LocalDate start = task.getStartDate();
-                LocalDate end = (task.getEndDate() != null) ? task.getEndDate() : start;
-
-                // Ensure start is before or equal to end
-                if (end.isBefore(start)) {
-                    LocalDate temp = start;
-                    start = end;
-                    end = temp;
-                }
-
-                // Add the task to every date in the range [start, end]
-                LocalDate current = start;
-                while (!current.isAfter(end)) {
-                    tasksByDate
-                        .computeIfAbsent(current, k -> new ArrayList<>())
-                        .add(task);
-
-                    current = current.plusDays(1);
-                }
+    private void addTasksToCalendar() {
+        Map<LocalDate, List<TaskInstanceDTO>> tasksByDate = new HashMap<>();
+        for (TaskInstanceDTO task : allTasks) {
+            LocalDate date = task.getDate();
+            if (date != null) {
+                tasksByDate.computeIfAbsent(date, k -> new ArrayList<>()).add(task);
             }
         }
 
         List<CalendarDay> calendarDays = new ArrayList<>();
-
-        for (Map.Entry<LocalDate, List<Task>> entry : tasksByDate.entrySet()) {
+        for (Map.Entry<LocalDate, List<TaskInstanceDTO>> entry : tasksByDate.entrySet()) {
             LocalDate date = entry.getKey();
-            List<Task> tasksForDay = entry.getValue();
+            List<TaskInstanceDTO> tasksForDay = entry.getValue();
 
             Calendar cal = Calendar.getInstance();
             cal.set(date.getYear(), date.getMonthValue() - 1, date.getDayOfMonth());
 
-            // Build the icon list
             List<Integer> icons = new ArrayList<>();
             for (int i = 0; i < Math.min(tasksForDay.size(), 3); i++) {
-                // TODO: Change avatar1 to corresponding color of category
+                // TODO: replace with category color drawable
                 icons.add(R.drawable.avatar1);
             }
-
-            // If day contains 4 or more tasks show ic_plus drawable
             if (tasksForDay.size() > 3) {
                 icons.add(R.drawable.ic_plus);
             }
@@ -152,12 +131,9 @@ public class TaskCalendarFragment extends Fragment {
             CalendarDay day = new CalendarDay(cal);
             day.setImageDrawable(combinedDrawable);
             calendarDays.add(day);
-
         }
 
-        com.applandeo.materialcalendarview.CalendarView calendarView2 =
-            requireView().findViewById(R.id.materialCalendarView);
-        calendarView2.setCalendarDays(calendarDays);
+        calendarView.setCalendarDays(calendarDays);
     }
 
     private Drawable combineIcons(Context context, List<Integer> iconResIds) {
@@ -170,6 +146,7 @@ public class TaskCalendarFragment extends Fragment {
             d.setBounds(i * size, 0, (i + 1) * size, size);
             d.draw(canvas);
         }
+
         return new BitmapDrawable(context.getResources(), combined);
     }
 }

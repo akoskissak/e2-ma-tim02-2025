@@ -58,6 +58,11 @@ public class TaskRepository {
         } else {
             values.putNull("endDate");
         }
+        if (task.getExecutionTime() != null) {
+            values.put("executionTime", task.getExecutionTime().toString());
+        } else {
+            values.putNull("executionTime");
+        }
         values.put("difficulty", task.getDifficulty().name());
         values.put("importance", task.getImportance().name());
         values.put("xpValue", task.getXpValue());
@@ -176,4 +181,31 @@ public class TaskRepository {
 
         return task;
     }
+
+    public Task getUserTaskById(String userId, String taskId) {
+        SQLiteDatabase db = dbHelper.getReadableDatabase();
+        Task task = null;
+
+        String selection = "userId = ? AND id = ?";
+        String[] selectionArgs = { userId, taskId };
+
+        Cursor cursor = db.query(
+                "tasks",
+                null,  // sve kolone
+                selection,
+                selectionArgs,
+                null,
+                null,
+                null
+        );
+
+        if (cursor.moveToFirst()) {
+            task = mapCursorToTask(cursor);
+        }
+
+        cursor.close();
+        db.close();
+        return task;
+    }
+
 }

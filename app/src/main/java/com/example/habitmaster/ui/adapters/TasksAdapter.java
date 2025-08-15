@@ -10,16 +10,22 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.habitmaster.R;
-import com.example.habitmaster.domain.models.Task;
+import com.example.habitmaster.data.dtos.TaskInstanceDTO;
 
 import java.util.List;
 
 public class TasksAdapter extends RecyclerView.Adapter<TasksAdapter.TaskViewHolder> {
 
-    private final List<Task> tasks;
+    private final List<TaskInstanceDTO> tasks;
+    private final OnItemClickListener listener;
 
-    public TasksAdapter(List<Task> tasks) {
+    public interface OnItemClickListener {
+        void onItemClick(TaskInstanceDTO task);
+    }
+
+    public TasksAdapter(List<TaskInstanceDTO> tasks, OnItemClickListener listener) {
         this.tasks = tasks;
+        this.listener = listener;
     }
 
     @NonNull
@@ -32,30 +38,24 @@ public class TasksAdapter extends RecyclerView.Adapter<TasksAdapter.TaskViewHold
 
     @Override
     public void onBindViewHolder(@NonNull TaskViewHolder holder, int position) {
-        Task task = tasks.get(position);
+        TaskInstanceDTO task = tasks.get(position);
         holder.nameText.setText(task.getName());
         holder.descriptionText.setText(task.getDescription());
         holder.difficultyText.setText(task.getDifficulty().name());
         holder.importanceText.setText(task.getImportance().name());
 
         View itemColor = holder.itemView.findViewById(R.id.itemColor);
-
         int color;
         switch (task.getCategoryId()) {
-            case 1:
-                color = Color.rgb(0, 0, 255);
-                break;
-            case 2:
-                color = Color.rgb(255, 0, 0);
-                break;
-            case 3:
-                color = Color.rgb(0, 255, 0);
-                break;
-            default:
-                color = Color.rgb(200, 200, 200);
+            case 1: color = Color.rgb(0, 0, 255); break;
+            case 2: color = Color.rgb(255, 0, 0); break;
+            case 3: color = Color.rgb(0, 255, 0); break;
+            default: color = Color.rgb(200, 200, 200);
         }
-
         itemColor.setBackgroundColor(color);
+
+        // klik listener
+        holder.itemView.setOnClickListener(v -> listener.onItemClick(task));
     }
 
     @Override

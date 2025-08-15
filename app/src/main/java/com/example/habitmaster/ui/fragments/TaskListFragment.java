@@ -45,7 +45,7 @@ public class TaskListFragment extends Fragment {
         viewPager.setAdapter(adapter);
 
         new TabLayoutMediator(tabLayout, viewPager,
-                (tab, position) -> tab.setText(position == 0 ? "Jednokratni" : "Ponavljajući")
+                (tab, position) -> tab.setText(position == 0 ? "One time tasks" : "Repeating tasks")
         ).attach();
 
         return view;
