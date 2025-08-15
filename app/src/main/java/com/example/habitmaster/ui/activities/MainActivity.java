@@ -45,8 +45,13 @@ public class MainActivity extends AppCompatActivity {
         Button btnLogout = findViewById(R.id.btnLogout);
         btnLogout.setOnClickListener(v -> {
             prefs.setUid(null);
+            prefs.setEmail(null);
             startActivity(new Intent(this, LoginActivity.class));
             finish();
+        });
+        Button btnProfile = findViewById(R.id.btnProfile);
+        btnProfile.setOnClickListener(v -> {
+            startActivity(new Intent(this, ProfileActivity.class));
         });
     }
 }

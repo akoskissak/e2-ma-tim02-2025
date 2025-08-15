@@ -10,4 +10,19 @@
     <string name="btn_login">Prijava</string>
     <string name="no_account_register">Nemas nalog? Registruj se</string>
     <string name="account_login">Vec imas nalog? Prijavi se</string>
+    <string name="profile_title">Profil</string>
+    <string name="username_profile">Korisničko ime:</string>
+    <string name="level_profile">Level:</string>
+    <string name="title_profile">Titula:</string>
+    <string name="xp_profile">XP:</string>
+    <string name="badge_count_profile">Broj bedževa:</string>
+    <string name="coins_profile">Novčići:</string>
+    <string name="equipment_profile">Oprema:</string>
+    <string name="qr_code_profile">QR kod:</string>
+    <string name="change_password_profile">Promena lozinke</string>
+    <string name="old_password_profile">Stara lozinka</string>
+    <string name="new_password_profile">Nova lozinka</string>
+    <string name="confirm_password_profile">Potvrdi novu lozinku</string>
+    <string name="change_password">Promeni lozinku</string>
+    <string name="badges_profile">Bedzevi:</string>
 </resources>
