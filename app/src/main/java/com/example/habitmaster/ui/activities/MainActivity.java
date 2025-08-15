@@ -1,9 +1,10 @@
 package com.example.habitmaster.ui.activities;
 
 import android.content.Intent;
+import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
+import android.widget.Button;
 import android.os.Handler;
-import android.os.Looper;
 
 import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
@@ -12,12 +13,28 @@ import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
 import com.example.habitmaster.R;
+import com.example.habitmaster.data.database.DatabaseHelper;
+import com.example.habitmaster.utils.Prefs;
 
 public class MainActivity extends AppCompatActivity {
+    private Prefs prefs;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        prefs = new Prefs(this);
+
+        if(prefs.getUid() == null){
+            startActivity(new Intent(this, LoginActivity.class));
+            finish();
+            return;
+        }
+
+        // zbog pregleda baze
+        DatabaseHelper helper = new DatabaseHelper(this);
+        SQLiteDatabase db = helper.getReadableDatabase();
+
         EdgeToEdge.enable(this);
         setContentView(R.layout.activity_main);
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
@@ -26,13 +43,25 @@ public class MainActivity extends AppCompatActivity {
             return insets;
         });
 
+        Button btnLogout = findViewById(R.id.btnLogout);
+        btnLogout.setOnClickListener(v -> {
+            prefs.setUid(null);
+            prefs.setEmail(null);
+            startActivity(new Intent(this, LoginActivity.class));
+            finish();
+        });
+        Button btnProfile = findViewById(R.id.btnProfile);
+        btnProfile.setOnClickListener(v -> {
+            startActivity(new Intent(this, ProfileActivity.class));
+        });
+
+        // Add button to go to this activity
         new Handler().postDelayed(new Runnable() {
             @Override
             public void run() {
                 Intent intent = new Intent(MainActivity.this, CreateTaskActivity.class);
                 startActivity(intent);
-                finish(); // Optional: close the current activity
             }
-        }, 1000);
+        }, 5000);
     }
 }

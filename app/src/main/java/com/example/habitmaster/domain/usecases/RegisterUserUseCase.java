@@ -1,12 +1,12 @@
 package com.example.habitmaster.domain.usecases;
 
 import android.content.Context;
-import android.widget.Toast;
 
 import com.example.habitmaster.data.repositories.UserRepository;
 import com.example.habitmaster.domain.models.User;
+import com.example.habitmaster.services.ICallback;
 import com.example.habitmaster.utils.Prefs;
-import com.example.habitmaster.utils.RegisterValidation;
+import com.example.habitmaster.utils.AuthValidation;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthResult;
 
@@ -14,43 +14,38 @@ public class RegisterUserUseCase {
     private final UserRepository repo;
     private final Context context;
 
-    public interface Callback {
-        void onSuccess(User user);
-        void onError(String errorMessage);
-    }
-
     public RegisterUserUseCase(Context ctx){
         this.context = ctx.getApplicationContext();
         this.repo = new UserRepository(ctx);
     }
 
-    public void execute(String email, String password, String confirm, String username, String avatarName, Callback callback) {
-        if (!RegisterValidation.isValidEmail(email)) {
+    public void execute(String email, String password, String confirm, String username, String avatarName, ICallback callback) {
+        if (!AuthValidation.isValidEmail(email)) {
             callback.onError("Neispravan email");
             return;
         }
-        if (!RegisterValidation.passwordsMatch(password, confirm)) {
+        if (!AuthValidation.passwordsMatch(password, confirm)) {
             callback.onError("Lozinke se ne poklapaju");
             return;
         }
-        if (!RegisterValidation.isStrongPassword(password)) {
+        if (!AuthValidation.isStrongPassword(password)) {
             callback.onError("Lozinka mora imati min. 8 karaktera");
             return;
         }
-        if (!RegisterValidation.isValidUsername(username)) {
+        if (!AuthValidation.isValidUsername(username)) {
             callback.onError("Korisnicko ime (3-20, bez razmaka)");
             return;
         }
-        if (!RegisterValidation.notEmpty(avatarName)) {
+        if (!AuthValidation.notEmpty(avatarName)) {
             callback.onError("Izaberite avatar");
             return;
         }
         repo.createAuthUser(email, password, task -> onAuthCreated(task, email, username, avatarName, callback));
     }
 
-    private void onAuthCreated(Task<AuthResult> task, String email, String username, String avatarName, Callback callback) {
+    private void onAuthCreated(Task<AuthResult> task, String email, String username, String avatarName, ICallback callback) {
         if (!task.isSuccessful()) {
-            callback.onError("Greška: " + (task.getException() != null ? task.getException().getMessage() : ""));
+            callback.onError("Greska: " + (task.getException() != null ? task.getException().getMessage() : ""));
             return;
         }
 
@@ -63,6 +58,7 @@ public class RegisterUserUseCase {
 
         Prefs prefs = new Prefs(context);
         prefs.setUid(uid);
+        prefs.setEmail(email);
         prefs.lockUsername();
         prefs.lockAvatar();
 

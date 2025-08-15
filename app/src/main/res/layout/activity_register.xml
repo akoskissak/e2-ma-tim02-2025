@@ -13,41 +13,41 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Registracija"
+            android:text="@string/register_title"
             android:textSize="24sp"
             android:textStyle="bold"
             android:layout_gravity="center_horizontal"
             android:layout_marginBottom="24dp" />
 
         <EditText
-            android:id="@+id/etEmail"
+            android:id="@+id/registerEmail"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:hint="Email"
+            android:hint="@string/hint_email"
             android:inputType="textEmailAddress"
             android:layout_marginBottom="12dp" />
 
         <EditText
-            android:id="@+id/etPassword"
+            android:id="@+id/registerPassword"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:hint="Lozinka"
+            android:hint="@string/hint_password"
             android:inputType="textPassword"
             android:layout_marginBottom="12dp" />
 
         <EditText
-            android:id="@+id/etConfirmPassword"
+            android:id="@+id/registerConfirmPassword"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:hint="Ponovljena lozinka"
+            android:hint="@string/hint_confirm_password"
             android:inputType="textPassword"
             android:layout_marginBottom="12dp" />
 
         <EditText
-            android:id="@+id/etUsername"
+            android:id="@+id/registerUsername"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:hint="Korisničko ime"
+            android:hint="@string/hint_username"
             android:inputType="textPersonName"
             android:layout_marginBottom="12dp" />
 
@@ -61,7 +61,7 @@
             android:id="@+id/btnRegister"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Registruj se"
+            android:text="@string/btn_register"
             android:layout_marginBottom="16dp" />
 
         <ProgressBar
@@ -70,6 +70,16 @@
             android:layout_height="wrap_content"
             android:layout_gravity="center"
             android:visibility="gone" />
+
+        <TextView
+            android:id="@+id/tvGoToLogin"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/account_login"
+            android:textColor="@color/purple_500"
+            android:layout_gravity="center"
+            android:layout_marginTop="16dp" />
+
 
     </LinearLayout>
 </ScrollView>

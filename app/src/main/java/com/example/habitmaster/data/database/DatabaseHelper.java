@@ -23,7 +23,15 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 "username TEXT NOT NULL UNIQUE, " +
                 "avatarName TEXT NOT NULL, " +
                 "activated INTEGER NOT NULL DEFAULT 0, " +
-                "createdAt INTEGER NOT NULL" +
+                "createdAt INTEGER NOT NULL," +
+                "level INTEGER DEFAULT 1," +
+                "title TEXT," +
+                "powerPoints INTEGER DEFAULT 0," +
+                "xp INTEGER DEFAULT 0," +
+                "coins INTEGER DEFAULT 0," +
+                "badgesCount INTEGER DEFAULT 0," +
+                "badges TEXT," +
+                "equipment TEXT" +
                 ")");
 
         db.execSQL("CREATE TABLE " + T_TASKS + " (" +
