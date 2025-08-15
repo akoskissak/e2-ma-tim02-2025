@@ -58,6 +58,7 @@ public class RegisterUserUseCase {
 
         Prefs prefs = new Prefs(context);
         prefs.setUid(uid);
+        prefs.setEmail(email);
         prefs.lockUsername();
         prefs.lockAvatar();
 

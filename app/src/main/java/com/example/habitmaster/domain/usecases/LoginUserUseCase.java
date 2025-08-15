@@ -41,6 +41,7 @@ public class LoginUserUseCase {
                         repo.activateUserInFirebase(user.getUid());
                         Prefs prefs = new Prefs(context);
                         prefs.setUid(user.getUid());
+                        prefs.setEmail(user.getEmail());
                         callback.onSuccess(localUser);
                     } else {
                         long currentTime = System.currentTimeMillis();

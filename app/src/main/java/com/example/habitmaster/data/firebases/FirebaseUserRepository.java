@@ -5,8 +5,12 @@ import android.content.Context;
 import com.example.habitmaster.data.repositories.UserLocalRepository;
 import com.example.habitmaster.domain.models.User;
 import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Tasks;
+import com.google.firebase.auth.AuthCredential;
 import com.google.firebase.auth.AuthResult;
+import com.google.firebase.auth.EmailAuthProvider;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.FirebaseFirestore;
 
 import java.util.HashMap;
@@ -49,6 +53,14 @@ public class FirebaseUserRepository {
         doc.put("avatarName",u.getAvatarName());
         doc.put("activated",u.isActivated());
         doc.put("createdAt",u.getCreatedAt());
+        doc.put("level",u.getLevel());
+        doc.put("title",u.getTitle());
+        doc.put("powerPoints",u.getPowerPoints());
+        doc.put("xp",u.getXp());
+        doc.put("coins",u.getCoins());
+        doc.put("badgesCount",u.getBadgesCount());
+        doc.put("badges",u.getBadges());
+        doc.put("equipment",u.getEquipment());
         return doc;
     }
 
@@ -57,5 +69,26 @@ public class FirebaseUserRepository {
                 .update("activated", activated)
                 .addOnCompleteListener(listener);
 
+    }
+
+    public void changePassword(String oldPassword, String newPassword, OnCompleteListener<Void> listener) {
+        FirebaseUser currentUser = auth.getCurrentUser();
+
+        if(currentUser == null || currentUser.getEmail() == null) {
+            if(listener != null){
+                listener.onComplete(Tasks.forException(new Exception("Korisnik nije ulogovan ili nedostaje email")));
+            }
+            return;
+        }
+
+        AuthCredential credential = EmailAuthProvider.getCredential(currentUser.getEmail(), oldPassword);
+
+        currentUser.reauthenticate(credential).addOnCompleteListener(authTask -> {
+            if(authTask.isSuccessful()) {
+                currentUser.updatePassword(newPassword).addOnCompleteListener(listener);
+            } else {
+                listener.onComplete(authTask);
+            }
+        });
     }
 }

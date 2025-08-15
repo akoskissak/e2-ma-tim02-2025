@@ -42,4 +42,8 @@ public class UserRepository {
             }
         });
     }
+
+    public void changePassword(String oldPassword, String newPassword, OnCompleteListener<Void> listener) {
+        firebaseRepo.changePassword(oldPassword, newPassword, listener);
+    }
 }

@@ -7,6 +7,14 @@ public class User {
     private String avatarName;
     private boolean activated;
     private long createdAt;
+    private int level;
+    private String title;
+    private int powerPoints;
+    private int xp;
+    private int coins;
+    private int badgesCount;
+    private String badges;
+    private String equipment;
 
     public User() {}
 
@@ -17,6 +25,14 @@ public class User {
         this.avatarName = avatarName;
         this.activated = activated;
         this.createdAt = createdAt;
+        this.level = 0;
+        this.title = "Rookie";
+        this.powerPoints = 0;
+        this.xp = 0;
+        this.coins = 0;
+        this.badgesCount = 0;
+        this.badges = "";
+        this.equipment = "";
     }
 
     public String getId() {
@@ -65,5 +81,69 @@ public class User {
 
     public void setCreatedAt(long createdAt) {
         this.createdAt = createdAt;
+    }
+
+    public int getLevel() {
+        return level;
+    }
+
+    public void setLevel(int level) {
+        this.level = level;
+    }
+
+    public String getTitle() {
+        return title;
+    }
+
+    public void setTitle(String title) {
+        this.title = title;
+    }
+
+    public int getPowerPoints() {
+        return powerPoints;
+    }
+
+    public void setPowerPoints(int powerPoints) {
+        this.powerPoints = powerPoints;
+    }
+
+    public int getXp() {
+        return xp;
+    }
+
+    public void setXp(int xp) {
+        this.xp = xp;
+    }
+
+    public int getCoins() {
+        return coins;
+    }
+
+    public void setCoins(int coins) {
+        this.coins = coins;
+    }
+
+    public int getBadgesCount() {
+        return badgesCount;
+    }
+
+    public void setBadgesCount(int badgesCount) {
+        this.badgesCount = badgesCount;
+    }
+
+    public String getBadges() {
+        return badges;
+    }
+
+    public void setBadges(String badges) {
+        this.badges = badges;
+    }
+
+    public String getEquipment() {
+        return equipment;
+    }
+
+    public void setEquipment(String equipment) {
+        this.equipment = equipment;
     }
 }
