@@ -4,6 +4,7 @@ import java.time.LocalDate;
 
 public class Task {
     private String id;
+    private String userId;
     private String name;
     private String description;
     private int categoryId;
@@ -18,8 +19,9 @@ public class Task {
     public Task() {
     }
 
-    public Task(String id, String name, String description, int categoryId, TaskFrequency frequency, int repeatInterval, LocalDate startDate, LocalDate endDate, TaskDifficulty difficulty, TaskImportance importance) {
+    public Task(String id, String userId, String name, String description, int categoryId, TaskFrequency frequency, int repeatInterval, LocalDate startDate, LocalDate endDate, TaskDifficulty difficulty, TaskImportance importance) {
         this.id = id;
+        this.userId = userId;
         this.name = name;
         this.description = description;
         this.categoryId = categoryId;
@@ -117,6 +119,14 @@ public class Task {
 
     public void setEndDate(LocalDate endDate) {
         this.endDate = endDate;
+    }
+
+    public String getUserId() {
+        return userId;
+    }
+
+    public void setUserId(String userId) {
+        this.userId = userId;
     }
 
     public void calculateXp() {

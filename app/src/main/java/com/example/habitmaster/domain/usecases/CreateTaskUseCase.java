@@ -2,6 +2,7 @@ package com.example.habitmaster.domain.usecases;
 
 import com.example.habitmaster.data.firebases.FirebaseTaskRepository;
 import com.example.habitmaster.data.repositories.TaskRepository;
+import com.example.habitmaster.data.repositories.UserRepository;
 import com.example.habitmaster.domain.models.Task;
 import com.example.habitmaster.domain.models.TaskDifficulty;
 import com.example.habitmaster.domain.models.TaskFrequency;
@@ -15,6 +16,7 @@ import javax.security.auth.callback.Callback;
 
 public class CreateTaskUseCase {
     private final TaskRepository localRepo;
+    private final UserRepository userRepository;
     private final FirebaseTaskRepository remoteRepo;
 
     public interface Callback {
@@ -22,9 +24,11 @@ public class CreateTaskUseCase {
         void onError(String errorMessage);
     }
 
-    public CreateTaskUseCase(TaskRepository localRepo, FirebaseTaskRepository remoteRepo) {
+    public CreateTaskUseCase(TaskRepository localRepo, FirebaseTaskRepository remoteRepo,
+                             UserRepository userRepository) {
         this.localRepo = localRepo;
         this.remoteRepo = remoteRepo;
+        this.userRepository = userRepository;
     }
 
     public void execute(
@@ -104,9 +108,11 @@ public class CreateTaskUseCase {
             xpValue = 0;
         }
 
+        String userId = userRepository.currentUid();
         String id = UUID.randomUUID().toString();
         Task task = new Task(
                 id,
+                userId,
                 name,
                 description,
                 categoryId,

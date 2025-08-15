@@ -28,6 +28,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
         db.execSQL("CREATE TABLE " + T_TASKS + " (" +
                 "id TEXT PRIMARY KEY, " +
+                "userId TEXT NOT NULL, " +
                 "name TEXT NOT NULL, " +
                 "description TEXT, " +
                 "categoryId INTEGER NOT NULL, " +

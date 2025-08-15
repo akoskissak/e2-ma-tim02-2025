@@ -4,15 +4,16 @@ import android.content.Context;
 
 import com.example.habitmaster.data.firebases.FirebaseTaskRepository;
 import com.example.habitmaster.data.repositories.TaskRepository;
+import com.example.habitmaster.data.repositories.UserRepository;
 import com.example.habitmaster.domain.models.Task;
 import com.example.habitmaster.domain.usecases.CreateTaskUseCase;
-import com.example.habitmaster.domain.usecases.GetTasksUseCase;
+import com.example.habitmaster.domain.usecases.GetUserTasksUseCase;
 
 import java.util.List;
 
 public class TaskService {
     private CreateTaskUseCase createTaskUseCase;
-    private GetTasksUseCase getTasksUseCase;
+    private GetUserTasksUseCase getUserTasksUseCase;
 
     public interface Callback {
         void onSuccess();
@@ -22,8 +23,9 @@ public class TaskService {
     public TaskService(Context context) {
         TaskRepository localRepo = new TaskRepository(context);
         FirebaseTaskRepository remoteRepo = new FirebaseTaskRepository();
-        this.createTaskUseCase = new CreateTaskUseCase(localRepo, remoteRepo);
-        this.getTasksUseCase = new GetTasksUseCase(localRepo);
+        UserRepository userRepo = new UserRepository(context);
+        this.createTaskUseCase = new CreateTaskUseCase(localRepo, remoteRepo, userRepo);
+        this.getUserTasksUseCase = new GetUserTasksUseCase(localRepo, userRepo);
     }
 
     public void createTask(
@@ -53,14 +55,14 @@ public class TaskService {
     }
 
     public List<Task> getAllTasks() {
-        return getTasksUseCase.getAllTasks();
+        return getUserTasksUseCase.getAllTasks();
     }
 
     public List<Task> getRepeatingTasks() {
-        return getTasksUseCase.getRepeatingTasks();
+        return getUserTasksUseCase.getRepeatingTasks();
     }
 
     public List<Task> getOneTimeTasks() {
-        return getTasksUseCase.getOneTimeTasks();
+        return getUserTasksUseCase.getOneTimeTasks();
     }
 }

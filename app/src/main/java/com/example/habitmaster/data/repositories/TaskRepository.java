@@ -42,6 +42,7 @@ public class TaskRepository {
         SQLiteDatabase db = dbHelper.getWritableDatabase();
         ContentValues values = new ContentValues();
         values.put("id", task.getId());
+        values.put("userId", task.getUserId());
         values.put("name", task.getName());
         values.put("description", task.getDescription());
         values.put("categoryId", task.getCategoryId());
@@ -64,15 +65,18 @@ public class TaskRepository {
         db.close();
     }
 
-    public List<Task> getAllTasks() {
+    public List<Task> getAllUserTasks(String userId) {
         SQLiteDatabase db = dbHelper.getReadableDatabase();
         List<Task> tasks = new ArrayList<>();
 
+        String selection = "userId = ?";
+        String[] selectionArgs = { userId };
+
         Cursor cursor = db.query(
                 "tasks",
-                null,  // all columns
                 null,
-                null,
+                selection,
+                selectionArgs,
                 null,
                 null,
                 null
@@ -91,12 +95,13 @@ public class TaskRepository {
         return tasks;
     }
 
-    public List<Task> getOneTimeTasks() {
+
+    public List<Task> getOneTimeUserTasks(String userId) {
         SQLiteDatabase db = dbHelper.getReadableDatabase();
         List<Task> tasks = new ArrayList<>();
 
-        String selection = "frequency = ?";
-        String[] selectionArgs = { TaskFrequency.ONCE.name() };
+        String selection = "userId = ? AND frequency = ?";
+        String[] selectionArgs = { userId, TaskFrequency.ONCE.name() };
 
         Cursor cursor = db.query(
                 "tasks",
@@ -120,12 +125,12 @@ public class TaskRepository {
         return tasks;
     }
 
-    public List<Task> getRepeatingTasks() {
+    public List<Task> getRepeatingUserTasks(String userId) {
         SQLiteDatabase db = dbHelper.getReadableDatabase();
         List<Task> tasks = new ArrayList<>();
 
-        String selection = "frequency != ?";
-        String[] selectionArgs = { TaskFrequency.ONCE.name() };
+        String selection = "userId = ? AND frequency != ?";
+        String[] selectionArgs = { userId, TaskFrequency.ONCE.name() };
 
         Cursor cursor = db.query(
                 "tasks",
@@ -152,6 +157,7 @@ public class TaskRepository {
     private Task mapCursorToTask(Cursor cursor) {
         Task task = new Task();
         task.setId(cursor.getString(cursor.getColumnIndexOrThrow("id")));
+        task.setUserId(cursor.getString(cursor.getColumnIndexOrThrow("userId")));
         task.setName(cursor.getString(cursor.getColumnIndexOrThrow("name")));
         task.setDescription(cursor.getString(cursor.getColumnIndexOrThrow("description")));
         task.setCategoryId(cursor.getInt(cursor.getColumnIndexOrThrow("categoryId")));
