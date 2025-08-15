@@ -23,18 +23,20 @@ import com.example.habitmaster.services.TaskService;
 import com.example.habitmaster.utils.HorizontalNumberPicker;
 
 import java.util.Calendar;
+import android.util.Log;
 
 public class CreateTaskActivity extends AppCompatActivity {
 
     private EditText taskNameEdit, taskDescEdit;
     private Spinner categorySpinner, difficultySpinner, importanceSpinner, repeatFrequencySpinner;
     private RadioGroup repeatRadioGroup;
-    private LinearLayout taskDatePickerLayout;
-    private Button startDateButton, endDateButton, btnCreateTask;
+    private LinearLayout taskDatePickerLayout, oneTimeDatePickerLayout;
+    private Button startDateButton, endDateButton, oneTimeDateButton, btnCreateTask;
     private HorizontalNumberPicker repeatingIntervalNumberPicker;
 
     private int startYear, startMonth, startDay;
     private int endYear, endMonth, endDay;
+    private boolean isRepeating;
 
     private TaskService taskService;
 
@@ -56,13 +58,16 @@ public class CreateTaskActivity extends AppCompatActivity {
         importanceSpinner = findViewById(R.id.importanceSpinner);
         repeatRadioGroup = findViewById(R.id.radio_group_create_task);
         taskDatePickerLayout = findViewById(R.id.taskDatePickerLayout);
+        oneTimeDatePickerLayout = findViewById(R.id.taskOneTimeDatePickerLayout);
         startDateButton = findViewById(R.id.startDateButton);
         endDateButton = findViewById(R.id.endDateButton);
+        oneTimeDateButton = findViewById(R.id.btnOneTimeDate);
         btnCreateTask = findViewById(R.id.btnCreateTask);
         repeatFrequencySpinner = findViewById(R.id.taskFrequencySpinner);
         repeatingIntervalNumberPicker = findViewById(R.id.repeatingIntervalNumberPicker);
 
         taskDatePickerLayout.setVisibility(LinearLayout.GONE);
+        oneTimeDatePickerLayout.setVisibility(LinearLayout.GONE);
 
         Calendar calendar = Calendar.getInstance();
         startYear = endYear = calendar.get(Calendar.YEAR);
@@ -72,6 +77,7 @@ public class CreateTaskActivity extends AppCompatActivity {
         // Set button text to current date initially
         startDateButton.setText((startMonth + 1) + "/" + startDay + "/" + startYear);
         endDateButton.setText((endMonth + 1) + "/" + endDay + "/" + endYear);
+        oneTimeDateButton.setText((startMonth + 1) + "/" + startDay + "/" + startYear);
 
         taskService = new TaskService(this);
 
@@ -80,15 +86,18 @@ public class CreateTaskActivity extends AppCompatActivity {
             public void onCheckedChanged(RadioGroup group, int checkedId) {
                 RadioButton selectedRadio = findViewById(checkedId);
                 if (selectedRadio.getText().toString().equals("Repeating")) {
+                    oneTimeDatePickerLayout.setVisibility(View.GONE);
                     taskDatePickerLayout.setVisibility(View.VISIBLE);
                 } else {
                     taskDatePickerLayout.setVisibility(View.GONE);
+                    oneTimeDatePickerLayout.setVisibility(View.VISIBLE);
                 }
             }
         });
 
         startDateButton.setOnClickListener(view -> showDatePicker(true));
         endDateButton.setOnClickListener(view -> showDatePicker(false));
+        oneTimeDateButton.setOnClickListener(view -> showDatePicker(true));
 
         btnCreateTask.setOnClickListener(view -> createTask());
     }
@@ -98,12 +107,20 @@ public class CreateTaskActivity extends AppCompatActivity {
         int month = isStart ? startMonth : endMonth;
         int day = isStart ? startDay : endDay;
 
+        isRepeating = repeatRadioGroup.getCheckedRadioButtonId() != -1 &&
+                ((RadioButton) findViewById(repeatRadioGroup.getCheckedRadioButtonId()))
+                        .getText().toString().equals("Repeating");
+
         DatePickerDialog datePickerDialog = new DatePickerDialog(
                 CreateTaskActivity.this,
                 (view, y, m, d) -> {
                     if (isStart) {
                         startYear = y; startMonth = m; startDay = d;
-                        startDateButton.setText((m+1) + "/" + d + "/" + y);
+                        if (isRepeating) {
+                            startDateButton.setText((m+1) + "/" + d + "/" + y);
+                        } else {
+                            oneTimeDateButton.setText((m+1) + "/" + d + "/" + y);
+                        }
                     } else {
                         endYear = y; endMonth = m; endDay = d;
                         endDateButton.setText((m+1) + "/" + d + "/" + y);
@@ -119,7 +136,7 @@ public class CreateTaskActivity extends AppCompatActivity {
         int categoryId = categorySpinner.getSelectedItemPosition();
         String difficulty = difficultySpinner.getSelectedItem().toString();
         String importance = importanceSpinner.getSelectedItem().toString();
-        boolean isRepeating = repeatRadioGroup.getCheckedRadioButtonId() != -1 &&
+        isRepeating = repeatRadioGroup.getCheckedRadioButtonId() != -1 &&
                 ((RadioButton) findViewById(repeatRadioGroup.getCheckedRadioButtonId()))
                         .getText().toString().equals("Repeating");
 
@@ -135,6 +152,7 @@ public class CreateTaskActivity extends AppCompatActivity {
         String startDate = String.format("%04d-%02d-%02d", startYear, startMonth + 1, startDay);
         String endDate = String.format("%04d-%02d-%02d", endYear, endMonth + 1, endDay);
 
+        Log.d("CreateTask", "startDate=" + startDate + ", endDate=" + endDate);
         taskService.createTask(name, description, categoryId, repeatingFrequency, repeatingInterval, startDate, endDate, difficulty, importance,
             new TaskService.Callback() {
                 @Override

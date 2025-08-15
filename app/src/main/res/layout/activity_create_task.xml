@@ -58,6 +58,27 @@
     </RadioGroup>
 
     <LinearLayout
+        android:id="@+id/taskOneTimeDatePickerLayout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="16dp"
+        android:gravity="center_horizontal">
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textAlignment="center"
+            android:text="Date"/>
+        <Button
+            android:id="@+id/btnOneTimeDate"
+            android:layout_width="wrap_content"
+            android:minWidth="160dp"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:text="Select date"/>
+    </LinearLayout>
+
+    <LinearLayout
         android:id="@+id/taskDatePickerLayout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"

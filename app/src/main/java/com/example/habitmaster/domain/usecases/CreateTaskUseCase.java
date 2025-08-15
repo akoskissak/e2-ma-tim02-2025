@@ -70,6 +70,13 @@ public class CreateTaskUseCase {
             } catch (DateTimeParseException e) {
                 e.printStackTrace();
             }
+        } else {
+            try {
+                startDate = LocalDate.parse(startDateStr);
+                endDate = startDate;
+            } catch (DateTimeParseException e) {
+                e.printStackTrace();
+            }
         }
 
         int createdCount = localRepo.getTasksCountByDifficultyAndImportance(difficulty, importance);
