@@ -55,13 +55,9 @@ public class MainActivity extends AppCompatActivity {
             startActivity(new Intent(this, ProfileActivity.class));
         });
 
-        // Add button to go to this activity
-        new Handler().postDelayed(new Runnable() {
-            @Override
-            public void run() {
-                Intent intent = new Intent(MainActivity.this, CreateTaskActivity.class);
-                startActivity(intent);
-            }
-        }, 5000);
+        Button btnMyTasks = findViewById(R.id.btnMyTasks);
+        btnMyTasks.setOnClickListener(view -> {
+            startActivity(new Intent(this, MyTasksActivity.class));
+        });
     }
 }
