@@ -7,11 +7,8 @@ import android.widget.Button;
 import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
-import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.habitmaster.R;
-import com.example.habitmaster.services.TaskService;
-import com.example.habitmaster.ui.adapters.TasksAdapter;
 import com.example.habitmaster.ui.fragments.TaskCalendarFragment;
 import com.example.habitmaster.ui.fragments.TaskListFragment;
 
