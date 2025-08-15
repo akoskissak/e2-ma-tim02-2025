@@ -10,7 +10,12 @@ import androidx.annotation.NonNull;
 import com.example.habitmaster.data.database.DatabaseHelper;
 import com.example.habitmaster.domain.models.Task;
 import com.example.habitmaster.domain.models.TaskDifficulty;
+import com.example.habitmaster.domain.models.TaskFrequency;
 import com.example.habitmaster.domain.models.TaskImportance;
+
+import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
 
 public class TaskRepository {
     private final DatabaseHelper dbHelper;
@@ -57,5 +62,49 @@ public class TaskRepository {
         values.put("xpValue", task.getXpValue());
         db.insert("tasks", null, values);
         db.close();
+    }
+
+    public List<Task> getAllTasks() {
+        SQLiteDatabase db = dbHelper.getReadableDatabase();
+        List<Task> tasks = new ArrayList<>();
+
+        Cursor cursor = db.query(
+                "tasks",
+                null,  // all columns
+                null,
+                null,
+                null,
+                null,
+                null
+        );
+
+        if (cursor.moveToFirst()) {
+            do {
+                Task task = new Task();
+                task.setId(cursor.getString(cursor.getColumnIndexOrThrow("id")));
+                task.setName(cursor.getString(cursor.getColumnIndexOrThrow("name")));
+                task.setDescription(cursor.getString(cursor.getColumnIndexOrThrow("description")));
+                task.setCategoryId(cursor.getInt(cursor.getColumnIndexOrThrow("categoryId")));
+                task.setFrequency(TaskFrequency.valueOf(cursor.getString(cursor.getColumnIndexOrThrow("frequency"))));
+                task.setRepeatInterval(cursor.getInt(cursor.getColumnIndexOrThrow("repeatInterval")));
+
+                String startDateStr = cursor.getString(cursor.getColumnIndexOrThrow("startDate"));
+                task.setStartDate(startDateStr != null ? LocalDate.parse(startDateStr) : null);
+
+                String endDateStr = cursor.getString(cursor.getColumnIndexOrThrow("endDate"));
+                task.setEndDate(endDateStr != null ? LocalDate.parse(endDateStr) : null);
+
+                task.setDifficulty(TaskDifficulty.valueOf(cursor.getString(cursor.getColumnIndexOrThrow("difficulty"))));
+                task.setImportance(TaskImportance.valueOf(cursor.getString(cursor.getColumnIndexOrThrow("importance"))));
+                task.setXpValue(cursor.getInt(cursor.getColumnIndexOrThrow("xpValue")));
+
+                tasks.add(task);
+            } while (cursor.moveToNext());
+        }
+
+        cursor.close();
+        db.close();
+
+        return tasks;
     }
 }

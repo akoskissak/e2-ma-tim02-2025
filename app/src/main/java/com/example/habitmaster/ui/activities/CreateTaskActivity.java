@@ -1,6 +1,7 @@
 package com.example.habitmaster.ui.activities;
 
 import android.app.DatePickerDialog;
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
@@ -42,7 +43,7 @@ public class CreateTaskActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         EdgeToEdge.enable(this);
         setContentView(R.layout.activity_create_task);
-        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
+        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.activity_create_task), (v, insets) -> {
             Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
             return insets;
@@ -87,7 +88,7 @@ public class CreateTaskActivity extends AppCompatActivity {
         });
 
         startDateButton.setOnClickListener(view -> showDatePicker(true));
-        endDateButton.setOnClickListener(view -> showDatePicker(true));
+        endDateButton.setOnClickListener(view -> showDatePicker(false));
 
         btnCreateTask.setOnClickListener(view -> createTask());
     }
@@ -139,6 +140,9 @@ public class CreateTaskActivity extends AppCompatActivity {
                 @Override
                 public void onSuccess() {
                     Toast.makeText(CreateTaskActivity.this, "Task created successfully", Toast.LENGTH_SHORT).show();
+                    Intent intent = new Intent(CreateTaskActivity.this, MyTasksActivity.class);
+                    startActivity(intent);
+                    finish();
                 }
 
                 @Override

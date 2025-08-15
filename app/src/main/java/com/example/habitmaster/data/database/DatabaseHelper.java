@@ -31,9 +31,9 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 "name TEXT NOT NULL, " +
                 "description TEXT, " +
                 "categoryId INTEGER NOT NULL, " +
-                "frequency TEXT NOT NULL, " +
-                "repeatInterval INTEGER NOT NULL, " +
-                "startDate TEXT NOT NULL, " +
+                "frequency TEXT, " +
+                "repeatInterval INTEGER, " +
+                "startDate TEXT, " +
                 "endDate TEXT, " +
                 "difficulty TEXT NOT NULL, " +
                 "importance TEXT NOT NULL, " +
