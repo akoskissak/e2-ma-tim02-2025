@@ -25,4 +25,39 @@
     <string name="confirm_password_profile">Potvrdi novu lozinku</string>
     <string name="change_password">Promeni lozinku</string>
     <string name="badges_profile">Bedzevi:</string>
+
+    <string-array name="task_categories">
+        <item>Zdravlje</item>
+        <item>Ucenje</item>
+        <item>Zabava</item>
+        <item>Sredjivanje</item>
+        <item>Sport</item>
+    </string-array>
+
+    <string-array name="task_difficulties">
+        <item>Very easy</item>
+        <item>Easy</item>
+        <item>Hard</item>
+        <item>Extremely hard</item>
+    </string-array>
+
+    <string-array name="task_importances">
+        <item>Normal</item>
+        <item>Important</item>
+        <item>Extremely important</item>
+        <item>Special</item>
+    </string-array>
+
+    <string-array name="task_frequency">
+        <item>Daily</item>
+        <item>Weekly</item>
+        <item>Monthly</item>
+        <item>Yearly</item>
+    </string-array>
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="done">Done</string>
+    <string name="pause">Pause</string>
+    <string name="cancel">Cancel</string>
+    <string name="create_task">Create task</string>
 </resources>

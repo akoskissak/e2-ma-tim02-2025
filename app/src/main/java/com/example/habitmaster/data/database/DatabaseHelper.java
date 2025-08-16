@@ -9,6 +9,8 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     public static final int DB_VERSION = 1;
 
     public static final String T_USERS = "users";
+    public static final String T_TASKS = "tasks";
+    public static final String T_TASK_INSTANCES = "task_instances";
 
     public DatabaseHelper(Context context) {
         super(context, DB_NAME, null, DB_VERSION);
@@ -32,11 +34,38 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 "badges TEXT," +
                 "equipment TEXT" +
                 ")");
+
+        db.execSQL("CREATE TABLE " + T_TASKS + " (" +
+                "id TEXT PRIMARY KEY, " +
+                "userId TEXT NOT NULL, " +
+                "name TEXT NOT NULL, " +
+                "description TEXT, " +
+                "categoryId INTEGER NOT NULL, " +
+                "frequency TEXT, " +
+                "repeatInterval INTEGER, " +
+                "startDate TEXT, " +
+                "endDate TEXT, " +
+                "executionTime TEXT, " +
+                "difficulty TEXT NOT NULL, " +
+                "importance TEXT NOT NULL, " +
+                "xpValue INTEGER NOT NULL" +
+                ")");
+
+        db.execSQL("CREATE TABLE " + T_TASK_INSTANCES + " (" +
+            "id TEXT PRIMARY KEY, " +
+            "taskId TEXT NOT NULL, " +
+            "date TEXT NOT NULL, " +
+            "status TEXT NOT NULL, " +
+            "FOREIGN KEY(taskId) REFERENCES " + T_TASKS + "(id) ON DELETE CASCADE, " +
+            "UNIQUE(taskId, date)" +
+            ")");
     }
 
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
         db.execSQL("DROP TABLE IF EXISTS " + T_USERS);
+        db.execSQL("DROP TABLE IF EXISTS " + T_TASKS);
+        db.execSQL("DROP TABLE IF EXISTS " + T_TASK_INSTANCES);
         onCreate(db);
     }
 }

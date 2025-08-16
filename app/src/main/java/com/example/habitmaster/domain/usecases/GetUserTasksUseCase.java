@@ -1,0 +1,212 @@
+package com.example.habitmaster.domain.usecases;
+
+import com.example.habitmaster.data.dtos.TaskInstanceDTO;
+import com.example.habitmaster.data.repositories.TaskInstanceRepository;
+import com.example.habitmaster.data.repositories.TaskRepository;
+import com.example.habitmaster.data.repositories.UserRepository;
+import com.example.habitmaster.domain.models.Task;
+import com.example.habitmaster.domain.models.TaskFrequency;
+import com.example.habitmaster.domain.models.TaskInstance;
+import com.example.habitmaster.domain.models.TaskStatus;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
+
+public class GetUserTasksUseCase {
+    private final TaskRepository taskRepo;
+    private final TaskInstanceRepository taskInstanceRepo;
+    private final UserRepository userRepository;
+
+    public GetUserTasksUseCase(TaskRepository taskRepo, TaskInstanceRepository taskInstanceRepo, UserRepository userRepository) {
+        this.taskRepo = taskRepo;
+        this.taskInstanceRepo = taskInstanceRepo;
+        this.userRepository = userRepository;
+    }
+
+    public List<TaskInstanceDTO> getAllTasks() {
+        String userId = userRepository.currentUid();
+
+        // 1. Get all tasks
+        List<Task> tasks = taskRepo.getAllUserTasks(userId);
+
+        if (tasks.isEmpty()) return new ArrayList<>();
+
+        // 2. Separate repeating and one-time tasks
+        List<Task> repeatingTasks = new ArrayList<>();
+        List<Task> oneTimeTasks = new ArrayList<>();
+
+        for (Task task : tasks) {
+            if (task.getFrequency() == TaskFrequency.ONCE) {
+                oneTimeTasks.add(task);
+            } else {
+                repeatingTasks.add(task);
+            }
+        }
+
+        // 3. Get instances for repeating tasks
+        List<TaskInstanceDTO> dtos = new ArrayList<>();
+        if (!repeatingTasks.isEmpty()) {
+            List<String> repeatingTaskIds = repeatingTasks.stream()
+                    .map(Task::getId)
+                    .collect(Collectors.toList());
+
+            List<TaskInstance> instances = taskInstanceRepo.getByTaskIds(repeatingTaskIds);
+
+            Map<String, Task> taskMap = repeatingTasks.stream()
+                    .collect(Collectors.toMap(Task::getId, t -> t));
+
+            for (TaskInstance instance : instances) {
+                Task task = taskMap.get(instance.getTaskId());
+                if (task == null) continue;
+
+                dtos.add(new TaskInstanceDTO(
+                        instance.getId(),
+                        task.getId(),
+                        task.getName(),
+                        task.getDescription(),
+                        task.getCategoryId(),
+                        task.getFrequency(),
+                        task.getRepeatInterval(),
+                        instance.getDate(),
+                        task.getExecutionTime(),
+                        task.getDifficulty(),
+                        task.getImportance(),
+                        task.getXpValue(),
+                        instance.getStatus()
+                ));
+            }
+        }
+
+        // 4. Add one-time tasks as single instances
+        for (Task task : oneTimeTasks) {
+            dtos.add(new TaskInstanceDTO(
+                    task.getId(), // instanceId same as taskId for one-time
+                    task.getId(),
+                    task.getName(),
+                    task.getDescription(),
+                    task.getCategoryId(),
+                    task.getFrequency(),
+                    task.getRepeatInterval(),
+                    task.getStartDate(), // date = startDate
+                    task.getExecutionTime(),
+                    task.getDifficulty(),
+                    task.getImportance(),
+                    task.getXpValue(),
+                    TaskStatus.ACTIVE // default status for one-time
+            ));
+        }
+
+        return dtos;
+    }
+
+    public List<TaskInstanceDTO> getRepeatingTasks() {
+        String userId = userRepository.currentUid();
+
+        List<Task> tasks = taskRepo.getRepeatingUserTasks(userId);
+
+        if (tasks.isEmpty()) return new ArrayList<>();
+
+        List<String> taskIds = tasks.stream()
+            .map(Task::getId)
+            .collect(Collectors.toList());
+
+        List<TaskInstance> instances = taskInstanceRepo.getByTaskIds(taskIds);
+
+        Map<String, Task> taskMap = tasks.stream()
+                .collect(Collectors.toMap(Task::getId, t -> t));
+
+        List<TaskInstanceDTO> dtos = new ArrayList<>();
+        for (TaskInstance instance : instances) {
+            Task task = taskMap.get(instance.getTaskId());
+            if (task == null) continue;
+
+            TaskInstanceDTO dto = new TaskInstanceDTO(instance.getId(), task.getId(), task.getName(), task.getDescription(), task.getCategoryId(),
+                    task.getFrequency(), task.getRepeatInterval(), instance.getDate(), task.getExecutionTime(), task.getDifficulty(), task.getImportance(),
+                    task.getXpValue(), instance.getStatus());
+
+            dtos.add(dto);
+        }
+
+        return dtos;
+    }
+
+    public List<TaskInstanceDTO> getOneTimeTasks() {
+        String userId = userRepository.currentUid();
+
+        // 1. Get one-time tasks
+        List<Task> tasks = taskRepo.getOneTimeUserTasks(userId);
+        if (tasks.isEmpty()) return new ArrayList<>();
+
+        // 2. Collect task IDs
+        List<String> taskIds = tasks.stream()
+                .map(Task::getId)
+                .collect(Collectors.toList());
+
+        // 3. Get TaskInstances
+        List<TaskInstance> instances = taskInstanceRepo.getByTaskIds(taskIds);
+
+        // 4. Map tasks by ID
+        Map<String, Task> taskMap = tasks.stream()
+                .collect(Collectors.toMap(Task::getId, t -> t));
+
+        // 5. Combine into DTOs
+        List<TaskInstanceDTO> dtos = new ArrayList<>();
+        for (TaskInstance instance : instances) {
+            Task task = taskMap.get(instance.getTaskId());
+            if (task == null) continue;
+
+            TaskInstanceDTO dto = new TaskInstanceDTO(
+                    instance.getId(),
+                    task.getId(),
+                    task.getName(),
+                    task.getDescription(),
+                    task.getCategoryId(),
+                    task.getFrequency(),
+                    task.getRepeatInterval(),
+                    instance.getDate(),
+                    task.getExecutionTime(),
+                    task.getDifficulty(),
+                    task.getImportance(),
+                    task.getXpValue(),
+                    instance.getStatus()
+            );
+            dtos.add(dto);
+        }
+
+        return dtos;
+    }
+
+    public TaskInstanceDTO getTaskById(String taskId) {
+        String userId = userRepository.currentUid();
+
+        // 1. Get the task
+        Task task = taskRepo.getUserTaskById(userId, taskId);
+        if (task == null) return null;
+
+        // 2. Get the associated TaskInstance(s)
+        List<TaskInstance> instances = taskInstanceRepo.getByTaskIds(List.of(taskId));
+        if (instances.isEmpty()) return null; // or create a default instance?
+
+        // 3. For one-time tasks, take the first instance
+        TaskInstance instance = instances.get(0);
+
+        // 4. Combine into DTO
+        return new TaskInstanceDTO(
+                instance.getId(),
+                task.getId(),
+                task.getName(),
+                task.getDescription(),
+                task.getCategoryId(),
+                task.getFrequency(),
+                task.getRepeatInterval(),
+                instance.getDate(),
+                task.getExecutionTime(),
+                task.getDifficulty(),
+                task.getImportance(),
+                task.getXpValue(),
+                instance.getStatus()
+        );
+    }
+}

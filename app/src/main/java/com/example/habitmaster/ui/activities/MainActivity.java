@@ -4,6 +4,7 @@ import android.content.Intent;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
 import android.widget.Button;
+import android.os.Handler;
 
 import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
@@ -52,6 +53,11 @@ public class MainActivity extends AppCompatActivity {
         Button btnProfile = findViewById(R.id.btnProfile);
         btnProfile.setOnClickListener(v -> {
             startActivity(new Intent(this, ProfileActivity.class));
+        });
+
+        Button btnMyTasks = findViewById(R.id.btnMyTasks);
+        btnMyTasks.setOnClickListener(view -> {
+            startActivity(new Intent(this, MyTasksActivity.class));
         });
     }
 }

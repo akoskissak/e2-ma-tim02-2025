@@ -12,6 +12,9 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.HabitMaster">
         <activity
+            android:name=".ui.activities.TaskDetailActivity"
+            android:exported="false" />
+        <activity
             android:name=".ui.activities.MainActivity"
             android:exported="true">
             <intent-filter>
@@ -22,7 +25,13 @@
         </activity>
         <activity android:name=".ui.activities.RegisterActivity" />
         <activity android:name=".ui.activities.LoginActivity" />
-        <activity android:name=".ui.activities.ProfileActivity"/>
+        <activity android:name=".ui.activities.ProfileActivity" />
+        <activity
+            android:name=".ui.activities.MyTasksActivity"
+            android:exported="false" />
+        <activity
+            android:name=".ui.activities.CreateTaskActivity"
+            android:exported="false" />
     </application>
 
 </manifest>
