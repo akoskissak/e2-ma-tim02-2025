@@ -31,7 +31,6 @@ public class TaskDetailActivity extends AppCompatActivity {
     private EditText editName, editDescription;
     private Spinner spinnerDifficulty, spinnerImportance;
     private LinearLayout editExecutionTimeLayout, bottomButtonslayouts;
-    private Button btnEdit, btnEditExecutionTime, btnSave, btnCancelEdit;
     private Button btnEdit, btnEditExecutionTime, btnSave, btnCancelEdit, btnDelete;
     private LocalTime executionTime;
     TextView nameText, descriptionText, categoryText, difficultyText, importanceText, startDateText, endDateText, frequencyText, xpText;
