@@ -39,7 +39,6 @@ public class TaskInstanceRepository {
         SQLiteDatabase db = dbHelper.getReadableDatabase();
         List<TaskInstance> instances = new ArrayList<>();
 
-        // Build a dynamic "IN" clause (?, ?, ?, ...)
         StringBuilder inClause = new StringBuilder();
         String[] selectionArgs = new String[taskIds.size()];
         for (int i = 0; i < taskIds.size(); i++) {
@@ -51,8 +50,8 @@ public class TaskInstanceRepository {
         String selection = "taskId IN (" + inClause.toString() + ")";
 
         Cursor cursor = db.query(
-                "task_instances",   // Table name
-                null,               // All columns
+                "task_instances",
+                null,
                 selection,
                 selectionArgs,
                 null,
@@ -72,6 +71,49 @@ public class TaskInstanceRepository {
 
         return instances;
     }
+
+    public List<TaskInstance> getByTaskIdsFromDate(List<String> taskIds, LocalDate fromDate) {
+        if (taskIds == null || taskIds.isEmpty()) {
+            return new ArrayList<>();
+        }
+
+        SQLiteDatabase db = dbHelper.getReadableDatabase();
+        List<TaskInstance> instances = new ArrayList<>();
+
+        StringBuilder inClause = new StringBuilder();
+        String[] selectionArgs = new String[taskIds.size() + 1]; // +1 for date
+        for (int i = 0; i < taskIds.size(); i++) {
+            inClause.append("?");
+            if (i < taskIds.size() - 1) inClause.append(",");
+            selectionArgs[i] = taskIds.get(i);
+        }
+
+        String selection = "taskId IN (" + inClause + ") AND date >= ?";
+        selectionArgs[taskIds.size()] = fromDate.toString(); // yyyy-MM-dd
+
+        Cursor cursor = db.query(
+                "task_instances",
+                null,
+                selection,
+                selectionArgs,
+                null,
+                null,
+                "date ASC"
+        );
+
+        if (cursor.moveToFirst()) {
+            do {
+                TaskInstance instance = mapCursorToTaskInstance(cursor);
+                instances.add(instance);
+            } while (cursor.moveToNext());
+        }
+
+        cursor.close();
+        db.close();
+
+        return instances;
+    }
+
 
     private TaskInstance mapCursorToTaskInstance(Cursor cursor) {
         TaskInstance instance = new TaskInstance();

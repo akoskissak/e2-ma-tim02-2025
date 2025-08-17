@@ -8,15 +8,17 @@ import com.example.habitmaster.data.firebases.FirebaseTaskRepository;
 import com.example.habitmaster.data.repositories.TaskInstanceRepository;
 import com.example.habitmaster.data.repositories.TaskRepository;
 import com.example.habitmaster.data.repositories.UserRepository;
-import com.example.habitmaster.domain.models.Task;
 import com.example.habitmaster.domain.usecases.CreateTaskUseCase;
 import com.example.habitmaster.domain.usecases.GetUserTasksUseCase;
+import com.example.habitmaster.domain.usecases.UpdateTaskUseCase;
 
+import java.time.LocalDate;
 import java.util.List;
 
 public class TaskService {
     private CreateTaskUseCase createTaskUseCase;
     private GetUserTasksUseCase getUserTasksUseCase;
+    private UpdateTaskUseCase updateTaskUseCase;
 
     public interface Callback {
         void onSuccess();
@@ -31,6 +33,7 @@ public class TaskService {
         FirebaseTaskInstanceRepository remoteInstanceRepo = new FirebaseTaskInstanceRepository();
         this.createTaskUseCase = new CreateTaskUseCase(localRepo, remoteRepo, userRepo, localTaskInstanceRepo, remoteInstanceRepo);
         this.getUserTasksUseCase = new GetUserTasksUseCase(localRepo, localTaskInstanceRepo, userRepo);
+        this.updateTaskUseCase = new UpdateTaskUseCase(localRepo, localTaskInstanceRepo);
     }
 
     public void createTask(
@@ -64,13 +67,18 @@ public class TaskService {
         return getUserTasksUseCase.getAllTasks();
     }
 
-    public List<TaskInstanceDTO> getRepeatingTasks() {
-        return getUserTasksUseCase.getRepeatingTasks();
+    public List<TaskInstanceDTO> getRepeatingTasks(LocalDate fromDate) {
+        return getUserTasksUseCase.getRepeatingTasks(fromDate);
     }
 
-    public List<TaskInstanceDTO> getOneTimeTasks() {
-        return getUserTasksUseCase.getOneTimeTasks();
+    public List<TaskInstanceDTO> getOneTimeTasks(LocalDate fromDate) {
+        return getUserTasksUseCase.getOneTimeTasks(fromDate);
     }
 
-    public TaskInstanceDTO getTaskById(String id) { return getUserTasksUseCase.getTaskById(id); }
+    public TaskInstanceDTO getTaskById(String id) { return getUserTasksUseCase.findTaskById(id); }
+
+    public TaskInstanceDTO updateTask(TaskInstanceDTO dto) {
+        updateTaskUseCase.updateTask(dto);
+        return null;
+    }
 }

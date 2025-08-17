@@ -9,6 +9,7 @@ import com.example.habitmaster.domain.models.TaskFrequency;
 import com.example.habitmaster.domain.models.TaskInstance;
 import com.example.habitmaster.domain.models.TaskStatus;
 
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -101,10 +102,10 @@ public class GetUserTasksUseCase {
         return dtos;
     }
 
-    public List<TaskInstanceDTO> getRepeatingTasks() {
+    public List<TaskInstanceDTO> getRepeatingTasks(LocalDate fromDate) {
         String userId = userRepository.currentUid();
 
-        List<Task> tasks = taskRepo.getRepeatingUserTasks(userId);
+        List<Task> tasks = taskRepo.getRepeatingUserTasks(userId, fromDate);
 
         if (tasks.isEmpty()) return new ArrayList<>();
 
@@ -112,7 +113,7 @@ public class GetUserTasksUseCase {
             .map(Task::getId)
             .collect(Collectors.toList());
 
-        List<TaskInstance> instances = taskInstanceRepo.getByTaskIds(taskIds);
+        List<TaskInstance> instances = taskInstanceRepo.getByTaskIdsFromDate(taskIds, fromDate);
 
         Map<String, Task> taskMap = tasks.stream()
                 .collect(Collectors.toMap(Task::getId, t -> t));
@@ -132,11 +133,11 @@ public class GetUserTasksUseCase {
         return dtos;
     }
 
-    public List<TaskInstanceDTO> getOneTimeTasks() {
+    public List<TaskInstanceDTO> getOneTimeTasks(LocalDate fromDate) {
         String userId = userRepository.currentUid();
 
         // 1. Get one-time tasks
-        List<Task> tasks = taskRepo.getOneTimeUserTasks(userId);
+        List<Task> tasks = taskRepo.getOneTimeUserTasks(userId, fromDate);
         if (tasks.isEmpty()) return new ArrayList<>();
 
         // 2. Collect task IDs
@@ -178,21 +179,18 @@ public class GetUserTasksUseCase {
         return dtos;
     }
 
-    public TaskInstanceDTO getTaskById(String taskId) {
+    public TaskInstanceDTO findTaskById(String taskId) {
         String userId = userRepository.currentUid();
 
-        // 1. Get the task
-        Task task = taskRepo.getUserTaskById(userId, taskId);
+        Task task = taskRepo.findUserTaskById(userId, taskId);
         if (task == null) return null;
 
-        // 2. Get the associated TaskInstance(s)
         List<TaskInstance> instances = taskInstanceRepo.getByTaskIds(List.of(taskId));
-        if (instances.isEmpty()) return null; // or create a default instance?
+        if (instances.isEmpty()) return null; // TODO: Handle null return
 
         // 3. For one-time tasks, take the first instance
         TaskInstance instance = instances.get(0);
 
-        // 4. Combine into DTO
         return new TaskInstanceDTO(
                 instance.getId(),
                 task.getId(),
