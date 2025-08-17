@@ -156,4 +156,56 @@ public class TaskInstanceRepository {
             return false;
         }
     }
+
+    public TaskInstance findById(String id) {
+        SQLiteDatabase db = null;
+        Cursor cursor = null;
+
+        try {
+            db = dbHelper.getReadableDatabase();
+
+            String[] columns = {"id", "taskId", "date", "status"};
+            String selection = "id = ?";
+            String[] selectionArgs = {id};
+
+            cursor = db.query("task_instances", columns, selection, selectionArgs,
+                    null, null, null);
+
+            if (cursor != null && cursor.moveToFirst()) {
+                return mapCursorToTaskInstance(cursor); // reuse your mapping method
+            } else {
+                return null; // not found
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        } finally {
+            if (cursor != null) cursor.close();
+            if (db != null) db.close();
+        }
+    }
+
+    public boolean updateStatus(String taskInstanceId, TaskStatus newStatus) {
+        try (SQLiteDatabase db = dbHelper.getWritableDatabase()) {
+            ContentValues values = new ContentValues();
+            values.put("status", newStatus.name());
+
+            String threeDaysAgo = LocalDate.now().minusDays(3).toString();
+
+            int rowsUpdated = db.update(
+                    "task_instances",
+                    values,
+                    "id = ? AND date >= ?",
+                    new String[]{taskInstanceId, threeDaysAgo}
+            );
+
+            return rowsUpdated > 0;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+
 }

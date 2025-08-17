@@ -179,7 +179,7 @@ public class GetUserTasksUseCase {
         return dtos;
     }
 
-    public TaskInstanceDTO findTaskById(String taskId) {
+    public TaskInstanceDTO findTaskInstanceById(String taskId) {
         String userId = userRepository.currentUid();
 
         Task task = taskRepo.findUserTaskById(userId, taskId);

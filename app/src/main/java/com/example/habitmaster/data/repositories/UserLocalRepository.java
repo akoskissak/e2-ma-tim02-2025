@@ -78,4 +78,28 @@ public class UserLocalRepository {
         db.delete(DatabaseHelper.T_USERS, "id = ?", new String[]{userId});
         db.close();
     }
+
+    public void addXp(String userId, int xp) {
+        try (SQLiteDatabase db = helper.getWritableDatabase(); Cursor cursor = db.query(DatabaseHelper.T_USERS,
+                new String[]{"xp"},
+                "id = ?",
+                new String[]{userId},
+                null, null, null)) {
+
+            int currentXp = 0;
+            if (cursor != null && cursor.moveToFirst()) {
+                currentXp = cursor.getInt(cursor.getColumnIndexOrThrow("xp"));
+            }
+
+            int newXp = currentXp + xp;
+
+            ContentValues values = new ContentValues();
+            values.put("xp", newXp);
+
+            db.update(DatabaseHelper.T_USERS, values, "id = ?", new String[]{userId});
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
 }

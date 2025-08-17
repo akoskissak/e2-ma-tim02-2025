@@ -22,6 +22,7 @@ import com.example.habitmaster.domain.models.TaskDifficulty;
 import com.example.habitmaster.domain.models.TaskImportance;
 import com.example.habitmaster.domain.models.TaskStatus;
 import com.example.habitmaster.services.TaskService;
+import com.example.habitmaster.utils.Prefs;
 
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
@@ -31,9 +32,10 @@ public class TaskDetailActivity extends AppCompatActivity {
     private EditText editName, editDescription;
     private Spinner spinnerDifficulty, spinnerImportance;
     private LinearLayout editExecutionTimeLayout, bottomButtonslayouts;
-    private Button btnEdit, btnEditExecutionTime, btnSave, btnCancelEdit, btnDelete;
+    private Button btnEdit, btnEditExecutionTime, btnSave, btnCancelEdit, btnDelete, btnPause, btnDone;
     private LocalTime executionTime;
     TextView nameText, descriptionText, categoryText, difficultyText, importanceText, startDateText, endDateText, frequencyText, xpText;
+    Prefs prefs;
     public static final String EXTRA_TASK_ID = "extra_task_id";
 
     private TaskService taskService;
@@ -54,6 +56,8 @@ public class TaskDetailActivity extends AppCompatActivity {
             return;
         }
 
+        prefs =  new Prefs(this);
+
         nameText = findViewById(R.id.textTaskName);
         descriptionText = findViewById(R.id.textTaskDescription);
         categoryText = findViewById(R.id.textTaskCategory);
@@ -63,6 +67,7 @@ public class TaskDetailActivity extends AppCompatActivity {
         endDateText = findViewById(R.id.textTaskEndDate);
         frequencyText = findViewById(R.id.textTaskFrequency);
         xpText = findViewById(R.id.textTaskXp);
+        btnPause = findViewById(R.id.btnPause);
 
         new Thread(() -> {
             task = taskService.getTaskById(taskId);
@@ -78,6 +83,8 @@ public class TaskDetailActivity extends AppCompatActivity {
 //                    endDateText.setText("End: " + (task.getEndDate() != null ? task.getEndDate().toString() : "-"));
                     frequencyText.setText("Frequency: " + task.getFrequency().name());
                     xpText.setText("XP: " + task.getXpValue());
+
+                    btnPause.setText(task.getStatus() == TaskStatus.PAUSED ? "Resume" : "Pause");
                 } else {
                     Log.d("Task == null", "Task is null");
                 }
@@ -88,6 +95,7 @@ public class TaskDetailActivity extends AppCompatActivity {
         btnSave = findViewById(R.id.btnSave);
         btnCancelEdit = findViewById(R.id.btnCancelEdit);
         btnDelete = findViewById(R.id.btnDelete);
+        btnDone = findViewById(R.id.btnDone);
         editName = findViewById(R.id.editTaskName);
         editDescription = findViewById(R.id.editTaskDescription);
         btnEditExecutionTime = findViewById(R.id.btnEditTaskExecutionTime);
@@ -126,6 +134,8 @@ public class TaskDetailActivity extends AppCompatActivity {
         btnSave.setOnClickListener(v -> saveEdits());
         btnCancelEdit.setOnClickListener(v -> cancelEditing());
         btnDelete.setOnClickListener(v -> confirmDeleteTask());
+        btnPause.setOnClickListener(v -> pauseTask());
+        btnDone.setOnClickListener(v -> completeTask());
     }
 
     private void enableEditing() {
@@ -161,7 +171,7 @@ public class TaskDetailActivity extends AppCompatActivity {
         task.setXpValue(task.getDifficulty().getXpValue() + task.getImportance().getXpValue());
 
         new Thread(() -> {
-            taskService.updateTask(task);
+            taskService.updateTaskInfo(task);
 
             runOnUiThread(() -> {
                 showEditFields(false);
@@ -223,6 +233,53 @@ public class TaskDetailActivity extends AppCompatActivity {
             @Override
             public void onError(String errorMessage) {
                 Toast.makeText(TaskDetailActivity.this, "Failed to delete task: " + errorMessage, Toast.LENGTH_SHORT).show();
+            }
+        });
+    }
+
+    private void pauseTask() {
+        if (task == null) return;
+
+        Log.d("Pause task", "Attempting to pause");
+        var status = task.getStatus();
+        if (status == TaskStatus.ACTIVE) {
+            status = TaskStatus.PAUSED;
+        }
+        else if (status == TaskStatus.PAUSED) {
+            status = TaskStatus.ACTIVE;
+        }
+
+        TaskStatus newStatus = status;
+        taskService.updateTaskStatus(prefs.getUid(), task.getId(), newStatus, new TaskService.Callback() {
+            @Override
+            public void onSuccess() {
+                Log.d("Pause success", "Attempting to pause");
+                task.setStatus(newStatus);
+                btnPause.setText(newStatus == TaskStatus.PAUSED ? "Resume" : "Pause");
+                String toastMessage = newStatus == TaskStatus.PAUSED ? "paused" : "resumed";
+                Toast.makeText(TaskDetailActivity.this, "Task " + toastMessage, Toast.LENGTH_SHORT).show();
+            }
+
+            @Override
+            public void onError(String errorMessage) {
+                Log.d("Pause error", "Attempting to pause");
+                String toastMessage = newStatus == TaskStatus.PAUSED ? "pause" : "resume";
+                Toast.makeText(TaskDetailActivity.this, "Failed to " + toastMessage + " task: " + errorMessage, Toast.LENGTH_SHORT).show();
+            }});
+    }
+
+    private void completeTask() {
+        if (task == null) return;
+
+        taskService.completeTask(prefs.getUid(), task, new TaskService.Callback() {
+            @Override
+            public void onSuccess() {
+                Toast.makeText(TaskDetailActivity.this, "Task completed", Toast.LENGTH_SHORT).show();
+            }
+
+            @Override
+            public void onError(String errorMessage) {
+                Toast.makeText(TaskDetailActivity.this, "Failed: " + errorMessage, Toast.LENGTH_SHORT).show();
             }
         });
     }
