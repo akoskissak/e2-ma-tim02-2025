@@ -153,11 +153,15 @@ public class TaskDetailActivity extends AppCompatActivity {
         spinnerDifficulty.setSelection(task.getDifficulty().ordinal());
         spinnerImportance.setSelection(task.getImportance().ordinal());
 
+        btnEdit.setVisibility(View.GONE);
+        btnDelete.setVisibility(View.GONE);
         showStaticFields(false);
         showEditFields(true);
     }
 
     private void saveEdits() {
+        btnEdit.setVisibility(View.VISIBLE);
+        btnDelete.setVisibility(View.VISIBLE);
         if (task == null) return;
 
         task.setName(editName.getText().toString());
@@ -190,6 +194,8 @@ public class TaskDetailActivity extends AppCompatActivity {
     }
 
     private void cancelEditing() {
+        btnEdit.setVisibility(View.VISIBLE);
+        btnDelete.setVisibility(View.VISIBLE);
         showEditFields(false);
         showStaticFields(true);
     }
