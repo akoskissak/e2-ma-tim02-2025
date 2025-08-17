@@ -12,7 +12,7 @@ public class UpdateTaskUseCase {
 
     // TODO: Update only future tasks
     // Currently all task instances (previous and future) are updated
-    public TaskInstanceDTO updateTask(TaskInstanceDTO dto) {
+    public TaskInstanceDTO execute(TaskInstanceDTO dto) {
         var task = taskRepo.findTaskById(dto.getTaskId());
 
         if (task == null) {

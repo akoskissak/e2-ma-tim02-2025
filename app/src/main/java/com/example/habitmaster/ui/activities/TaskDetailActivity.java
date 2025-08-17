@@ -13,6 +13,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.example.habitmaster.R;
@@ -31,6 +32,7 @@ public class TaskDetailActivity extends AppCompatActivity {
     private Spinner spinnerDifficulty, spinnerImportance;
     private LinearLayout editExecutionTimeLayout, bottomButtonslayouts;
     private Button btnEdit, btnEditExecutionTime, btnSave, btnCancelEdit;
+    private Button btnEdit, btnEditExecutionTime, btnSave, btnCancelEdit, btnDelete;
     private LocalTime executionTime;
     TextView nameText, descriptionText, categoryText, difficultyText, importanceText, startDateText, endDateText, frequencyText, xpText;
     public static final String EXTRA_TASK_ID = "extra_task_id";
@@ -86,6 +88,7 @@ public class TaskDetailActivity extends AppCompatActivity {
         btnEdit = findViewById(R.id.btnEdit);
         btnSave = findViewById(R.id.btnSave);
         btnCancelEdit = findViewById(R.id.btnCancelEdit);
+        btnDelete = findViewById(R.id.btnDelete);
         editName = findViewById(R.id.editTaskName);
         editDescription = findViewById(R.id.editTaskDescription);
         btnEditExecutionTime = findViewById(R.id.btnEditTaskExecutionTime);
@@ -123,6 +126,7 @@ public class TaskDetailActivity extends AppCompatActivity {
         btnEdit.setOnClickListener(v -> enableEditing());
         btnSave.setOnClickListener(v -> saveEdits());
         btnCancelEdit.setOnClickListener(v -> cancelEditing());
+        btnDelete.setOnClickListener(v -> confirmDeleteTask());
     }
 
     private void enableEditing() {
@@ -198,4 +202,29 @@ public class TaskDetailActivity extends AppCompatActivity {
         xpText.setVisibility(show ? View.VISIBLE : View.GONE);
     }
 
+    private void confirmDeleteTask() {
+        new AlertDialog.Builder(this)
+            .setTitle("Delete Task")
+            .setMessage("Are you sure you want to delete this task?")
+            .setPositiveButton("Yes", (dialog, which) -> deleteTask())
+            .setNegativeButton("No", null)
+            .show();
+    }
+
+    private void deleteTask() {
+        if (task == null) return;
+
+        taskService.deleteTask(taskId, new TaskService.Callback() {
+            @Override
+            public void onSuccess() {
+                Toast.makeText(TaskDetailActivity.this, "Task deleted", Toast.LENGTH_SHORT).show();
+                finish(); // Close activity after deletion
+            }
+
+            @Override
+            public void onError(String errorMessage) {
+                Toast.makeText(TaskDetailActivity.this, "Failed to delete task: " + errorMessage, Toast.LENGTH_SHORT).show();
+            }
+        });
+    }
 }

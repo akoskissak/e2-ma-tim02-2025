@@ -256,4 +256,17 @@ public class TaskRepository {
         db.close();
     }
 
+    public boolean deleteTask(String taskId) {
+        try (SQLiteDatabase db = dbHelper.getWritableDatabase()) {
+            int rowsDeleted = db.delete(
+                    "tasks",
+                    "id = ?",
+                    new String[]{taskId}
+            );
+            return rowsDeleted > 0;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
 }

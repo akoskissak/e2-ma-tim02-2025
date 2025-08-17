@@ -142,5 +142,18 @@ public class TaskInstanceRepository {
         return instance;
     }
 
+    public boolean deleteFutureTaskInstances(String taskId) {
+        try (SQLiteDatabase db = dbHelper.getWritableDatabase()) {
 
+            String whereClause = "taskId = ? AND date >= ? AND status != ?";
+            String[] whereArgs = new String[]{taskId, LocalDate.now().toString(), TaskStatus.COMPLETED.name()};
+
+            int rowsDeleted = db.delete("task_instances", whereClause, whereArgs);
+
+            return rowsDeleted > 0;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
 }

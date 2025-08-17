@@ -9,6 +9,7 @@ import com.example.habitmaster.data.repositories.TaskInstanceRepository;
 import com.example.habitmaster.data.repositories.TaskRepository;
 import com.example.habitmaster.data.repositories.UserRepository;
 import com.example.habitmaster.domain.usecases.CreateTaskUseCase;
+import com.example.habitmaster.domain.usecases.DeleteTaskUseCase;
 import com.example.habitmaster.domain.usecases.GetUserTasksUseCase;
 import com.example.habitmaster.domain.usecases.UpdateTaskUseCase;
 
@@ -19,6 +20,7 @@ public class TaskService {
     private CreateTaskUseCase createTaskUseCase;
     private GetUserTasksUseCase getUserTasksUseCase;
     private UpdateTaskUseCase updateTaskUseCase;
+    private DeleteTaskUseCase deleteTaskUseCase;
 
     public interface Callback {
         void onSuccess();
@@ -34,6 +36,7 @@ public class TaskService {
         this.createTaskUseCase = new CreateTaskUseCase(localRepo, remoteRepo, userRepo, localTaskInstanceRepo, remoteInstanceRepo);
         this.getUserTasksUseCase = new GetUserTasksUseCase(localRepo, localTaskInstanceRepo, userRepo);
         this.updateTaskUseCase = new UpdateTaskUseCase(localRepo, localTaskInstanceRepo);
+        this.deleteTaskUseCase = new DeleteTaskUseCase(localTaskInstanceRepo);
     }
 
     public void createTask(
@@ -78,7 +81,20 @@ public class TaskService {
     public TaskInstanceDTO getTaskById(String id) { return getUserTasksUseCase.findTaskById(id); }
 
     public TaskInstanceDTO updateTask(TaskInstanceDTO dto) {
-        updateTaskUseCase.updateTask(dto);
-        return null;
+        return updateTaskUseCase.execute(dto);
+    }
+
+    public void deleteTask(String taskId, Callback callback) {
+        deleteTaskUseCase.execute(taskId, new DeleteTaskUseCase.Callback() {
+            @Override
+            public void onSuccess() {
+                callback.onSuccess();
+            }
+
+            @Override
+            public void onError(String errorMessage) {
+                callback.onError(errorMessage);
+            }
+        });
     }
 }
