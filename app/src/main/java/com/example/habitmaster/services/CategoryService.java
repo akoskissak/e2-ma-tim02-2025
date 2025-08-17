@@ -37,12 +37,17 @@ public class CategoryService {
     }
 
     public void addCategory(Category category, Callback callback) {
-        boolean result = addCategoryUseCase.execute(category);
-        if (result) {
-            callback.onSuccess(category);
-        } else {
-            callback.onError("Failed to add category");
-        }
+        addCategoryUseCase.execute(category, new AddCategoryUseCase.Callback() {
+            @Override
+            public void onSuccess(Category category) {
+                callback.onSuccess(category);
+            }
+
+            @Override
+            public void onError(String errorMessage) {
+                callback.onError(errorMessage);
+            }
+        });
     }
 
     public void updateCategory(Category category, Callback callback) {

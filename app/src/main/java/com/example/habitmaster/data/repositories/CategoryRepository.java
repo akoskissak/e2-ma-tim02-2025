@@ -7,6 +7,8 @@ import android.database.sqlite.SQLiteDatabase;
 
 import com.example.habitmaster.data.database.DatabaseHelper;
 import com.example.habitmaster.domain.models.Category;
+import com.example.habitmaster.utils.exceptions.ColorNotUniqueException;
+import com.example.habitmaster.utils.exceptions.NameNotUniqueException;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -49,8 +51,37 @@ public class CategoryRepository {
         return category;
     }
 
-    public void addCategory(Category category) {
+    public void addCategory(Category category) throws NameNotUniqueException, ColorNotUniqueException {
         try (SQLiteDatabase db = dbHelper.getWritableDatabase()) {
+
+            // Check if name is already used by this user
+            Cursor cursorName = db.query(
+                    DatabaseHelper.T_CATEGORIES,
+                    new String[] {"id"},
+                    "userId = ? AND name = ?",
+                    new String[] {category.getUserId(), category.getName()},
+                    null, null, null
+            );
+            if (cursorName.moveToFirst()) {
+                cursorName.close();
+                throw new NameNotUniqueException();
+            }
+            cursorName.close();
+
+            // Check if color is already used by this user
+            Cursor cursorColor = db.query(
+                    DatabaseHelper.T_CATEGORIES,
+                    new String[] {"id"},
+                    "userId = ? AND color = ?",
+                    new String[] {category.getUserId(), String.valueOf(category.getColor())},
+                    null, null, null
+            );
+            if (cursorColor.moveToFirst()) {
+                cursorColor.close();
+                throw new ColorNotUniqueException();
+            }
+            cursorColor.close();
+
             ContentValues values = new ContentValues();
             values.put("id", category.getId());
             values.put("userId", category.getUserId());
@@ -60,6 +91,7 @@ public class CategoryRepository {
             db.insert(DatabaseHelper.T_CATEGORIES, null, values);
         }
     }
+
 
     public void updateCategory(Category category) throws Exception {
         try (SQLiteDatabase db = dbHelper.getWritableDatabase()) {

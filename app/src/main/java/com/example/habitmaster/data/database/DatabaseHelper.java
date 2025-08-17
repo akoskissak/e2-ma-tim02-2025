@@ -67,7 +67,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 "name TEXT NOT NULL, " +
                 "color INTEGER NOT NULL, " +
                 "FOREIGN KEY(userId) REFERENCES " + T_USERS + "(id) ON DELETE CASCADE, " +
-                "UNIQUE(userId, name)" +
+                "UNIQUE(userId, name, color)" +
                 ")");
 
     }
