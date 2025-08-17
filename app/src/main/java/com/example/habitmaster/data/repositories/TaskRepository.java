@@ -101,12 +101,12 @@ public class TaskRepository {
     }
 
 
-    public List<Task> getOneTimeUserTasks(String userId) {
+    public List<Task> getOneTimeUserTasks(String userId, LocalDate fromDate) {
         SQLiteDatabase db = dbHelper.getReadableDatabase();
         List<Task> tasks = new ArrayList<>();
 
-        String selection = "userId = ? AND frequency = ?";
-        String[] selectionArgs = { userId, TaskFrequency.ONCE.name() };
+        String selection = "userId = ? AND frequency = ? AND startDate >= ?";
+        String[] selectionArgs = { userId, TaskFrequency.ONCE.name(), fromDate.toString() };
 
         Cursor cursor = db.query(
                 "tasks",
@@ -115,7 +115,7 @@ public class TaskRepository {
                 selectionArgs,
                 null,
                 null,
-                null
+                "startDate ASC"
         );
 
         if (cursor.moveToFirst()) {
@@ -130,12 +130,12 @@ public class TaskRepository {
         return tasks;
     }
 
-    public List<Task> getRepeatingUserTasks(String userId) {
+    public List<Task> getRepeatingUserTasks(String userId, LocalDate fromDate) {
         SQLiteDatabase db = dbHelper.getReadableDatabase();
         List<Task> tasks = new ArrayList<>();
 
-        String selection = "userId = ? AND frequency != ?";
-        String[] selectionArgs = { userId, TaskFrequency.ONCE.name() };
+        String selection = "userId = ? AND frequency != ? AND endDate >= ?";
+        String[] selectionArgs = { userId, TaskFrequency.ONCE.name(), fromDate.toString() };
 
         Cursor cursor = db.query(
                 "tasks",
@@ -144,7 +144,7 @@ public class TaskRepository {
                 selectionArgs,
                 null,
                 null,
-                null
+                "endDate ASC"
         );
 
         if (cursor.moveToFirst()) {
@@ -182,7 +182,7 @@ public class TaskRepository {
         return task;
     }
 
-    public Task getUserTaskById(String userId, String taskId) {
+    public Task findUserTaskById(String userId, String taskId) {
         SQLiteDatabase db = dbHelper.getReadableDatabase();
         Task task = null;
 
@@ -208,4 +208,65 @@ public class TaskRepository {
         return task;
     }
 
+    public Task findTaskById(String taskId) {
+        SQLiteDatabase db = dbHelper.getReadableDatabase();
+        Task task = null;
+
+        String selection = "id = ?";
+        String[] selectionArgs = { taskId };
+
+        Cursor cursor = db.query(
+                "tasks",
+                null,
+                selection,
+                selectionArgs,
+                null,
+                null,
+                null
+        );
+
+        if (cursor.moveToFirst()) {
+            task = mapCursorToTask(cursor);
+        }
+
+        cursor.close();
+        db.close();
+        return task;
+    }
+
+    public void update(Task task) {
+        SQLiteDatabase db = dbHelper.getWritableDatabase();
+
+        ContentValues values = new ContentValues();
+        values.put("name", task.getName());
+        values.put("description", task.getDescription());
+        if (task.getExecutionTime() != null) {
+            values.put("executionTime", task.getExecutionTime().toString());
+        }
+        values.put("difficulty", task.getDifficulty().name());
+        values.put("importance", task.getImportance().name());
+
+        db.update(
+                "tasks",
+                values,
+                "id = ?",
+                new String[]{task.getId()}
+        );
+
+        db.close();
+    }
+
+    public boolean deleteTask(String taskId) {
+        try (SQLiteDatabase db = dbHelper.getWritableDatabase()) {
+            int rowsDeleted = db.delete(
+                    "tasks",
+                    "id = ?",
+                    new String[]{taskId}
+            );
+            return rowsDeleted > 0;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
 }

@@ -3,6 +3,7 @@ package com.example.habitmaster.data.dtos;
 import com.example.habitmaster.domain.models.TaskDifficulty;
 import com.example.habitmaster.domain.models.TaskFrequency;
 import com.example.habitmaster.domain.models.TaskImportance;
+import com.example.habitmaster.domain.models.TaskInstance;
 import com.example.habitmaster.domain.models.TaskStatus;
 
 import java.time.LocalDate;

@@ -19,6 +19,7 @@ import com.example.habitmaster.services.TaskService;
 import com.example.habitmaster.ui.activities.TaskDetailActivity;
 import com.example.habitmaster.ui.adapters.TasksAdapter;
 
+import java.time.LocalDate;
 import java.util.List;
 
 public class TaskTabFragment extends Fragment {
@@ -59,9 +60,9 @@ public class TaskTabFragment extends Fragment {
         new Thread(() -> {
             List<TaskInstanceDTO> tasks;
             if (repeating) {
-                tasks = taskService.getRepeatingTasks();
+                tasks = taskService.getRepeatingTasks(LocalDate.now());
             } else {
-                tasks = taskService.getOneTimeTasks();
+                tasks = taskService.getOneTimeTasks(LocalDate.now());
             }
 
             getActivity().runOnUiThread(() -> {
