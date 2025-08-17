@@ -5,6 +5,7 @@ import android.content.Context;
 import com.example.habitmaster.data.dtos.TaskInstanceDTO;
 import com.example.habitmaster.data.firebases.FirebaseTaskInstanceRepository;
 import com.example.habitmaster.data.firebases.FirebaseTaskRepository;
+import com.example.habitmaster.data.repositories.CategoryRepository;
 import com.example.habitmaster.data.repositories.TaskInstanceRepository;
 import com.example.habitmaster.data.repositories.TaskRepository;
 import com.example.habitmaster.data.repositories.UserLocalRepository;
@@ -37,8 +38,9 @@ public class TaskService {
         UserRepository userRepo = new UserRepository(context);
         TaskInstanceRepository localTaskInstanceRepo = new TaskInstanceRepository(context);
         FirebaseTaskInstanceRepository remoteInstanceRepo = new FirebaseTaskInstanceRepository();
+        CategoryRepository categoryRepo = new CategoryRepository(context);
         this.createTaskUseCase = new CreateTaskUseCase(localRepo, remoteRepo, userRepo, localTaskInstanceRepo, remoteInstanceRepo);
-        this.getUserTasksUseCase = new GetUserTasksUseCase(localRepo, localTaskInstanceRepo, userRepo);
+        this.getUserTasksUseCase = new GetUserTasksUseCase(localRepo, localTaskInstanceRepo, userRepo, categoryRepo);
         this.updateTaskUseCase = new UpdateTaskUseCase(localRepo, localTaskInstanceRepo);
         this.deleteTaskUseCase = new DeleteTaskUseCase(localTaskInstanceRepo);
         this.addUserXpUseCase = new AddUserXpUseCase(new UserLocalRepository(context));
@@ -47,7 +49,7 @@ public class TaskService {
     public void createTask(
             String name,
             String description,
-            int categoryId,
+            String categoryId,
             String frequency,
             int repeatInterval,
             String startDate,

@@ -41,7 +41,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 "userId TEXT NOT NULL, " +
                 "name TEXT NOT NULL, " +
                 "description TEXT, " +
-                "categoryId INTEGER NOT NULL, " +
+                "categoryId TEXT NOT NULL, " +
                 "frequency TEXT, " +
                 "repeatInterval INTEGER, " +
                 "startDate TEXT, " +

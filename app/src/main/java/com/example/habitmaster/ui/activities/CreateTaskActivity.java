@@ -5,6 +5,7 @@ import android.app.TimePickerDialog;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.LinearLayout;
@@ -20,12 +21,18 @@ import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
 import com.example.habitmaster.R;
+import com.example.habitmaster.domain.models.Category;
+import com.example.habitmaster.services.CategoryService;
 import com.example.habitmaster.services.TaskService;
 import com.example.habitmaster.utils.HorizontalNumberPicker;
+import com.example.habitmaster.utils.Prefs;
 
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.List;
+
 import android.util.Log;
 
 public class CreateTaskActivity extends AppCompatActivity {
@@ -43,6 +50,10 @@ public class CreateTaskActivity extends AppCompatActivity {
     private boolean isRepeating;
 
     private TaskService taskService;
+    private CategoryService categoryService;
+    private List<Category> myCategories;
+
+    private Prefs prefs;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -54,6 +65,8 @@ public class CreateTaskActivity extends AppCompatActivity {
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
             return insets;
         });
+
+        prefs = new Prefs(this);
 
         taskNameEdit = findViewById(R.id.taskName);
         taskDescEdit = findViewById(R.id.taskDescription);
@@ -100,6 +113,8 @@ public class CreateTaskActivity extends AppCompatActivity {
             }
         });
 
+        populateCategorySpinner();
+
         startDateButton.setOnClickListener(view -> showDatePicker(true));
         endDateButton.setOnClickListener(view -> showDatePicker(false));
         oneTimeDateButton.setOnClickListener(view -> showDatePicker(true));
@@ -124,6 +139,23 @@ public class CreateTaskActivity extends AppCompatActivity {
         });
 
         btnCreateTask.setOnClickListener(view -> createTask());
+    }
+
+    private void populateCategorySpinner() {
+        categoryService = new CategoryService(this);
+        myCategories = categoryService.getUserCategories(prefs.getUid());
+        List<String> categoryNames = new ArrayList<>();
+        for (Category c : myCategories) {
+            categoryNames.add(c.getName());
+        }
+
+        ArrayAdapter<String> spinnerAdapter = new ArrayAdapter<>(
+                this,
+                android.R.layout.simple_spinner_item,
+                categoryNames
+        );
+        spinnerAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        categorySpinner.setAdapter(spinnerAdapter);
     }
 
     private void showDatePicker(boolean isStart) {
@@ -157,7 +189,8 @@ public class CreateTaskActivity extends AppCompatActivity {
     private void createTask() {
         String name = taskNameEdit.getText().toString().trim();
         String description = taskDescEdit.getText().toString().trim();
-        int categoryId = categorySpinner.getSelectedItemPosition();
+        int position = categorySpinner.getSelectedItemPosition();
+        String categoryId = myCategories.get(position).getId();
         String difficulty = difficultySpinner.getSelectedItem().toString();
         String importance = importanceSpinner.getSelectedItem().toString();
         isRepeating = repeatRadioGroup.getCheckedRadioButtonId() != -1 &&

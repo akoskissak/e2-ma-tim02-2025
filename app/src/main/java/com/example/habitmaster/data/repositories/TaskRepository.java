@@ -165,7 +165,7 @@ public class TaskRepository {
         task.setUserId(cursor.getString(cursor.getColumnIndexOrThrow("userId")));
         task.setName(cursor.getString(cursor.getColumnIndexOrThrow("name")));
         task.setDescription(cursor.getString(cursor.getColumnIndexOrThrow("description")));
-        task.setCategoryId(cursor.getInt(cursor.getColumnIndexOrThrow("categoryId")));
+        task.setCategoryId(cursor.getString(cursor.getColumnIndexOrThrow("categoryId")));
         task.setFrequency(TaskFrequency.valueOf(cursor.getString(cursor.getColumnIndexOrThrow("frequency"))));
         task.setRepeatInterval(cursor.getInt(cursor.getColumnIndexOrThrow("repeatInterval")));
 

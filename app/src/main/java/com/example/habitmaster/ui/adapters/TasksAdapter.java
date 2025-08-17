@@ -45,13 +45,7 @@ public class TasksAdapter extends RecyclerView.Adapter<TasksAdapter.TaskViewHold
         holder.importanceText.setText(task.getImportance().name());
 
         View itemColor = holder.itemView.findViewById(R.id.itemColor);
-        int color;
-        switch (task.getCategoryId()) {
-            case 1: color = Color.rgb(0, 0, 255); break;
-            case 2: color = Color.rgb(255, 0, 0); break;
-            case 3: color = Color.rgb(0, 255, 0); break;
-            default: color = Color.rgb(200, 200, 200);
-        }
+        int color = task.getCategoryColor();
         itemColor.setBackgroundColor(color);
 
         // klik listener

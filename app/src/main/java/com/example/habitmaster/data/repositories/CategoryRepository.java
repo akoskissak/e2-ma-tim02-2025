@@ -81,4 +81,29 @@ public class CategoryRepository {
         }
     }
 
+    public int getCategoryColorById(String categoryId) {
+        int color = -1; // default value if not found
+        try (SQLiteDatabase db = dbHelper.getReadableDatabase()) {
+            Cursor cursor = db.query(
+                    DatabaseHelper.T_CATEGORIES,
+                    new String[]{"color"},
+                    "id = ?",
+                    new String[]{categoryId},
+                    null,
+                    null,
+                    null
+            );
+
+            if (cursor != null) {
+                if (cursor.moveToFirst()) {
+                    color = cursor.getInt(cursor.getColumnIndexOrThrow("color"));
+                }
+                cursor.close();
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return color;
+    }
+
 }

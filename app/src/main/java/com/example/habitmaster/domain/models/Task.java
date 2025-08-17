@@ -8,7 +8,7 @@ public class Task {
     private String userId;
     private String name;
     private String description;
-    private int categoryId;
+    private String categoryId;
     private TaskFrequency frequency;
     private int repeatInterval;
     private LocalDate startDate;
@@ -21,7 +21,7 @@ public class Task {
     public Task() {
     }
 
-    public Task(String id, String userId, String name, String description, int categoryId, TaskFrequency frequency, int repeatInterval, LocalDate startDate, LocalDate endDate, LocalTime executionTime, TaskDifficulty difficulty, TaskImportance importance) {
+    public Task(String id, String userId, String name, String description, String categoryId, TaskFrequency frequency, int repeatInterval, LocalDate startDate, LocalDate endDate, LocalTime executionTime, TaskDifficulty difficulty, TaskImportance importance) {
         this.id = id;
         this.userId = userId;
         this.name = name;
@@ -84,11 +84,11 @@ public class Task {
         this.description = description;
     }
 
-    public int getCategoryId() {
+    public String getCategoryId() {
         return categoryId;
     }
 
-    public void setCategoryId(int categoryId) {
+    public void setCategoryId(String categoryId) {
         this.categoryId = categoryId;
     }
 
