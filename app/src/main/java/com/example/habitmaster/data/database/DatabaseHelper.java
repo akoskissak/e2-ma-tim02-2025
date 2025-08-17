@@ -11,6 +11,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     public static final String T_USERS = "users";
     public static final String T_TASKS = "tasks";
     public static final String T_TASK_INSTANCES = "task_instances";
+    public static final String T_CATEGORIES = "categories";
 
     public DatabaseHelper(Context context) {
         super(context, DB_NAME, null, DB_VERSION);
@@ -59,6 +60,16 @@ public class DatabaseHelper extends SQLiteOpenHelper {
             "FOREIGN KEY(taskId) REFERENCES " + T_TASKS + "(id) ON DELETE CASCADE, " +
             "UNIQUE(taskId, date)" +
             ")");
+
+        db.execSQL("CREATE TABLE " + T_CATEGORIES + " (" +
+                "id TEXT PRIMARY KEY, " +
+                "userId TEXT NOT NULL, " +
+                "name TEXT NOT NULL, " +
+                "color INTEGER NOT NULL, " +
+                "FOREIGN KEY(userId) REFERENCES " + T_USERS + "(id) ON DELETE CASCADE, " +
+                "UNIQUE(userId, name)" +
+                ")");
+
     }
 
     @Override
@@ -66,6 +77,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         db.execSQL("DROP TABLE IF EXISTS " + T_USERS);
         db.execSQL("DROP TABLE IF EXISTS " + T_TASKS);
         db.execSQL("DROP TABLE IF EXISTS " + T_TASK_INSTANCES);
+        db.execSQL("DROP TABLE IF EXISTS " + T_CATEGORIES);
         onCreate(db);
     }
 }
