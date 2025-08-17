@@ -53,34 +53,7 @@ public class CategoryRepository {
 
     public void addCategory(Category category) throws NameNotUniqueException, ColorNotUniqueException {
         try (SQLiteDatabase db = dbHelper.getWritableDatabase()) {
-
-            // Check if name is already used by this user
-            Cursor cursorName = db.query(
-                    DatabaseHelper.T_CATEGORIES,
-                    new String[] {"id"},
-                    "userId = ? AND name = ?",
-                    new String[] {category.getUserId(), category.getName()},
-                    null, null, null
-            );
-            if (cursorName.moveToFirst()) {
-                cursorName.close();
-                throw new NameNotUniqueException();
-            }
-            cursorName.close();
-
-            // Check if color is already used by this user
-            Cursor cursorColor = db.query(
-                    DatabaseHelper.T_CATEGORIES,
-                    new String[] {"id"},
-                    "userId = ? AND color = ?",
-                    new String[] {category.getUserId(), String.valueOf(category.getColor())},
-                    null, null, null
-            );
-            if (cursorColor.moveToFirst()) {
-                cursorColor.close();
-                throw new ColorNotUniqueException();
-            }
-            cursorColor.close();
+            validateUniqueNameAndColor(category, db, false);
 
             ContentValues values = new ContentValues();
             values.put("id", category.getId());
@@ -92,9 +65,9 @@ public class CategoryRepository {
         }
     }
 
-
-    public void updateCategory(Category category) throws Exception {
+    public void updateCategory(Category category) throws NameNotUniqueException, ColorNotUniqueException, Exception {
         try (SQLiteDatabase db = dbHelper.getWritableDatabase()) {
+            validateUniqueNameAndColor(category, db, true);
 
             ContentValues values = new ContentValues();
             values.put("name", category.getName());
@@ -136,6 +109,47 @@ public class CategoryRepository {
             e.printStackTrace();
         }
         return color;
+    }
+
+    private void validateUniqueNameAndColor(Category category, SQLiteDatabase db, boolean isUpdate)
+            throws NameNotUniqueException, ColorNotUniqueException {
+
+        String idExclusion = isUpdate ? " AND id != ?" : "";
+        String[] nameArgs = isUpdate
+                ? new String[]{category.getUserId(), category.getName(), category.getId()}
+                : new String[]{category.getUserId(), category.getName()};
+
+        // Check name
+        Cursor cursorName = db.query(
+                DatabaseHelper.T_CATEGORIES,
+                new String[]{"id"},
+                "userId = ? AND name = ?" + idExclusion,
+                nameArgs,
+                null, null, null
+        );
+        if (cursorName.moveToFirst()) {
+            cursorName.close();
+            throw new NameNotUniqueException();
+        }
+        cursorName.close();
+
+        // Check color
+        String[] colorArgs = isUpdate
+                ? new String[]{category.getUserId(), String.valueOf(category.getColor()), category.getId()}
+                : new String[]{category.getUserId(), String.valueOf(category.getColor())};
+
+        Cursor cursorColor = db.query(
+                DatabaseHelper.T_CATEGORIES,
+                new String[]{"id"},
+                "userId = ? AND color = ?" + idExclusion,
+                colorArgs,
+                null, null, null
+        );
+        if (cursorColor.moveToFirst()) {
+            cursorColor.close();
+            throw new ColorNotUniqueException();
+        }
+        cursorColor.close();
     }
 
 }

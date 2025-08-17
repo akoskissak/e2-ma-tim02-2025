@@ -51,12 +51,17 @@ public class CategoryService {
     }
 
     public void updateCategory(Category category, Callback callback) {
-        boolean result = updateCategoryUseCase.execute(category);
-        if (result) {
-            callback.onSuccess(category);
-        } else {
-            callback.onError("Failed to update category");
-        }
+        updateCategoryUseCase.execute(category, new UpdateCategoryUseCase.Callback() {
+            @Override
+            public void onSuccess(Category category) {
+                callback.onSuccess(category);
+            }
+
+            @Override
+            public void onError(String errorMessage) {
+                callback.onError("Failed to update category");
+            }
+        });
     }
 }
 
