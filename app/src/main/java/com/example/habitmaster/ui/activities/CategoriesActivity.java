@@ -17,6 +17,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.example.habitmaster.R;
 import com.example.habitmaster.domain.models.Category;
 import com.example.habitmaster.services.CategoryService;
+import com.example.habitmaster.services.ICallbackVoid;
 import com.example.habitmaster.ui.adapters.CategoryAdapter;
 import com.example.habitmaster.utils.Prefs;
 
@@ -52,7 +53,6 @@ public class CategoriesActivity extends AppCompatActivity {
         recyclerView.setAdapter(adapter);
 
         btnAddCategory.setOnClickListener(v -> {
-//            openAddCategoryDialog();
             openCategoryDialog(null);
         });
 
@@ -106,6 +106,7 @@ public class CategoriesActivity extends AppCompatActivity {
                                 public void onSuccess(Category category) {
                                     adapter.addCategory(category);
                                     recyclerView.scrollToPosition(adapter.getItemCount() - 1);
+                                    Toast.makeText(CategoriesActivity.this, "Category added", Toast.LENGTH_SHORT).show();
                                 }
 
                                 @Override
@@ -115,12 +116,12 @@ public class CategoriesActivity extends AppCompatActivity {
                             });
 
                         } else {
-                            category.setName(name);
-                            category.setColor(selectedColor[0]);
-                            categoryService.updateCategory(category, new CategoryService.Callback() {
+                            var updateCategory = new Category(category.getId(), category.getUserId(), name, selectedColor[0]);
+                            categoryService.updateCategory(updateCategory, new CategoryService.Callback() {
                                 @Override
                                 public void onSuccess(Category category) {
-                                    adapter.updateCategory(category);
+                                    adapter.updateCategory(updateCategory);
+                                    Toast.makeText(CategoriesActivity.this, "Category updated", Toast.LENGTH_SHORT).show();
                                 }
 
                                 @Override
@@ -136,4 +137,20 @@ public class CategoriesActivity extends AppCompatActivity {
                 .setNegativeButton("Cancel", null)
                 .show();
     }
+
+    public void deleteCategory(String categoryId) {
+        categoryService.deleteCategory(categoryId, new ICallbackVoid() {
+            @Override
+            public void onSuccess() {
+                adapter.removeCategory(categoryId);
+                Toast.makeText(CategoriesActivity.this, "Category deleted", Toast.LENGTH_SHORT).show();
+            }
+
+            @Override
+            public void onError(String errorMessage) {
+                Toast.makeText(CategoriesActivity.this, errorMessage, Toast.LENGTH_SHORT).show();
+            }
+        });
+    }
+
 }

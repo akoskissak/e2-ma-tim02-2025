@@ -5,6 +5,7 @@ import android.content.Context;
 import com.example.habitmaster.data.repositories.CategoryRepository;
 import com.example.habitmaster.domain.models.Category;
 import com.example.habitmaster.domain.usecases.categories.AddCategoryUseCase;
+import com.example.habitmaster.domain.usecases.categories.DeleteCategoryUseCase;
 import com.example.habitmaster.domain.usecases.categories.GetUserCategoriesUseCase;
 import com.example.habitmaster.domain.usecases.categories.UpdateCategoryUseCase;
 
@@ -15,6 +16,7 @@ public class CategoryService {
     private AddCategoryUseCase addCategoryUseCase;
     private GetUserCategoriesUseCase getUserCategoriesUseCase;
     private UpdateCategoryUseCase updateCategoryUseCase;
+    private DeleteCategoryUseCase deleteCategoryUseCase;
 
     public interface Callback {
         void onSuccess(Category category);
@@ -26,6 +28,7 @@ public class CategoryService {
         this.addCategoryUseCase = new AddCategoryUseCase(categoryRepo);
         this.getUserCategoriesUseCase = new GetUserCategoriesUseCase(categoryRepo);
         this.updateCategoryUseCase = new UpdateCategoryUseCase(categoryRepo);
+        this.deleteCategoryUseCase = new DeleteCategoryUseCase(categoryRepo);
     }
 
     public List<Category> getUserCategories(String userId) {
@@ -62,6 +65,16 @@ public class CategoryService {
                 callback.onError("Failed to update category");
             }
         });
+    }
+
+    // TODO: Handle deleting category when there are tasks with that category
+    public void deleteCategory(String categoryId, ICallbackVoid callback) {
+        boolean success = deleteCategoryUseCase.execute(categoryId);
+        if (success) {
+            callback.onSuccess();
+        } else {
+            callback.onError("Failed to delete category");
+        }
     }
 }
 

@@ -5,10 +5,12 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.ImageButton;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
+import androidx.appcompat.app.AlertDialog;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.habitmaster.R;
@@ -63,22 +65,50 @@ public class CategoryAdapter extends RecyclerView.Adapter<CategoryAdapter.ViewHo
     class ViewHolder extends RecyclerView.ViewHolder {
         TextView tvName;
         View colorView;
+        Button btnEdit;
+        ImageButton btnDelete;
 
         public ViewHolder(@NonNull View itemView) {
             super(itemView);
             tvName = itemView.findViewById(R.id.tvCategoryName);
             colorView = itemView.findViewById(R.id.viewColor);
+            btnEdit = itemView.findViewById(R.id.btnEditCategory);
+            btnDelete = itemView.findViewById(R.id.btnDeleteCategory);
         }
 
         public void bind(Category category) {
             tvName.setText(category.getName());
             colorView.setBackgroundColor(category.getColor());
 
-            itemView.setOnClickListener(v -> {
+            btnEdit.setOnClickListener(v -> {
                 ((CategoriesActivity) context).openCategoryDialog(category);
+            });
+
+            btnDelete.setOnClickListener(v -> {
+                new AlertDialog.Builder(context)   // use adapter's context
+                        .setTitle("Delete Category")
+                        .setMessage("Are you sure you want to delete the category \"" + category.getName() + "\"?")
+                        .setPositiveButton("Yes", (dialog, which) -> {
+                            // Call delete method from your activity
+                            ((CategoriesActivity) context).deleteCategory(category.getId());
+                            Toast.makeText(context, "Category deleted", Toast.LENGTH_SHORT).show();
+                        })
+                        .setNegativeButton("No", null)
+                        .show();
             });
         }
     }
+
+    public void removeCategory(String categoryId) {
+        for (int i = 0; i < categories.size(); i++) {
+            if (categories.get(i).getId().equals(categoryId)) {
+                categories.remove(i);
+                notifyItemRemoved(i);
+                break;
+            }
+        }
+    }
+
 }
 
 

@@ -152,4 +152,14 @@ public class CategoryRepository {
         cursorColor.close();
     }
 
+    public boolean deleteCategory(String categoryId) {
+        try (SQLiteDatabase db = dbHelper.getWritableDatabase()) {
+            int rowsAffected = db.delete(
+                    DatabaseHelper.T_CATEGORIES,
+                    "id = ?",
+                    new String[]{categoryId}
+            );
+            return rowsAffected > 0; // true if at least one row was deleted
+        }
+    }
 }
