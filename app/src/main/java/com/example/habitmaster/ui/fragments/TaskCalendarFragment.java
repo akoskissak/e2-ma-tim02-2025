@@ -4,8 +4,13 @@ import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
+import android.graphics.Color;
+import android.graphics.Paint;
+import android.graphics.Typeface;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
+import android.graphics.drawable.ShapeDrawable;
+import android.graphics.drawable.shapes.OvalShape;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -118,16 +123,18 @@ public class TaskCalendarFragment extends Fragment {
             Calendar cal = Calendar.getInstance();
             cal.set(date.getYear(), date.getMonthValue() - 1, date.getDayOfMonth());
 
-            List<Integer> icons = new ArrayList<>();
+            List<Drawable> drawables = new ArrayList<>();
             for (int i = 0; i < Math.min(tasksForDay.size(), 3); i++) {
-                // TODO: replace with category color drawable
-                icons.add(R.drawable.avatar1);
+                TaskInstanceDTO task = tasksForDay.get(i);
+                int color = task.getCategoryColor(); // Assuming TaskInstanceDTO has categoryColor
+                Drawable circle = createColoredCircleDrawable(color, 48); // 48px diameter
+                drawables.add(circle);
             }
             if (tasksForDay.size() > 3) {
-                icons.add(R.drawable.ic_plus);
+                drawables.add(ContextCompat.getDrawable(requireContext(), R.drawable.ic_plus));
             }
 
-            Drawable combinedDrawable = combineIcons(requireContext(), icons);
+            Drawable combinedDrawable = combineIcons(requireContext(), drawables);
             CalendarDay day = new CalendarDay(cal);
             day.setImageDrawable(combinedDrawable);
             calendarDays.add(day);
@@ -136,17 +143,62 @@ public class TaskCalendarFragment extends Fragment {
         calendarView.setCalendarDays(calendarDays);
     }
 
-    private Drawable combineIcons(Context context, List<Integer> iconResIds) {
-        int size = 48;
-        Bitmap combined = Bitmap.createBitmap(size * iconResIds.size(), size, Bitmap.Config.ARGB_8888);
-        Canvas canvas = new Canvas(combined);
+    private Drawable createColoredCircleDrawable(int color, int sizePx) {
+        ShapeDrawable drawable = new ShapeDrawable(new OvalShape());
+        drawable.setIntrinsicWidth(sizePx);
+        drawable.setIntrinsicHeight(sizePx);
+        drawable.getPaint().setColor(color);
+        drawable.getPaint().setStyle(Paint.Style.FILL);
+        return drawable;
+    }
 
-        for (int i = 0; i < iconResIds.size(); i++) {
-            Drawable d = ContextCompat.getDrawable(context, iconResIds.get(i));
-            d.setBounds(i * size, 0, (i + 1) * size, size);
+    private Drawable combineIcons(Context context, List<Drawable> drawables) {
+        if (drawables.isEmpty()) return null;
+
+        int circleSize = 48; // diameter of each circle in pixels
+        int spacing = 8;     // spacing between circles
+
+        int rowCount = 2;
+        int colCount = 2; // max 2 items per row
+        int width = colCount * circleSize + spacing * (colCount - 1);
+        int height = rowCount * circleSize + spacing; // spacing between rows
+
+        Bitmap combinedBitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
+        Canvas canvas = new Canvas(combinedBitmap);
+
+        // Row 1: first 2 tasks
+        for (int i = 0; i < Math.min(drawables.size(), colCount); i++) {
+            Drawable d = drawables.get(i);
+            int left = i * (circleSize + spacing);
+            int top = 0;
+            d.setBounds(left, top, left + circleSize, top + circleSize);
             d.draw(canvas);
         }
 
-        return new BitmapDrawable(context.getResources(), combined);
+        // Row 2: 3rd task + plus sign if needed
+        if (drawables.size() >= 3) {
+            Drawable d = drawables.get(2);
+            int left = 0;
+            int top = circleSize + spacing;
+            d.setBounds(left, top, left + circleSize, top + circleSize);
+            d.draw(canvas);
+
+            if (drawables.size() > 3) {
+                String extraText = "+" + (drawables.size() - 3);
+                Paint textPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+                textPaint.setColor(Color.BLACK);
+                textPaint.setTextSize(circleSize * 0.9f);
+                textPaint.setTextAlign(Paint.Align.CENTER);
+                textPaint.setTypeface(Typeface.create(Typeface.DEFAULT, Typeface.BOLD));
+
+                float x = circleSize + spacing + circleSize / 2f;
+                float y = circleSize + spacing + circleSize / 2f - ((textPaint.descent() + textPaint.ascent()) / 2);
+
+                canvas.drawText(extraText, x, y, textPaint);
+            }
+        }
+
+        return new BitmapDrawable(context.getResources(), combinedBitmap);
     }
+
 }

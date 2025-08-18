@@ -45,7 +45,7 @@ public class CreateTaskUseCase {
     public void execute(
             String name,
             String description,
-            int categoryId,
+            String categoryId,
             String frequencyStr,
             int repeatInterval,
             String startDateStr,

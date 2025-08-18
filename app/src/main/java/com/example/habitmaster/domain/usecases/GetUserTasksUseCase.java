@@ -1,6 +1,7 @@
 package com.example.habitmaster.domain.usecases;
 
 import com.example.habitmaster.data.dtos.TaskInstanceDTO;
+import com.example.habitmaster.data.repositories.CategoryRepository;
 import com.example.habitmaster.data.repositories.TaskInstanceRepository;
 import com.example.habitmaster.data.repositories.TaskRepository;
 import com.example.habitmaster.data.repositories.UserRepository;
@@ -19,11 +20,13 @@ public class GetUserTasksUseCase {
     private final TaskRepository taskRepo;
     private final TaskInstanceRepository taskInstanceRepo;
     private final UserRepository userRepository;
+    private final CategoryRepository categoryRepo;
 
-    public GetUserTasksUseCase(TaskRepository taskRepo, TaskInstanceRepository taskInstanceRepo, UserRepository userRepository) {
+    public GetUserTasksUseCase(TaskRepository taskRepo, TaskInstanceRepository taskInstanceRepo, UserRepository userRepository, CategoryRepository categoryRepo) {
         this.taskRepo = taskRepo;
         this.taskInstanceRepo = taskInstanceRepo;
         this.userRepository = userRepository;
+        this.categoryRepo = categoryRepo;
     }
 
     public List<TaskInstanceDTO> getAllTasks() {
@@ -68,6 +71,7 @@ public class GetUserTasksUseCase {
                         task.getName(),
                         task.getDescription(),
                         task.getCategoryId(),
+                        categoryRepo.getCategoryColorById(task.getCategoryId()),
                         task.getFrequency(),
                         task.getRepeatInterval(),
                         instance.getDate(),
@@ -88,6 +92,7 @@ public class GetUserTasksUseCase {
                     task.getName(),
                     task.getDescription(),
                     task.getCategoryId(),
+                    categoryRepo.getCategoryColorById(task.getCategoryId()),
                     task.getFrequency(),
                     task.getRepeatInterval(),
                     task.getStartDate(), // date = startDate
@@ -123,7 +128,8 @@ public class GetUserTasksUseCase {
             Task task = taskMap.get(instance.getTaskId());
             if (task == null) continue;
 
-            TaskInstanceDTO dto = new TaskInstanceDTO(instance.getId(), task.getId(), task.getName(), task.getDescription(), task.getCategoryId(),
+            TaskInstanceDTO dto = new TaskInstanceDTO(instance.getId(), task.getId(), task.getName(), task.getDescription(),
+                    task.getCategoryId(), categoryRepo.getCategoryColorById(task.getCategoryId()),
                     task.getFrequency(), task.getRepeatInterval(), instance.getDate(), task.getExecutionTime(), task.getDifficulty(), task.getImportance(),
                     task.getXpValue(), instance.getStatus());
 
@@ -164,6 +170,7 @@ public class GetUserTasksUseCase {
                     task.getName(),
                     task.getDescription(),
                     task.getCategoryId(),
+                    categoryRepo.getCategoryColorById(task.getCategoryId()),
                     task.getFrequency(),
                     task.getRepeatInterval(),
                     instance.getDate(),
@@ -197,6 +204,7 @@ public class GetUserTasksUseCase {
                 task.getName(),
                 task.getDescription(),
                 task.getCategoryId(),
+                categoryRepo.getCategoryColorById(task.getCategoryId()),
                 task.getFrequency(),
                 task.getRepeatInterval(),
                 instance.getDate(),
