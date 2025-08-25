@@ -46,7 +46,7 @@ public class LoginActivity extends AppCompatActivity {
         userService.login(
                 email,
                 password,
-                new ICallback() {
+                new ICallback<User>() {
                     @Override
                     public void onSuccess(User user) {
                         Toast.makeText(LoginActivity.this, "Dobrodosao " + user.getUsername(), Toast.LENGTH_SHORT).show();

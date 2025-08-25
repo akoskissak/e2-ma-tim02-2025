@@ -4,10 +4,10 @@ import android.content.Intent;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
 import android.widget.Button;
-import android.os.Handler;
 
 import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.app.AppCompatDelegate;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
@@ -30,6 +30,9 @@ public class MainActivity extends AppCompatActivity {
             finish();
             return;
         }
+
+        // da uvek bude mode day
+        AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO);
 
         // zbog pregleda baze
         DatabaseHelper helper = new DatabaseHelper(this);
@@ -63,6 +66,11 @@ public class MainActivity extends AppCompatActivity {
         Button btnCategories = findViewById(R.id.btnCategories);
         btnCategories.setOnClickListener(v -> {
             startActivity(new Intent(this, CategoriesActivity.class));
+        });
+
+        Button btnStatistics = findViewById(R.id.btnStatistics);
+        btnStatistics.setOnClickListener(v -> {
+            startActivity(new Intent(this, UserStatisticsActivity.class));
         });
     }
 }
