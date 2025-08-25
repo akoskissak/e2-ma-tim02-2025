@@ -19,7 +19,6 @@ import com.example.habitmaster.ui.fragments.AvatarPickerFragment;
 
 public class RegisterActivity extends AppCompatActivity implements AvatarPickerFragment.OnAvatarSelectedListener {
     private EditText etEmail, etPassword, etConfirmPassword, etUsername;
-    private Button registerButton;
     private ProgressBar progressBar;
     private String selectedAvatarName;
 
@@ -42,7 +41,7 @@ public class RegisterActivity extends AppCompatActivity implements AvatarPickerF
         etPassword = findViewById(R.id.registerPassword);
         etConfirmPassword = findViewById(R.id.registerConfirmPassword);
         etUsername = findViewById(R.id.registerUsername);
-        registerButton = findViewById(R.id.btnRegister);
+        Button registerButton = findViewById(R.id.btnRegister);
         progressBar = findViewById(R.id.progressBar);
         TextView tvGoToLogin = findViewById(R.id.tvGoToLogin);
         tvGoToLogin.setOnClickListener(v -> {
@@ -69,7 +68,7 @@ public class RegisterActivity extends AppCompatActivity implements AvatarPickerF
                 confirmPassword,
                 username,
                 selectedAvatarName,
-                new ICallback() {
+                new ICallback<User>() {
                     @Override
                     public void onSuccess(User user) {
                         progressBar.setVisibility(View.GONE);

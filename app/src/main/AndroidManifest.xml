@@ -29,6 +29,7 @@
         <activity android:name=".ui.activities.RegisterActivity" />
         <activity android:name=".ui.activities.LoginActivity" />
         <activity android:name=".ui.activities.ProfileActivity" />
+        <activity android:name =".ui.activities.UserStatisticsActivity" />
         <activity
             android:name=".ui.activities.MyTasksActivity"
             android:exported="false" />

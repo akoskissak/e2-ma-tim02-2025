@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <LinearLayout
+        android:orientation="vertical"
+        android:padding="16dp"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <!-- Active days -->
+        <LinearLayout
+            android:orientation="horizontal"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content">
+
+            <TextView
+                android:id="@+id/labelActiveDays"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Active days: " />
+
+            <TextView
+                android:id="@+id/tvActiveDays"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textStyle="bold" />
+        </LinearLayout>
+
+        <!-- Current streak -->
+        <LinearLayout
+            android:orientation="horizontal"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content">
+
+            <TextView
+                android:id="@+id/labelStreak"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Current streak: " />
+
+            <TextView
+                android:id="@+id/tvStreak"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textStyle="bold" />
+        </LinearLayout>
+
+        <!-- XP last 7 days -->
+        <LinearLayout
+            android:orientation="horizontal"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content">
+
+            <TextView
+                android:id="@+id/labelXpLast7Days"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="XP last 7 days: " />
+
+            <TextView
+                android:id="@+id/tvXpLast7Days"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textStyle="bold" />
+        </LinearLayout>
+
+        <com.github.mikephil.charting.charts.PieChart
+            android:id="@+id/chartTasksStatus"
+            android:layout_width="match_parent"
+            android:layout_height="200dp" />
+
+        <com.github.mikephil.charting.charts.BarChart
+            android:id="@+id/chartByCategory"
+            android:layout_width="match_parent"
+            android:layout_height="200dp" />
+
+        <com.github.mikephil.charting.charts.LineChart
+            android:id="@+id/chartXpLast7Days"
+            android:layout_width="match_parent"
+            android:layout_height="200dp" />
+
+        <com.github.mikephil.charting.charts.LineChart
+            android:id="@+id/chartPercentageByDifficulty"
+            android:layout_width="match_parent"
+            android:layout_height="200dp" />
+
+    </LinearLayout>
+</ScrollView>
