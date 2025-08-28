@@ -77,8 +77,8 @@ public class TaskDetailActivity extends AppCompatActivity {
                     nameText.setText(task.getName());
                     descriptionText.setText("Description: " + task.getDescription());
                     categoryText.setText("Category: " + task.getCategoryId());
-                    difficultyText.setText("Difficulty: " + task.getDifficulty().name());
-                    importanceText.setText("Importance: " + task.getImportance().name());
+                    difficultyText.setText("Difficulty: " + task.getDifficulty().getDisplayName());
+                    importanceText.setText("Importance: " + task.getImportance().getDisplayName());
                     startDateText.setText("Start: " + (task.getDate() != null ? task.getDate().toString() : "-"));
 //                    endDateText.setText("End: " + (task.getEndDate() != null ? task.getEndDate().toString() : "-"));
                     frequencyText.setText("Frequency: " + task.getFrequency().name());
@@ -180,8 +180,8 @@ public class TaskDetailActivity extends AppCompatActivity {
 
                 nameText.setText(task.getName());
                 descriptionText.setText("Description: " + task.getDescription());
-                difficultyText.setText("Difficulty: " + task.getDifficulty().name());
-                importanceText.setText("Importance: " + task.getImportance().name());
+                difficultyText.setText("Difficulty: " + task.getDifficulty().getDisplayName());
+                importanceText.setText("Importance: " + task.getImportance().getDisplayName());
                 xpText.setText("XP: " + task.getXpValue());
 
                 showStaticFields(true);

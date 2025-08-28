@@ -68,13 +68,13 @@ public class CreateTaskUseCase {
         LocalTime executionTime = null;
 
         try {
-            difficulty = TaskDifficulty.valueOf(difficultyStr.toUpperCase());
+            difficulty = TaskDifficulty.fromDisplayName(difficultyStr);
         } catch (IllegalArgumentException e) {
             difficulty = TaskDifficulty.EASY; // fallback default
         }
 
         try {
-            importance = TaskImportance.valueOf(importanceStr.toUpperCase());
+            importance = TaskImportance.fromDisplayName(importanceStr);
         } catch (IllegalArgumentException e) {
             importance = TaskImportance.NORMAL; // fallback default
         }

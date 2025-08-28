@@ -41,8 +41,8 @@ public class TasksAdapter extends RecyclerView.Adapter<TasksAdapter.TaskViewHold
         TaskInstanceDTO task = tasks.get(position);
         holder.nameText.setText(task.getName());
         holder.descriptionText.setText(task.getDescription());
-        holder.difficultyText.setText(task.getDifficulty().name());
-        holder.importanceText.setText(task.getImportance().name());
+        holder.difficultyText.setText(task.getDifficulty().getDisplayName());
+        holder.importanceText.setText(task.getImportance().getDisplayName());
 
         View itemColor = holder.itemView.findViewById(R.id.itemColor);
         int color = task.getCategoryColor();

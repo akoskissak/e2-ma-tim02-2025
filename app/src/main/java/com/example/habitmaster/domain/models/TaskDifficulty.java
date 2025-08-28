@@ -1,10 +1,34 @@
 package com.example.habitmaster.domain.models;
 
 public enum TaskDifficulty {
-    VERY_EASY,
-    EASY,
-    HARD,
-    EXTREMELY_HARD;
+    VERY_EASY("Very easy"),
+    EASY("Easy"),
+    HARD("Hard"),
+    EXTREMELY_HARD("Extremely hard");
+
+    private final String displayName;
+
+    TaskDifficulty(String displayName) {
+        this.displayName = displayName;
+    }
+
+    public String getDisplayName() {
+        return displayName;
+    }
+
+    @Override
+    public String toString() {
+        return displayName;
+    }
+
+    public static TaskDifficulty fromDisplayName(String name) {
+        for (TaskDifficulty d : values()) {
+            if (d.displayName.equalsIgnoreCase(name)) {
+                return d;
+            }
+        }
+        throw new IllegalArgumentException("Unknown difficulty: " + name);
+    }
 
     public int getXpValue(UserLevelProgress progress) {
         switch (this) {
