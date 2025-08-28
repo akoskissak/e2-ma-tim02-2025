@@ -171,9 +171,7 @@ public class TaskDetailActivity extends AppCompatActivity {
         }
         task.setDifficulty(TaskDifficulty.values()[spinnerDifficulty.getSelectedItemPosition()]);
         task.setImportance(TaskImportance.values()[spinnerImportance.getSelectedItemPosition()]);
-
-        task.setXpValue(task.getDifficulty().getXpValue() + task.getImportance().getXpValue());
-
+        
         new Thread(() -> {
             taskService.updateTaskInfo(task);
 

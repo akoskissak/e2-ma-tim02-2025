@@ -68,7 +68,7 @@ public class RegisterActivity extends AppCompatActivity implements AvatarPickerF
                 confirmPassword,
                 username,
                 selectedAvatarName,
-                new ICallback<User>() {
+                new ICallback<>() {
                     @Override
                     public void onSuccess(User user) {
                         progressBar.setVisibility(View.GONE);

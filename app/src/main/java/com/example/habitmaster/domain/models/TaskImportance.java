@@ -1,18 +1,23 @@
 package com.example.habitmaster.domain.models;
 
 public enum TaskImportance {
-    NORMAL(1),
-    IMPORTANT(3),
-    EXTREMELY_IMPORTANT(10),
-    SPECIAL(100);
+    NORMAL,
+    IMPORTANT,
+    EXTREMELY_IMPORTANT,
+    SPECIAL;
 
-    private final int xpValue;
-
-    TaskImportance(int xpValue) {
-        this.xpValue = xpValue;
-    }
-
-    public int getXpValue() {
-        return xpValue;
+    public int getXpValue(UserLevelProgress progress) {
+        switch (this) {
+            case NORMAL:
+                return progress.getNormalXp();
+            case IMPORTANT:
+                return progress.getImportantXp();
+            case EXTREMELY_IMPORTANT:
+                return progress.getExtremelyImportantXp();
+            case SPECIAL:
+                return progress.getSpecialXp();
+            default:
+                throw new IllegalArgumentException("Unknown importance level");
+        }
     }
 }

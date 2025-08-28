@@ -72,5 +72,10 @@ public class MainActivity extends AppCompatActivity {
         btnStatistics.setOnClickListener(v -> {
             startActivity(new Intent(this, UserStatisticsActivity.class));
         });
+
+        Button btnLevelProgress = findViewById(R.id.btnLevelProgress);
+        btnLevelProgress.setOnClickListener(v -> {
+            startActivity(new Intent(this, LevelProgressActivity.class));
+        });
     }
 }

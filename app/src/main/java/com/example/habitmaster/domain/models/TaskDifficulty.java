@@ -1,18 +1,23 @@
 package com.example.habitmaster.domain.models;
 
 public enum TaskDifficulty {
-    VERY_EASY(1),
-    EASY(3),
-    HARD(7),
-    EXTREMELY_HARD(20);
+    VERY_EASY,
+    EASY,
+    HARD,
+    EXTREMELY_HARD;
 
-    private final int xpValue;
-
-    TaskDifficulty(int xpValue) {
-        this.xpValue = xpValue;
-    }
-
-    public int getXpValue() {
-        return xpValue;
+    public int getXpValue(UserLevelProgress progress) {
+        switch (this) {
+            case VERY_EASY:
+                return progress.getVeryEasyXp();
+            case EASY:
+                return progress.getEasyXp();
+            case HARD:
+                return progress.getHardXp();
+            case EXTREMELY_HARD:
+                return progress.getExtremelyHardXp();
+            default:
+                throw new IllegalArgumentException("Unknown difficulty level");
+        }
     }
 }

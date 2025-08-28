@@ -7,12 +7,15 @@ import android.database.sqlite.SQLiteDatabase;
 
 import com.example.habitmaster.data.database.DatabaseHelper;
 import com.example.habitmaster.domain.models.User;
+import com.example.habitmaster.domain.models.UserLevelProgress;
 
 public class UserLocalRepository {
     private final DatabaseHelper helper;
+    private final UserLevelProgressRepository userLevelProgressRepository;
 
     public UserLocalRepository(Context ctx) {
         this.helper = new DatabaseHelper(ctx);
+        this.userLevelProgressRepository = new UserLevelProgressRepository(ctx);
     }
 
     public void insert(User u) {
@@ -33,6 +36,9 @@ public class UserLocalRepository {
         cv.put("badges", u.getBadges());
         cv.put("equipment", u.getEquipment());
         db.insert(DatabaseHelper.T_USERS, null, cv);
+
+        // kreiranje i userLevelProgress
+        userLevelProgressRepository.createUserLevelProgress(new UserLevelProgress(u.getId()));
     }
 
     public User findByEmail(String email) {
@@ -98,8 +104,78 @@ public class UserLocalRepository {
 
             db.update(DatabaseHelper.T_USERS, values, "id = ?", new String[]{userId});
 
+            // provera levelUp-a
+            checkAndLevelUp(userId, db);
         } catch (Exception e) {
             e.printStackTrace();
+        }
+    }
+
+    private void checkAndLevelUp(String userId, SQLiteDatabase db) {
+        Cursor userCursor = db.query(DatabaseHelper.T_USERS,
+                new String[]{"level", "title", "powerPoints", "xp"},
+                "id = ?",
+                new String[]{userId},
+                null, null, null);
+
+        int level = 0;
+        String title = "Rookie";
+        int powerPoints = 0;
+        int currentXp = 0;
+
+        if (userCursor.moveToFirst()) {
+            level = userCursor.getInt(userCursor.getColumnIndexOrThrow("level"));
+            title = userCursor.getString(userCursor.getColumnIndexOrThrow("title"));
+            powerPoints = userCursor.getInt(userCursor.getColumnIndexOrThrow("powerPoints"));
+            currentXp = userCursor.getInt(userCursor.getColumnIndexOrThrow("xp"));
+        }
+        userCursor.close();
+
+        UserLevelProgress progress = userLevelProgressRepository.getUserLevelProgress(userId);
+        if(progress == null ) return;
+
+        while(currentXp >= progress.getRequiredXp()) {
+            level++;
+
+            currentXp -= progress.getRequiredXp();
+
+            int prevRequired = progress.getRequiredXp();
+            progress.updateRequiredXp(prevRequired);
+
+            if(level == 1) {
+                powerPoints = 40;
+            } else {
+                powerPoints = (int) Math.round(powerPoints + (3.0 / 4.0) * powerPoints);
+            }
+
+            progress.updateXpValuesOnLevelUp();
+
+            switch (level) {
+                case 0:
+                    title = "Rookie";
+                    break;
+                case 1:
+                    title = "Adventurer";
+                    break;
+                case 2:
+                    title = "Hero";
+                    break;
+                default:
+                    title = "Hero lvl" + level;
+                    break;
+            }
+
+            ContentValues userValues = new ContentValues();
+            userValues.put("level", level);
+            userValues.put("title", title);
+            userValues.put("powerPoints", powerPoints);
+            userValues.put("xp", currentXp);
+
+            // dodavanje novcica prvi 200 pa za svaki sledeci 20% vise nego prethodnog
+
+            db.update(DatabaseHelper.T_USERS, userValues, "id = ?", new String[]{userId});
+
+            userLevelProgressRepository.updateUserLevelProgress(progress);
         }
     }
 }

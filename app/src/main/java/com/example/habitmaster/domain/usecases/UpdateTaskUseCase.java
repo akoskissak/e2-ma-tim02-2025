@@ -3,12 +3,16 @@ package com.example.habitmaster.domain.usecases;
 import com.example.habitmaster.data.dtos.TaskInstanceDTO;
 import com.example.habitmaster.data.repositories.TaskInstanceRepository;
 import com.example.habitmaster.data.repositories.TaskRepository;
+import com.example.habitmaster.data.repositories.UserLevelProgressRepository;
 import com.example.habitmaster.domain.models.Task;
 import com.example.habitmaster.domain.models.TaskStatus;
+import com.example.habitmaster.domain.models.UserLevelProgress;
+import com.example.habitmaster.utils.Prefs;
 
 public class UpdateTaskUseCase {
     private final TaskRepository taskRepo;
     private final TaskInstanceRepository taskInstanceRepo;
+    private final UserLevelProgressRepository userLevelProgressRepository;
 
     public interface Callback {
         void onSuccess();
@@ -16,14 +20,20 @@ public class UpdateTaskUseCase {
         void onError(String errorMessage);
     }
 
-    public UpdateTaskUseCase(TaskRepository taskRepo, TaskInstanceRepository taskInstanceRepo) {
+    public UpdateTaskUseCase(TaskRepository taskRepo, TaskInstanceRepository taskInstanceRepo, UserLevelProgressRepository userLevelProgressRepository) {
         this.taskRepo = taskRepo;
         this.taskInstanceRepo = taskInstanceRepo;
+        this.userLevelProgressRepository = userLevelProgressRepository;
     }
 
     // TODO: Update only future tasks
     // Currently all task instances (previous and future) are updated
-    public TaskInstanceDTO updateTaskInfo(TaskInstanceDTO dto) {
+    public TaskInstanceDTO updateTaskInfo(TaskInstanceDTO dto, String userId) {
+        // izracunavanje xp-a
+        UserLevelProgress progress = userLevelProgressRepository.getUserLevelProgress(userId);
+        int xpValue = dto.getDifficulty().getXpValue(progress) + dto.getImportance().getXpValue(progress);
+        dto.setXpValue(xpValue);
+
         var task = taskRepo.findTaskById(dto.getTaskId());
 
         if (task == null) {

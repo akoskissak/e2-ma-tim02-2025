@@ -20,7 +20,7 @@ public class LoginUserUseCase {
         this.localRepo = new UserLocalRepository(ctx);
     }
 
-    public void execute(String email, String password, ICallback callback){
+    public void execute(String email, String password, ICallback<User> callback){
         if(email.isEmpty() || password.isEmpty()){
             callback.onError("Popunite sva polja");
             return;

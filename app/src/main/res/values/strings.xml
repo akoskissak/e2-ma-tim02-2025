@@ -1,30 +1,31 @@
 <resources>
     <string name="app_name">HabitMaster</string>
-    <string name="register_title">Registracija</string>
+    <string name="register_title">Register</string>
     <string name="hint_email">Email</string>
-    <string name="hint_password">Lozinka</string>
-    <string name="hint_confirm_password">Ponovljena lozinka</string>
-    <string name="hint_username">Korisničko ime</string>
-    <string name="btn_register">Registruj se</string>
-    <string name="logout_title">Odjavi se</string>
-    <string name="btn_login">Prijava</string>
-    <string name="no_account_register">Nemas nalog? Registruj se</string>
-    <string name="account_login">Vec imas nalog? Prijavi se</string>
-    <string name="profile_title">Profil</string>
-    <string name="username_profile">Korisničko ime:</string>
+    <string name="hint_password">Password</string>
+    <string name="hint_confirm_password">Confirm Password</string>
+    <string name="hint_username">Username</string>
+    <string name="btn_register">Register</string>
+    <string name="logout_title">Logout</string>
+    <string name="btn_login">Login</string>
+    <string name="no_account_register">Don\'t have an account? Register</string>
+    <string name="account_login">Already have an account? Log in</string>
+    <string name="profile_title">Profile</string>
+    <string name="username_profile">Username:</string>
     <string name="level_profile">Level:</string>
-    <string name="title_profile">Titula:</string>
+    <string name="title_profile">Title:</string>
     <string name="xp_profile">XP:</string>
-    <string name="badge_count_profile">Broj bedževa:</string>
-    <string name="coins_profile">Novčići:</string>
-    <string name="equipment_profile">Oprema:</string>
-    <string name="qr_code_profile">QR kod:</string>
-    <string name="change_password_profile">Promena lozinke</string>
-    <string name="old_password_profile">Stara lozinka</string>
-    <string name="new_password_profile">Nova lozinka</string>
-    <string name="confirm_password_profile">Potvrdi novu lozinku</string>
-    <string name="change_password">Promeni lozinku</string>
-    <string name="badges_profile">Bedzevi:</string>
+    <string name="badge_count_profile">Number of Badges:</string>
+    <string name="coins_profile">Coins:</string>
+    <string name="equipment_profile">Equipment:</string>
+    <string name="qr_code_profile">QR Code:</string>
+    <string name="change_password_profile">Change Password</string>
+    <string name="old_password_profile">Old Password</string>
+    <string name="new_password_profile">New Password</string>
+    <string name="confirm_password_profile">Confirm New Password</string>
+    <string name="change_password">Change Password</string>
+    <string name="badges_profile">Badges:</string>
+
 
     <string-array name="task_categories">
         <item>Zdravlje</item>
@@ -61,4 +62,17 @@
     <string name="cancel">Cancel</string>
     <string name="create_task">Create task</string>
     <string name="edit">Edit</string>
+    <string name="statistics">Statistics</string>
+    <string name="level_progress">Level Progress</string>
+    <string name="next_level">Next Level:</string>
+    <string name="xp">XP:</string>
+    <string name="power_points">Power Points:</string>
+    <string name="active_days">Active days:</string>
+    <string name="current_streak">Current streak:</string>
+    <string name="xp_last_7_days">XP last 7 days:</string>
+    <string name="special_missions">Special Missions</string>
+    <string name="started">Started:</string>
+    <string name="completed">Completed:</string>
+    <string name="special_missions_started">special missions started:</string>
+    <string name="special_missions_completed">special missions completed:</string>
 </resources>

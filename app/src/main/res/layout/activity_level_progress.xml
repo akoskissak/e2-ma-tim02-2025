@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:padding="24dp"
+    android:background="#FAFAFA">
+
+    <TextView
+        android:id="@+id/tv_title"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:textSize="24sp"
+        android:textStyle="bold"
+        android:textColor="#212121"
+        android:gravity="center"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
+
+    <TextView
+        android:id="@+id/label_pp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/power_points"
+        android:textSize="16sp"
+        android:textStyle="bold"
+        android:textColor="#424242"
+        app:layout_constraintTop_toBottomOf="@id/tv_title"
+        app:layout_constraintStart_toStartOf="parent"
+        android:layout_marginTop="16dp"/>
+
+    <TextView
+        android:id="@+id/tv_pp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textSize="16sp"
+        android:textColor="#424242"
+        app:layout_constraintTop_toTopOf="@id/label_pp"
+        app:layout_constraintStart_toEndOf="@id/label_pp"
+        android:layout_marginStart="8dp"/>
+
+    <TextView
+        android:id="@+id/label_current_xp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/xp"
+        android:textSize="16sp"
+        android:textStyle="bold"
+        android:textColor="#424242"
+        app:layout_constraintTop_toBottomOf="@id/label_pp"
+        app:layout_constraintStart_toStartOf="parent"
+        android:layout_marginTop="16dp"/>
+
+
+    <TextView
+        android:id="@+id/tv_current_xp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textSize="16sp"
+        android:textColor="#424242"
+        app:layout_constraintTop_toTopOf="@id/label_current_xp"
+        app:layout_constraintStart_toEndOf="@id/label_current_xp"
+        android:layout_marginStart="8dp"/>
+
+    <TextView
+        android:id="@+id/label_required_xp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/next_level"
+        android:textSize="16sp"
+        android:textStyle="bold"
+        android:textColor="#424242"
+        app:layout_constraintTop_toTopOf="@id/tv_current_xp"
+        app:layout_constraintEnd_toStartOf="@id/tv_required_xp"
+        android:layout_marginEnd="4dp"/>
+
+    <TextView
+        android:id="@+id/tv_required_xp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textSize="16sp"
+        android:textColor="#424242"
+        app:layout_constraintTop_toTopOf="@id/tv_current_xp"
+        app:layout_constraintEnd_toEndOf="parent"/>
+
+    <ProgressBar
+        android:id="@+id/progress_bar"
+        style="?android:attr/progressBarStyleHorizontal"
+        android:layout_width="0dp"
+        android:layout_height="20dp"
+        android:progress="75"
+        android:max="100"
+        android:progressDrawable="@android:drawable/progress_horizontal"
+        android:indeterminate="false"
+        app:layout_constraintTop_toBottomOf="@id/tv_current_xp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_marginTop="24dp" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>

@@ -9,6 +9,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     public static final int DB_VERSION = 1;
 
     public static final String T_USERS = "users";
+    public static final String T_USER_LEVEL_PROGRESS = "user_level_progress";
     public static final String T_TASKS = "tasks";
     public static final String T_TASK_INSTANCES = "task_instances";
     public static final String T_CATEGORIES = "categories";
@@ -34,6 +35,20 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 "badgesCount INTEGER DEFAULT 0," +
                 "badges TEXT," +
                 "equipment TEXT" +
+                ")");
+
+        db.execSQL("CREATE TABLE " + T_USER_LEVEL_PROGRESS + " (" +
+                "userId TEXT PRIMARY KEY, " +
+                "requiredXp INTEGER DEFAULT 200," +
+                "veryEasyXp INTEGER DEFAULT 1," +
+                "easyXp INTEGER DEFAULT 3," +
+                "hardXp INTEGER DEFAULT 7," +
+                "extremelyHardXp INTEGER DEFAULT 20," +
+                "normalXp INTEGER DEFAULT 1," +
+                "importantXp INTEGER DEFAULT 3," +
+                "extremelyImportantXp INTEGER DEFAULT 10," +
+                "specialXp INTEGER DEFAULT 100," +
+                "FOREIGN KEY (userId) REFERENCES " + T_USERS + "(id) ON DELETE CASCADE" +
                 ")");
 
         db.execSQL("CREATE TABLE " + T_TASKS + " (" +
@@ -75,6 +90,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
         db.execSQL("DROP TABLE IF EXISTS " + T_USERS);
+        db.execSQL("DROP TABLE IF EXISTS " + T_USER_LEVEL_PROGRESS);
         db.execSQL("DROP TABLE IF EXISTS " + T_TASKS);
         db.execSQL("DROP TABLE IF EXISTS " + T_TASK_INSTANCES);
         db.execSQL("DROP TABLE IF EXISTS " + T_CATEGORIES);
