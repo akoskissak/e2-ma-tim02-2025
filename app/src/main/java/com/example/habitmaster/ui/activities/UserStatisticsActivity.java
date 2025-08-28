@@ -36,7 +36,7 @@ import java.util.List;
 import java.util.Map;
 
 public class UserStatisticsActivity extends AppCompatActivity {
-    private TextView tvActiveDays, tvStreak, tvXpLast7Days;
+    private TextView tvActiveDays, tvStreak, tvXpLast7Days, tvSpecialStarted, tvSpecialCompleted;
     private BarChart chartByCategory;
     private PieChart chartTasksStatus;
     private LineChart chartXpLast7Days, chartPercentageByDifficulty;
@@ -49,6 +49,8 @@ public class UserStatisticsActivity extends AppCompatActivity {
         tvActiveDays = findViewById(R.id.tvActiveDays);
         tvStreak = findViewById(R.id.tvStreak);
         tvXpLast7Days = findViewById(R.id.tvXpLast7Days);
+        tvSpecialStarted = findViewById(R.id.tvSpecialStarted);
+        tvSpecialCompleted = findViewById(R.id.tvSpecialCompleted);
 
         chartByCategory = findViewById(R.id.chartByCategory);
         chartTasksStatus = findViewById(R.id.chartTasksStatus);
@@ -74,6 +76,8 @@ public class UserStatisticsActivity extends AppCompatActivity {
     private void showStatistics(UserStatistics stats) {
         tvActiveDays.setText(String.valueOf(stats.getActiveDays()));
         tvStreak.setText(String.valueOf(stats.getLongestStreak()));
+        tvSpecialStarted.setText(String.valueOf(stats.getSpecialMissionsStarted()));
+        tvSpecialCompleted.setText(String.valueOf(stats.getSpecialMissionsCompleted()));
 
         int totalXp = 0;
         for (int xp : stats.getXpLast7Days()){

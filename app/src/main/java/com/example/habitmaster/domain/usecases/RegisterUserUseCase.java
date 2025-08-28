@@ -19,7 +19,7 @@ public class RegisterUserUseCase {
         this.repo = new UserRepository(ctx);
     }
 
-    public void execute(String email, String password, String confirm, String username, String avatarName, ICallback callback) {
+    public void execute(String email, String password, String confirm, String username, String avatarName, ICallback<User> callback) {
         if (!AuthValidation.isValidEmail(email)) {
             callback.onError("Neispravan email");
             return;
@@ -43,7 +43,7 @@ public class RegisterUserUseCase {
         repo.createAuthUser(email, password, task -> onAuthCreated(task, email, username, avatarName, callback));
     }
 
-    private void onAuthCreated(Task<AuthResult> task, String email, String username, String avatarName, ICallback callback) {
+    private void onAuthCreated(Task<AuthResult> task, String email, String username, String avatarName, ICallback<User> callback) {
         if (!task.isSuccessful()) {
             callback.onError("Greska: " + (task.getException() != null ? task.getException().getMessage() : ""));
             return;

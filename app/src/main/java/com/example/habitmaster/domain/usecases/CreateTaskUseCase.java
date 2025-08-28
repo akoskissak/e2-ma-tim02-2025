@@ -4,6 +4,7 @@ import com.example.habitmaster.data.firebases.FirebaseTaskInstanceRepository;
 import com.example.habitmaster.data.firebases.FirebaseTaskRepository;
 import com.example.habitmaster.data.repositories.TaskInstanceRepository;
 import com.example.habitmaster.data.repositories.TaskRepository;
+import com.example.habitmaster.data.repositories.UserLevelProgressRepository;
 import com.example.habitmaster.data.repositories.UserRepository;
 import com.example.habitmaster.domain.models.Task;
 import com.example.habitmaster.domain.models.TaskDifficulty;
@@ -11,6 +12,7 @@ import com.example.habitmaster.domain.models.TaskFrequency;
 import com.example.habitmaster.domain.models.TaskImportance;
 import com.example.habitmaster.domain.models.TaskInstance;
 import com.example.habitmaster.domain.models.TaskStatus;
+import com.example.habitmaster.domain.models.UserLevelProgress;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
@@ -22,6 +24,7 @@ import java.util.UUID;
 public class CreateTaskUseCase {
     private final TaskRepository localRepo;
     private final TaskInstanceRepository localInstanceRepo;
+    private final UserLevelProgressRepository userLevelProgressRepository;
     private final UserRepository userRepository;
     private final FirebaseTaskRepository remoteRepo;
     private final FirebaseTaskInstanceRepository remoteTaskInstanceRepository;
@@ -33,6 +36,7 @@ public class CreateTaskUseCase {
 
     public CreateTaskUseCase(TaskRepository localRepo, FirebaseTaskRepository remoteRepo,
                              UserRepository userRepository,
+                             UserLevelProgressRepository userLevelProgressRepository,
                              TaskInstanceRepository localInstanceRepo,
                              FirebaseTaskInstanceRepository remoteTaskInstanceRepository) {
         this.localRepo = localRepo;
@@ -40,6 +44,7 @@ public class CreateTaskUseCase {
         this.userRepository = userRepository;
         this.localInstanceRepo = localInstanceRepo;
         this.remoteTaskInstanceRepository = remoteTaskInstanceRepository;
+        this.userLevelProgressRepository = userLevelProgressRepository;
     }
 
     public void execute(
@@ -143,8 +148,8 @@ public class CreateTaskUseCase {
                 difficulty,
                 importance
         );
-
-        task.calculateXp();
+        UserLevelProgress progress = userLevelProgressRepository.getUserLevelProgress(userId);
+        task.calculateXp(progress);
 
         try {
             localRepo.insert(task);

@@ -3,8 +3,10 @@ package com.example.habitmaster.services;
 import android.content.Context;
 
 import com.example.habitmaster.domain.models.User;
+import com.example.habitmaster.domain.models.UserLevelProgress;
 import com.example.habitmaster.domain.models.UserStatistics;
 import com.example.habitmaster.domain.usecases.ChangePasswordUseCase;
+import com.example.habitmaster.domain.usecases.GetLevelProgressUseCase;
 import com.example.habitmaster.domain.usecases.GetUserStatisticsUseCase;
 import com.example.habitmaster.domain.usecases.GetUserUseCase;
 import com.example.habitmaster.domain.usecases.LoginUserUseCase;
@@ -16,6 +18,7 @@ public class UserService {
     private final GetUserUseCase getUserUC;
     private final ChangePasswordUseCase changePasswordUC;
     private final GetUserStatisticsUseCase getUserStatistiscUC;
+    private final GetLevelProgressUseCase getLevelProgressUC;
 
     public UserService(Context ctx){
         this.registerUC = new RegisterUserUseCase(ctx);
@@ -23,13 +26,14 @@ public class UserService {
         this.getUserUC = new GetUserUseCase(ctx);
         this.changePasswordUC = new ChangePasswordUseCase(ctx);
         this.getUserStatistiscUC = new GetUserStatisticsUseCase(ctx);
+        this.getLevelProgressUC = new GetLevelProgressUseCase(ctx);
     }
 
-    public void register(String email, String pass, String confirm, String username, String avatarName, ICallback callback){
+    public void register(String email, String pass, String confirm, String username, String avatarName, ICallback<User> callback){
         registerUC.execute(email, pass, confirm, username, avatarName, callback);
     }
 
-    public void login(String email, String pass, ICallback callback){
+    public void login(String email, String pass, ICallback<User> callback){
         loginUC.execute(email, pass, callback);
     }
 
@@ -43,5 +47,9 @@ public class UserService {
 
     public void getUserStatistics(ICallback<UserStatistics> callback) {
         getUserStatistiscUC.execute(callback);
+    }
+
+    public void getUserLevelProgress(ICallback<UserLevelProgress> callback) {
+        getLevelProgressUC.execute(callback);
     }
 }

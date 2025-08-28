@@ -154,6 +154,28 @@ public class UserStatisticsRepository {
         }
         stats.setDifficultyPercent(percentByDifficulty);
 
+        Cursor c8 = db.rawQuery(
+                "SELECT COUNT(DISTINCT t.id) " +
+                        "FROM task_instances ti " +
+                        "JOIN tasks t ON ti.taskId = t.id " +
+                        "WHERE t.userId = ? AND t.importance = 'SPECIAL'",
+                new String[]{userId});
+        if (c8.moveToFirst()) {
+            stats.setSpecialMissionsStarted(c8.getInt(0));
+        }
+        c8.close();
+
+        Cursor c9 = db.rawQuery(
+                "SELECT COUNT(DISTINCT t.id) " +
+                        "FROM task_instances ti " +
+                        "JOIN tasks t ON ti.taskId = t.id " +
+                        "WHERE t.userId = ? AND t.importance = 'SPECIAL' AND ti.status = 'COMPLETED'",
+                new String[]{userId});
+        if (c9.moveToFirst()) {
+            stats.setSpecialMissionsCompleted(c9.getInt(0));
+        }
+        c9.close();
+
         return stats;
     }
 }
