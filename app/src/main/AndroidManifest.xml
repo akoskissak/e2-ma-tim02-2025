@@ -47,6 +47,10 @@
         <activity
             android:name=".ui.activities.CreateTaskActivity"
             android:exported="false" />
+        <activity android:name=".ui.activities.ShopActivity"
+            android:exported="false" />
+        <activity android:name=".ui.activities.InventoryActivity"
+            android:exported="false" />
     </application>
 
 </manifest>
