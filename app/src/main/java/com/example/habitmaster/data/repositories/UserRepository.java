@@ -46,4 +46,14 @@ public class UserRepository {
     public void changePassword(String oldPassword, String newPassword, OnCompleteListener<Void> listener) {
         firebaseRepo.changePassword(oldPassword, newPassword, listener);
     }
+
+    public void updateUserCoins(String userId, int coins){
+        firebaseRepo.updateUserCoins(userId, coins, task -> {
+            if(!task.isSuccessful()) {
+                Log.e("UserRepository", "Greska pri update-u coins-a", task.getException());
+            }
+        });
+
+
+    }
 }

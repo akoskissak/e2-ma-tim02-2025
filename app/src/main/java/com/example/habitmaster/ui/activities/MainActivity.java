@@ -77,5 +77,15 @@ public class MainActivity extends AppCompatActivity {
         btnLevelProgress.setOnClickListener(v -> {
             startActivity(new Intent(this, LevelProgressActivity.class));
         });
+
+        Button btnShop = findViewById(R.id.btnShop);
+        btnShop.setOnClickListener(v -> {
+            startActivity(new Intent(this, ShopActivity.class));
+        });
+
+        Button btnInventory = findViewById(R.id.btnInventory);
+        btnInventory.setOnClickListener(v -> {
+            startActivity(new Intent(this, InventoryActivity.class));
+        });
     }
 }

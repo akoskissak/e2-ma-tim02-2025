@@ -85,6 +85,13 @@ public class UserLocalRepository {
         db.close();
     }
 
+    public void updateUserCoins(String userId, int coins) {
+        SQLiteDatabase db = helper.getWritableDatabase();
+        ContentValues values = new ContentValues();
+        values.put("coins", coins);
+        db.update(DatabaseHelper.T_USERS, values, "id = ?", new String[]{userId});
+    }
+
     public void addXp(String userId, int xp) {
         try (SQLiteDatabase db = helper.getWritableDatabase(); Cursor cursor = db.query(DatabaseHelper.T_USERS,
                 new String[]{"xp"},
@@ -119,7 +126,7 @@ public class UserLocalRepository {
                 null, null, null);
 
         int level = 0;
-        String title = "Rookie";
+        String title;
         int powerPoints = 0;
         int currentXp = 0;
 

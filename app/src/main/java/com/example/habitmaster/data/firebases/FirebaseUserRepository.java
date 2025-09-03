@@ -71,6 +71,12 @@ public class FirebaseUserRepository {
 
     }
 
+    public void updateUserCoins(String userId, int coins, OnCompleteListener<Void> listener) {
+        db.collection("users").document(userId)
+                .update("coins", coins)
+                .addOnCompleteListener(listener);
+    }
+
     public void changePassword(String oldPassword, String newPassword, OnCompleteListener<Void> listener) {
         FirebaseUser currentUser = auth.getCurrentUser();
 

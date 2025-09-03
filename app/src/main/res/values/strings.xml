@@ -75,4 +75,18 @@
     <string name="completed">Completed:</string>
     <string name="special_missions_started">special missions started:</string>
     <string name="special_missions_completed">special missions completed:</string>
+    <string name="action">Action</string>
+    <string name="coins">Coins:</string>
+    <string name="buy">Buy</string>
+    <string name="shop">Shop</string>
+    <string name="item_icon">Item icon</string>
+    <string name="inventory">Inventory</string>
+    <string name="inventory_menu">Inventory</string>
+    <string name="activate">Activate</string>
+    <string name="equipment_icon">equipment icon</string>
+    <string name="active_equipment">Active Equipment</string>
+    <string name="remove_active_equipment">Tap an icon to remove it from active equipment</string>
+    <string name="upgrade_weapon">Upgrade Weapon</string>
+    <string name="upgrade">Upgrade</string>
+    <string name="weapon_icon">weapon icon</string>
 </resources>

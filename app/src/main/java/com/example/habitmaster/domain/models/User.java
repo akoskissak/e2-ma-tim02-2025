@@ -35,6 +35,15 @@ public class User {
         this.equipment = "";
     }
 
+    public int getPreviousLevelReward() {
+        if(level <= 1) return 200;
+        int reward = 200;
+        for(int i = 2; i <= level; i++) {
+            reward = (int) (reward * 1.2);
+        }
+        return reward;
+    }
+
     public String getId() {
         return id;
     }

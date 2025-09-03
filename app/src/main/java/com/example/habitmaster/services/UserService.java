@@ -6,6 +6,7 @@ import com.example.habitmaster.domain.models.User;
 import com.example.habitmaster.domain.models.UserLevelProgress;
 import com.example.habitmaster.domain.models.UserStatistics;
 import com.example.habitmaster.domain.usecases.ChangePasswordUseCase;
+import com.example.habitmaster.domain.usecases.GetCurrentUserUseCase;
 import com.example.habitmaster.domain.usecases.GetLevelProgressUseCase;
 import com.example.habitmaster.domain.usecases.GetUserStatisticsUseCase;
 import com.example.habitmaster.domain.usecases.GetUserUseCase;
@@ -19,6 +20,7 @@ public class UserService {
     private final ChangePasswordUseCase changePasswordUC;
     private final GetUserStatisticsUseCase getUserStatistiscUC;
     private final GetLevelProgressUseCase getLevelProgressUC;
+    private final GetCurrentUserUseCase getCurrentUserUC;
 
     public UserService(Context ctx){
         this.registerUC = new RegisterUserUseCase(ctx);
@@ -27,6 +29,7 @@ public class UserService {
         this.changePasswordUC = new ChangePasswordUseCase(ctx);
         this.getUserStatistiscUC = new GetUserStatisticsUseCase(ctx);
         this.getLevelProgressUC = new GetLevelProgressUseCase(ctx);
+        this.getCurrentUserUC = new GetCurrentUserUseCase(ctx);
     }
 
     public void register(String email, String pass, String confirm, String username, String avatarName, ICallback<User> callback){
@@ -51,5 +54,9 @@ public class UserService {
 
     public void getUserLevelProgress(ICallback<UserLevelProgress> callback) {
         getLevelProgressUC.execute(callback);
+    }
+
+    public void getCurrentUser(ICallback<User> callback) {
+        getCurrentUserUC.execute(callback);
     }
 }
