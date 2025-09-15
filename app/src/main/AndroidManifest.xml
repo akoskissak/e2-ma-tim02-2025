@@ -2,6 +2,9 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
 
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_REMOTE_MESSAGING" />
     <application
         android:allowBackup="true"
         android:dataExtractionRules="@xml/data_extraction_rules"
@@ -47,10 +50,29 @@
         <activity
             android:name=".ui.activities.CreateTaskActivity"
             android:exported="false" />
-        <activity android:name=".ui.activities.ShopActivity"
+        <activity
+            android:name=".ui.activities.ShopActivity"
             android:exported="false" />
-        <activity android:name=".ui.activities.InventoryActivity"
+        <activity
+            android:name=".ui.activities.InventoryActivity"
             android:exported="false" />
+        <activity
+            android:name=".ui.activities.FriendActivity"
+            android:exported="false" />
+        <activity
+            android:name=".ui.activities.AllianceActivity"
+            android:exported="false" />
+        <activity
+            android:name=".ui.activities.FollowRequestsActivity"
+            android:exported="false" />
+        <service
+            android:name=".services.InviteForegroundService"
+            android:exported="false"
+            android:foregroundServiceType="remoteMessaging"
+            tools:ignore="ForegroundServicePermission" />
+        <receiver
+            android:name=".receivers.InviteActionReceiver"
+            android:exported="true" />
     </application>
 
 </manifest>

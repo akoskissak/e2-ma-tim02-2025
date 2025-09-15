@@ -89,4 +89,27 @@
     <string name="upgrade_weapon">Upgrade Weapon</string>
     <string name="upgrade">Upgrade</string>
     <string name="weapon_icon">weapon icon</string>
+    <string name="search_by_username">Search by username</string>
+    <string name="reset_search">Reset search</string>
+    <string name="avatar">Avatar</string>
+    <string name="username">Username</string>
+    <string name="follow">Follow</string>
+    <string name="friend">Friend</string>
+    <string name="friends">friends</string>
+    <string name="no_equipment_found">No equipment found</string>
+    <string name="scan_qr_code">Scan QR Code</string>
+    <string name="create_alliance">Create alliance</string>
+    <string name="alliance_name">Alliance name</string>
+    <string name="invite_friends">Invite friends</string>
+    <string name="close">Close</string>
+    <string name="create">Create</string>
+    <string name="alliance_creation">Alliance Creation</string>
+    <string name="delete_alliance">Delete Alliance</string>
+    <string name="members">Members:</string>
+    <string name="alliance">Alliance</string>
+    <string name="leader">Leader:</string>
+    <string name="follow_requests">Follow Requests</string>
+    <string name="profile">Profile</string>
+    <string name="accept">Accept</string>
+    <string name="decline">Decline</string>
 </resources>

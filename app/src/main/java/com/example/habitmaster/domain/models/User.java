@@ -14,7 +14,6 @@ public class User {
     private int coins;
     private int badgesCount;
     private String badges;
-    private String equipment;
 
     public User() {}
 
@@ -32,7 +31,6 @@ public class User {
         this.coins = 0;
         this.badgesCount = 0;
         this.badges = "";
-        this.equipment = "";
     }
 
     public int getPreviousLevelReward() {
@@ -146,13 +144,5 @@ public class User {
 
     public void setBadges(String badges) {
         this.badges = badges;
-    }
-
-    public String getEquipment() {
-        return equipment;
-    }
-
-    public void setEquipment(String equipment) {
-        this.equipment = equipment;
     }
 }

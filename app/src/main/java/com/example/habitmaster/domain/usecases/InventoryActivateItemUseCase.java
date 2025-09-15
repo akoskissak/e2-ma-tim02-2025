@@ -32,6 +32,19 @@ public class InventoryActivateItemUseCase {
             }
         }
 
+        if (type == EquipmentType.ARMOR) {
+            List<UserEquipment> activeArmors = inventoryList.stream()
+                    .filter(e -> e.getType() == EquipmentType.ARMOR && e.isActivated())
+                    .collect(Collectors.toList());
+
+            if (activeArmors.size() >= 2) {
+                // deaktiviram prvi aktivirani
+                UserEquipment oldArmor = activeArmors.get(0);
+                repository.updateEquipmentActivated(oldArmor.getId(), false);
+                oldArmor.setActivated(false);
+            }
+        }
+
         item.setActivated(true);
         repository.updateEquipmentActivated(item.getId(), true);
     }

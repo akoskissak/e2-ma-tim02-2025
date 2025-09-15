@@ -30,7 +30,6 @@ public class GetUserStatisticsUseCase {
             callback.onSuccess(stats);
         } catch (Exception e) {
             callback.onError("Failed to load statistics: " + e.getMessage());
-            Log.d("AKOS TAG", e.getMessage());
         }
     }
 }

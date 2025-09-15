@@ -4,6 +4,7 @@ import android.content.Context;
 
 import com.example.habitmaster.data.repositories.UserLocalRepository;
 import com.example.habitmaster.domain.models.User;
+import com.example.habitmaster.services.ICallback;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Tasks;
 import com.google.firebase.auth.AuthCredential;
@@ -15,6 +16,7 @@ import com.google.firebase.firestore.FirebaseFirestore;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.function.Consumer;
 
 public class FirebaseUserRepository {
     private final FirebaseAuth auth = FirebaseAuth.getInstance();
@@ -45,6 +47,26 @@ public class FirebaseUserRepository {
         local.insert(u);
     }
 
+    public void getUserById(String userId, ICallback<User> callback) {
+        db.collection("users")
+                .document(userId)
+                .get()
+                .addOnSuccessListener(documentSnapshot -> {
+                    if (documentSnapshot.exists()) {
+                        User user = documentSnapshot.toObject(User.class);
+                        if (user != null) {
+                            user.setId(documentSnapshot.getId());
+                            callback.onSuccess(user);
+                        } else {
+                            callback.onError("Greska u mapiranju korisnika");
+                        }
+                    } else {
+                        callback.onError("Korisnik ne postoji u Firestore");
+                    }
+                })
+                .addOnFailureListener(e -> callback.onError("Greska: " + e.getMessage()));
+    }
+
     private Map<String,Object> userToMap(User u){
         Map<String,Object> doc = new HashMap<>();
         doc.put("id",u.getId());
@@ -60,7 +82,6 @@ public class FirebaseUserRepository {
         doc.put("coins",u.getCoins());
         doc.put("badgesCount",u.getBadgesCount());
         doc.put("badges",u.getBadges());
-        doc.put("equipment",u.getEquipment());
         return doc;
     }
 
@@ -68,7 +89,6 @@ public class FirebaseUserRepository {
         db.collection("users").document(uid)
                 .update("activated", activated)
                 .addOnCompleteListener(listener);
-
     }
 
     public void updateUserCoins(String userId, int coins, OnCompleteListener<Void> listener) {
@@ -96,5 +116,31 @@ public class FirebaseUserRepository {
                 listener.onComplete(authTask);
             }
         });
+    }
+
+    public void isUsernameTaken(String username, Consumer<Boolean> onSuccess, Consumer<String> onError) {
+        db.collection("users")
+                .whereEqualTo("username", username)
+                .get()
+                .addOnCompleteListener(task -> {
+                    if (task.isSuccessful()) {
+                        onSuccess.accept(!task.getResult().isEmpty());
+                    } else {
+                        onError.accept(task.getException() != null ? task.getException().getMessage() : "Nepoznata greska");
+                    }
+                });
+    }
+
+    public void isEmailTaken(String email, Consumer<Boolean> onSuccess, Consumer<String> onError) {
+        db.collection("users")
+                .whereEqualTo("email", email)
+                .get()
+                .addOnCompleteListener(task -> {
+                    if (task.isSuccessful()) {
+                        onSuccess.accept(!task.getResult().isEmpty());
+                    } else {
+                        onError.accept(task.getException() != null ? task.getException().getMessage() : "Nepoznata greska");
+                    }
+                });
     }
 }

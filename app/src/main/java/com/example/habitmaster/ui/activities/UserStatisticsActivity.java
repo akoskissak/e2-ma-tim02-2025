@@ -3,7 +3,6 @@ package com.example.habitmaster.ui.activities;
 import android.graphics.Color;
 import android.graphics.Typeface;
 import android.os.Bundle;
-import android.util.Log;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -164,7 +163,6 @@ public class UserStatisticsActivity extends AppCompatActivity {
         for(int i = 0; i < stats.getXpLast7Days().size(); i++) {
             xpEntries.add(new Entry(i, stats.getXpLast7Days().get(i)));
             int value = stats.getXpLast7Days().get(i);
-            Log.d("LineChart", "Index " + i + ", XP: " + value);  // log svakog elementa
         }
 
         if (xpEntries.isEmpty()) {

@@ -14,7 +14,7 @@ public class GetUserUseCase {
         this.userRepository = new UserLocalRepository(ctx);
     }
 
-    public User execute(String email) {
-        return userRepository.findByEmail(email);
+    public User execute(String username) {
+        return userRepository.findUserByUsername(username);
     }
 }

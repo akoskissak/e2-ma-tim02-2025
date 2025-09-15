@@ -18,12 +18,12 @@ public class GetCurrentUserUseCase {
 
     public void execute(ICallback<User> callback) {
         Prefs prefs = new Prefs(context);
-        String email = prefs.getEmail();
-        if(email == null){
+        String username = prefs.getUsername();
+        if(username == null){
             callback.onError("No user logged in");
             return;
         }
-        User user = userRepository.findByEmail(email);
+        User user = userRepository.findUserByUsername(username);
 
         callback.onSuccess(user);
     }

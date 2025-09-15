@@ -28,41 +28,72 @@ public class LoginUserUseCase {
 
         repo.loginAuthUser(email, password, task -> {
             if(task.isSuccessful()){
-                FirebaseUser user = task.getResult().getUser();
-                if(user != null){
-                    User localUser = localRepo.findByEmail(email);
-                    if(localUser == null) {
-                        callback.onError("Korisnik nije pronadjen u lokalnoj bazi");
-                        return;
-                    }
+                FirebaseUser firebaseUser = task.getResult().getUser();
+                if (firebaseUser == null) {
+                    callback.onError("Korisnik nije pronadjen u Firebase Auth");
+                    return;
+                }
 
-                    if(user.isEmailVerified()){
-                        localRepo.updateActivateFlag(user.getUid());
-                        repo.activateUserInFirebase(user.getUid());
-                        Prefs prefs = new Prefs(context);
-                        prefs.setUid(user.getUid());
-                        prefs.setEmail(user.getEmail());
-                        callback.onSuccess(localUser);
-                    } else {
+                User localUser = localRepo.findByEmail(email);
+
+                if (!firebaseUser.isEmailVerified()) {
+                    if (localUser != null) {
                         long currentTime = System.currentTimeMillis();
                         long accountAgeMillis = currentTime - localUser.getCreatedAt();
-                        // ovo su 2 minuta 2 * 60 * 1000
-                        if(accountAgeMillis > 2 * 60 * 1000) {
+
+                        // 2 minute = 2 * 60 * 1000
+                        if (accountAgeMillis > 2 * 60 * 1000) {
                             callback.onError("Link je istekao, registrujte se ponovo");
                             localRepo.delete(localUser.getId());
-                            user.delete();
+                            firebaseUser.delete();
                         } else {
                             callback.onError("Molim vas aktivirajte nalog preko email-a");
                         }
+                    } else {
+                        callback.onError("Molim vas aktivirajte nalog preko email-a");
                     }
-                } else {
-                    callback.onError("Korisnik nije pronadjen u firebase bazi");
+                    return;
                 }
+
+                if (localUser != null) {
+                    activateAndSavePrefs(firebaseUser, localUser, callback);
+                } else {
+                    // Ako nema u SQLite, povuci iz Firestore
+                    repo.getUserFromFirestore(firebaseUser.getUid(), new ICallback<>() {
+                        @Override
+                        public void onSuccess(User userFromFirestore) {
+                            if (userFromFirestore == null) {
+                                callback.onError("Korisnik nije pronadjen u Firestore bazi");
+                                return;
+                            }
+
+                            localRepo.insert(userFromFirestore);
+
+                            activateAndSavePrefs(firebaseUser, userFromFirestore, callback);
+                        }
+
+                        @Override
+                        public void onError(String errorMessage) {
+                            callback.onError("Greska prilikom citanja Firestore korisnika: " + errorMessage);
+                        }
+                    });
+                }
+
             } else {
-                callback.onError("Greska: " + (task.getException() != null ? task.getException().getMessage() : ""));
+                callback.onError("Greska: " +
+                        (task.getException() != null ? task.getException().getMessage() : ""));
             }
         });
     }
 
+    private void activateAndSavePrefs(FirebaseUser firebaseUser, User user, ICallback<User> callback) {
+        localRepo.updateActivateFlag(firebaseUser.getUid());
+        repo.activateUserInFirebase(firebaseUser.getUid());
 
+        Prefs prefs = new Prefs(context);
+        prefs.setUid(firebaseUser.getUid());
+        prefs.setUsername(user.getUsername());
+
+        callback.onSuccess(user);
+    }
 }

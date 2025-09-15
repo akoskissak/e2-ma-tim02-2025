@@ -1,5 +1,6 @@
 package com.example.habitmaster.ui.fragments;
 
+import android.app.Notification;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -27,7 +28,7 @@ import java.util.stream.Collectors;
 
 public class InventoryFragment extends Fragment {
     private RecyclerView recyclerView, activeRecyclerView;
-    private TextView tvCoins;
+    private TextView tvCoins, tvNoEquipment;
     private InventoryAdapter adapter;
     private ActiveEquipmentAdapter activeAdapter;
     private List<UserEquipment> inventoryList = new ArrayList<>();
@@ -43,6 +44,7 @@ public class InventoryFragment extends Fragment {
         View view = inflater.inflate(R.layout.fragment_inventory, container, false);
 
         tvCoins = view.findViewById(R.id.coinsText);
+        tvNoEquipment = view.findViewById(R.id.tvNoEquipment);
         recyclerView = view.findViewById(R.id.inventoryRecyclerView);
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
 
@@ -53,8 +55,6 @@ public class InventoryFragment extends Fragment {
 
         userEquipmentService = new UserEquipmentService(requireContext());
         UserService userService = new UserService(requireContext());
-
-
 
         userService.getCurrentUser(new ICallback<>() {
             @Override
@@ -79,10 +79,22 @@ public class InventoryFragment extends Fragment {
         userEquipmentService.getAllUserEquipment(currentUser.getId(), new ICallback<>() {
             @Override
             public void onSuccess(List<UserEquipment> result) {
+
+                if (result == null || result.isEmpty()) {
+                    recyclerView.setVisibility(View.GONE);
+                    tvNoEquipment.setVisibility(View.VISIBLE);
+                } else {
+                    recyclerView.setVisibility(View.VISIBLE);
+                    tvNoEquipment.setVisibility(View.GONE);
+
+                    inventoryList = result;
+
+                    adapter = new InventoryAdapter(inventoryList, new UserEquipmentService(requireContext()), currentUser, item -> onActivateClicked(item), newCoins -> tvCoins.setText(String.valueOf(newCoins)));
+                    recyclerView.setAdapter(adapter);
+                }
                 inventoryList = result;
 
-                adapter = new InventoryAdapter(inventoryList, new UserEquipmentService(requireContext()), currentUser, item -> onActivateClicked(item), newCoins -> tvCoins.setText(String.valueOf(newCoins)));
-                recyclerView.setAdapter(adapter);
+
 
                 // Filtriranje samo aktivnih equipmenta
                 activeEquipmentList = inventoryList.stream()

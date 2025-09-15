@@ -42,6 +42,10 @@ public class InventoryAdapter extends RecyclerView.Adapter<InventoryAdapter.Inve
         this.currentUser = currentUser;
     }
 
+    public InventoryAdapter(List<UserEquipment> items, UserEquipmentService equipmentService, User currentUser) {
+        this(items, equipmentService, currentUser, null, null);
+    }
+
     @NonNull
     @Override
     public InventoryViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
@@ -58,18 +62,23 @@ public class InventoryAdapter extends RecyclerView.Adapter<InventoryAdapter.Inve
         holder.icon.setImageResource(icon);
         holder.durationText.setText(userEquipment.formatDuration());
 
+        if(activateClickListener != null) {
+            if(userEquipment.isActivated()) {
+                holder.activateButton.setText("Active");
+                holder.activateButton.setEnabled(false);
+            } else {
+                holder.activateButton.setText("Activate");
+                holder.activateButton.setEnabled(true);
+            }
 
-        if(userEquipment.isActivated()) {
-            holder.activateButton.setText("Active");
-            holder.activateButton.setEnabled(false);
+            holder.activateButton.setOnClickListener(v -> activateClickListener.onActivateClick(userEquipment));
         } else {
-            holder.activateButton.setText("Activate");
-            holder.activateButton.setEnabled(true);
+            holder.activateButton.setVisibility(View.GONE);
         }
 
-        holder.activateButton.setOnClickListener(v -> activateClickListener.onActivateClick(userEquipment));
 
-        if (userEquipment instanceof Weapon) {
+
+        if (weaponUpgradedListener != null && userEquipment instanceof Weapon) {
             holder.upgradeButton.setVisibility(View.VISIBLE);
             holder.upgradeButton.setOnClickListener(v -> showUpgradePopup(userEquipment, icon, holder.itemView.getContext()));
         } else {

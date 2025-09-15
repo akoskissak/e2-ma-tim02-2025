@@ -35,7 +35,6 @@ public class ShopService {
 
     public void buyItem(Equipment equipment, ICallback<UserEquipment> callback) {
         int calculatedCost = calculateCost(equipment, currentUser.getPreviousLevelReward());
-        Log.d("BUYING", String.valueOf(calculatedCost));
         if (!canAfford(calculatedCost)) {
             callback.onError("You do not have enough coins to buy this item");
             return;

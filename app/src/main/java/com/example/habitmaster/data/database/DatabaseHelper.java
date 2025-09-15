@@ -14,6 +14,11 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     public static final String T_TASK_INSTANCES = "task_instances";
     public static final String T_CATEGORIES = "categories";
     public static final String T_EQUIPMENT = "equipment";
+    public static final String T_FRIENDS = "friends";
+    public static final String T_ALLIANCES = "alliances";
+    public static final String T_ALLIANCE_INVITES = "alliance_invites";
+    public static final String T_ALLIANCE_MEMBERS = "alliance_members";
+    public static final String T_FOLLOW_REQUESTS = "follow_requests";
 
     public DatabaseHelper(Context context) {
         super(context, DB_NAME, null, DB_VERSION);
@@ -34,8 +39,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 "xp INTEGER DEFAULT 0," +
                 "coins INTEGER DEFAULT 0," +
                 "badgesCount INTEGER DEFAULT 0," +
-                "badges TEXT," +
-                "equipment TEXT" +
+                "badges TEXT" +
                 ")");
 
         db.execSQL("CREATE TABLE " + T_USER_LEVEL_PROGRESS + " (" +
@@ -100,6 +104,51 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 "FOREIGN KEY(userId) REFERENCES " + T_USERS + "(id) ON DELETE CASCADE" +
                 ")");
 
+        db.execSQL("CREATE TABLE " + T_FRIENDS + " (" +
+                "id INTEGER PRIMARY KEY AUTOINCREMENT," +
+                "userId TEXT NOT NULL," +
+                "friendUserId TEXT NOT NULL," +
+                "friendUsername TEXT," +
+                "friendAvatarName TEXT," +
+                "FOREIGN KEY(userId) REFERENCES "  + T_USERS + "(id) ON DELETE CASCADE," +
+                "UNIQUE(userId, friendUserId) ON CONFLICT REPLACE" +
+                ");");
+
+        db.execSQL("CREATE TABLE " + T_ALLIANCES + " (" +
+                "id TEXT PRIMARY KEY," +
+                "name TEXT NOT NULL," +
+                "leaderId TEXT NOT NULL," +
+                "missionStarted INTEGER NOT NULL DEFAULT 0," +
+                "FOREIGN KEY(leaderId) REFERENCES " + T_USERS + "(id) ON DELETE CASCADE" +
+                ");");
+
+        db.execSQL("CREATE TABLE " + T_ALLIANCE_INVITES + " (" +
+                "id TEXT PRIMARY KEY," +
+                "allianceId TEXT NOT NULL," +
+                "fromUserId TEXT NOT NULL," +
+                "toUserId TEXT NOT NULL," +
+                "status TEXT NOT NULL," +
+                "FOREIGN KEY(allianceId) REFERENCES " + T_ALLIANCES + "(id) ON DELETE CASCADE" +
+                ");");
+
+        db.execSQL("CREATE TABLE " + T_ALLIANCE_MEMBERS + " (" +
+                "id INTEGER PRIMARY KEY AUTOINCREMENT," +
+                "allianceId TEXT NOT NULL," +
+                "userId TEXT NOT NULL," +
+                "UNIQUE(allianceId, userId) ON CONFLICT REPLACE," +
+                "FOREIGN KEY(allianceId) REFERENCES " + T_ALLIANCES + "(id) ON DELETE CASCADE," +
+                "FOREIGN KEY(userId) REFERENCES " + T_USERS + "(id) ON DELETE CASCADE" +
+                ");");
+
+        db.execSQL("CREATE TABLE " + T_FOLLOW_REQUESTS + " (" +
+                "id TEXT PRIMARY KEY," +
+                "fromUserId TEXT NOT NULL," +
+                "toUserId TEXT NOT NULL," +
+                "status TEXT NOT NULL," +
+                "FOREIGN KEY(fromUserId) REFERENCES " + T_USERS + "(id) ON DELETE CASCADE," +
+                "FOREIGN KEY(toUserId) REFERENCES " + T_USERS + "(id) ON DELETE CASCADE" +
+                ");");
+
     }
 
     @Override
@@ -110,6 +159,10 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         db.execSQL("DROP TABLE IF EXISTS " + T_TASK_INSTANCES);
         db.execSQL("DROP TABLE IF EXISTS " + T_CATEGORIES);
         db.execSQL("DROP TABLE IF EXISTS " + T_EQUIPMENT);
+        db.execSQL("DROP TABLE IF EXISTS " + T_ALLIANCES);
+        db.execSQL("DROP TABLE IF EXISTS " + T_ALLIANCE_INVITES);
+        db.execSQL("DROP TABLE IF EXISTS " + T_ALLIANCE_MEMBERS);
+        db.execSQL("DROP TABLE IF EXISTS " + T_FOLLOW_REQUESTS);
         onCreate(db);
     }
 }

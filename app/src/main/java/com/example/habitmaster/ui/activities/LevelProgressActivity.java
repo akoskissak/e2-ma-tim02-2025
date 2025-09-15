@@ -24,7 +24,7 @@ public class LevelProgressActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_level_progress); // Pretpostaviti layout
+        setContentView(R.layout.activity_level_progress);
 
         tvTitle = findViewById(R.id.tv_title);
         tvPP = findViewById(R.id.tv_pp);
@@ -44,19 +44,28 @@ public class LevelProgressActivity extends AppCompatActivity {
             finish();
             return;
         }
-        User user = userService.getUser(prefs.getEmail());
 
-        userService.getUserLevelProgress(new ICallback<>() {
+        userService.findUserByUsername(prefs.getUsername(), new ICallback<>() {
             @Override
-            public void onSuccess(UserLevelProgress result) {
-                tvTitle.setText(user.getTitle());
-                tvPP.setText(String.valueOf(user.getPowerPoints()));
-                tvCurrentXP.setText(String.valueOf(user.getXp()));
-                String requiredXp = String.valueOf(result.getRequiredXp()) + " XP";
-                tvRequiredXP.setText(requiredXp);
+            public void onSuccess(User user) {
+                userService.getUserLevelProgress(new ICallback<>() {
+                    @Override
+                    public void onSuccess(UserLevelProgress result) {
+                        tvTitle.setText(user.getTitle());
+                        tvPP.setText(String.valueOf(user.getPowerPoints()));
+                        tvCurrentXP.setText(String.valueOf(user.getXp()));
+                        String requiredXp = String.valueOf(result.getRequiredXp()) + " XP";
+                        tvRequiredXP.setText(requiredXp);
 
-                int progressPercent = (result.getRequiredXp() > 0) ? (int) ((user.getXp() * 100.0) / result.getRequiredXp()) : 0;
-                progressBar.setProgress(Math.min(progressPercent, 100));
+                        int progressPercent = (result.getRequiredXp() > 0) ? (int) ((user.getXp() * 100.0) / result.getRequiredXp()) : 0;
+                        progressBar.setProgress(Math.min(progressPercent, 100));
+                    }
+
+                    @Override
+                    public void onError(String errorMessage) {
+                        Toast.makeText(LevelProgressActivity.this, errorMessage, Toast.LENGTH_SHORT).show();
+                    }
+                });
             }
 
             @Override

@@ -6,7 +6,7 @@ import android.content.SharedPreferences;
 public class Prefs {
     private static final String FILE = "habitmaster_prefs";
     private static final String KEY_UID = "uid";
-    private static final String KEY_EMAIL = "email";
+    private static final String KEY_USERNAME = "username";
     private static final String KEY_USERNAME_LOCK = "username_lock";
     private static final String KEY_AVATAR_LOCK = "avatar_lock";
 
@@ -28,16 +28,16 @@ public class Prefs {
         return sp.getString(KEY_UID, null);
     }
 
-    public void setEmail(String email) {
-        if(email == null){
-            sp.edit().remove(KEY_EMAIL).apply();
+    public void setUsername(String username) {
+        if(username == null){
+            sp.edit().remove(KEY_USERNAME).apply();
         } else {
-            sp.edit().putString(KEY_EMAIL, email).apply();
+            sp.edit().putString(KEY_USERNAME, username).apply();
         }
     }
 
-    public String getEmail() {
-        return sp.getString(KEY_EMAIL, null);
+    public String getUsername() {
+        return sp.getString(KEY_USERNAME, null);
     }
 
     public void lockUsername() {

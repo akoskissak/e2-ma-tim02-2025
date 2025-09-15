@@ -9,6 +9,9 @@ import com.example.habitmaster.data.database.DatabaseHelper;
 import com.example.habitmaster.domain.models.User;
 import com.example.habitmaster.domain.models.UserLevelProgress;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class UserLocalRepository {
     private final DatabaseHelper helper;
     private final UserLevelProgressRepository userLevelProgressRepository;
@@ -34,7 +37,6 @@ public class UserLocalRepository {
         cv.put("coins", u.getCoins());
         cv.put("badgesCount", u.getBadgesCount());
         cv.put("badges", u.getBadges());
-        cv.put("equipment", u.getEquipment());
         db.insert(DatabaseHelper.T_USERS, null, cv);
 
         // kreiranje i userLevelProgress
@@ -44,6 +46,18 @@ public class UserLocalRepository {
     public User findByEmail(String email) {
         SQLiteDatabase db = helper.getReadableDatabase();
         Cursor c = db.query(DatabaseHelper.T_USERS, null, "email=?", new String[]{email}, null, null, null);
+        if (c != null && c.moveToFirst()) {
+            User u = cursorToUser(c);
+            c.close();
+            return u;
+        }
+        if (c != null) c.close();
+        return null;
+    }
+
+    public User findById(String id) {
+        SQLiteDatabase db = helper.getReadableDatabase();
+        Cursor c = db.query(DatabaseHelper.T_USERS, null, "id=?", new String[]{id}, null, null, null);
         if (c != null && c.moveToFirst()) {
             User u = cursorToUser(c);
             c.close();
@@ -68,7 +82,6 @@ public class UserLocalRepository {
         u.setCoins(c.getInt(c.getColumnIndexOrThrow("coins")));
         u.setBadgesCount(c.getInt(c.getColumnIndexOrThrow("badgesCount")));
         u.setBadges(c.getString(c.getColumnIndexOrThrow("badges")));
-        u.setEquipment(c.getString(c.getColumnIndexOrThrow("equipment")));
         return u;
     }
 
@@ -90,6 +103,41 @@ public class UserLocalRepository {
         ContentValues values = new ContentValues();
         values.put("coins", coins);
         db.update(DatabaseHelper.T_USERS, values, "id = ?", new String[]{userId});
+    }
+
+    public List<User> getAllUsers() {
+        List<User> users = new ArrayList<>();
+        SQLiteDatabase db = helper.getReadableDatabase();
+        Cursor cursor = null;
+
+        try {
+            cursor = db.query("users", null, null, null, null, null, null); // sve kolone i svi redovi
+            if (cursor != null && cursor.moveToFirst()) {
+                do {
+                    User u = cursorToUser(cursor);
+                    users.add(u);
+                } while (cursor.moveToNext());
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            if (cursor != null) {
+                cursor.close();
+            }
+            db.close();
+        }
+
+        return users;
+    }
+
+    public boolean exists(String email, String username) {
+        List<User> users = getAllUsers();
+        for (User u : users) {
+            if (u.getEmail().equalsIgnoreCase(email) || u.getUsername().equalsIgnoreCase(username)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     public void addXp(String userId, int xp) {
@@ -184,5 +232,17 @@ public class UserLocalRepository {
 
             userLevelProgressRepository.updateUserLevelProgress(progress);
         }
+    }
+
+    public User findUserByUsername(String username) {
+        SQLiteDatabase db = helper.getReadableDatabase();
+        Cursor c = db.query(DatabaseHelper.T_USERS, null, "username=?", new String[]{username}, null, null, null);
+        if (c.moveToFirst()) {
+            User u = cursorToUser(c);
+            c.close();
+            return u;
+        }
+        c.close();
+        return null;
     }
 }

@@ -8,6 +8,8 @@ import com.example.habitmaster.domain.models.UserStatistics;
 import com.example.habitmaster.domain.usecases.ChangePasswordUseCase;
 import com.example.habitmaster.domain.usecases.GetCurrentUserUseCase;
 import com.example.habitmaster.domain.usecases.GetLevelProgressUseCase;
+import com.example.habitmaster.domain.usecases.GetUserByIdUseCase;
+import com.example.habitmaster.domain.usecases.GetUserByUsernameUseCase;
 import com.example.habitmaster.domain.usecases.GetUserStatisticsUseCase;
 import com.example.habitmaster.domain.usecases.GetUserUseCase;
 import com.example.habitmaster.domain.usecases.LoginUserUseCase;
@@ -21,6 +23,8 @@ public class UserService {
     private final GetUserStatisticsUseCase getUserStatistiscUC;
     private final GetLevelProgressUseCase getLevelProgressUC;
     private final GetCurrentUserUseCase getCurrentUserUC;
+    private final GetUserByUsernameUseCase getUserByUsernameUC;
+    private final GetUserByIdUseCase getUserByIdUC;
 
     public UserService(Context ctx){
         this.registerUC = new RegisterUserUseCase(ctx);
@@ -30,6 +34,8 @@ public class UserService {
         this.getUserStatistiscUC = new GetUserStatisticsUseCase(ctx);
         this.getLevelProgressUC = new GetLevelProgressUseCase(ctx);
         this.getCurrentUserUC = new GetCurrentUserUseCase(ctx);
+        this.getUserByUsernameUC = new GetUserByUsernameUseCase(ctx);
+        this.getUserByIdUC = new GetUserByIdUseCase(ctx);
     }
 
     public void register(String email, String pass, String confirm, String username, String avatarName, ICallback<User> callback){
@@ -40,8 +46,8 @@ public class UserService {
         loginUC.execute(email, pass, callback);
     }
 
-    public User getUser(String email){
-        return getUserUC.execute(email);
+    public User getUser(String username){
+        return getUserUC.execute(username);
     }
 
     public void changePassword(String oldPassword, String newPassword, ICallbackVoid callback) {
@@ -58,5 +64,13 @@ public class UserService {
 
     public void getCurrentUser(ICallback<User> callback) {
         getCurrentUserUC.execute(callback);
+    }
+
+    public void findUserByUsername(String username, ICallback<User> callback) {
+        getUserByUsernameUC.execute(username, callback);
+    }
+
+    public void findUserById(String userId, ICallback<User> callback) {
+        getUserByIdUC.execute(userId, callback);
     }
 }

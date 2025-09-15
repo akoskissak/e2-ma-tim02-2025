@@ -2,6 +2,7 @@ package com.example.habitmaster.domain.usecases;
 
 import android.content.Context;
 
+import com.example.habitmaster.data.repositories.UserLocalRepository;
 import com.example.habitmaster.data.repositories.UserRepository;
 import com.example.habitmaster.domain.models.User;
 import com.example.habitmaster.services.ICallback;
@@ -40,7 +41,23 @@ public class RegisterUserUseCase {
             callback.onError("Izaberite avatar");
             return;
         }
-        repo.createAuthUser(email, password, task -> onAuthCreated(task, email, username, avatarName, callback));
+
+        repo.checkUserExists(email, username, new ICallback<Boolean>() {
+            @Override
+            public void onSuccess(Boolean exists) {
+                if (exists) {
+                    callback.onError("Email ili korisnicko ime vec postoji");
+                    return;
+                }
+                repo.createAuthUser(email, password, task -> onAuthCreated(task, email, username, avatarName, callback));
+            }
+
+            @Override
+            public void onError(String error) {
+                callback.onError("Greska pri proveri korisnika: " + error);
+            }
+        });
+
     }
 
     private void onAuthCreated(Task<AuthResult> task, String email, String username, String avatarName, ICallback<User> callback) {
@@ -58,7 +75,7 @@ public class RegisterUserUseCase {
 
         Prefs prefs = new Prefs(context);
         prefs.setUid(uid);
-        prefs.setEmail(email);
+        prefs.setUsername(username);
         prefs.lockUsername();
         prefs.lockAvatar();
 

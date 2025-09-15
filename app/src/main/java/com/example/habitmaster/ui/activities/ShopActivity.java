@@ -20,7 +20,6 @@ import com.example.habitmaster.services.ShopService;
 import com.example.habitmaster.services.UserService;
 import com.example.habitmaster.ui.adapters.ShopAdapter;
 
-import java.util.ArrayList;
 import java.util.List;
 
 public class ShopActivity extends AppCompatActivity {
