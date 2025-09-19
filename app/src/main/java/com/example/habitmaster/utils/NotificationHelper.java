@@ -44,6 +44,27 @@ public class NotificationHelper {
         manager.notify(notificationId, notification);
     }
 
+    public static void notifyNewMessage(Context context, String fromUser, String messageText) {
+        if (ContextCompat.checkSelfPermission(context, Manifest.permission.POST_NOTIFICATIONS)
+                != PackageManager.PERMISSION_GRANTED) {
+            return;
+        }
+        createNotificationChannel(context);
+
+        NotificationManagerCompat manager = NotificationManagerCompat.from(context);
+
+        Notification notification = new NotificationCompat.Builder(context, CHANNEL_ID)
+                .setSmallIcon(android.R.drawable.ic_dialog_email)
+                .setContentTitle("Nova poruka od " + fromUser)
+                .setContentText(messageText)
+                .setPriority(NotificationCompat.PRIORITY_HIGH)
+                .build();
+
+        int notificationId = ("msg_" + fromUser + System.currentTimeMillis()).hashCode();
+        manager.notify(notificationId, notification);
+    }
+
+
     private static void createNotificationChannel(Context context) {
         NotificationManager manager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
         NotificationChannel channel = new NotificationChannel(
@@ -51,7 +72,8 @@ public class NotificationHelper {
                 "Alliance Notifications",
                 NotificationManager.IMPORTANCE_HIGH
         );
-        channel.setDescription("Notifications for alliance invitations");
+        channel.setDescription("Notifications for alliance");
+        channel.enableVibration(true);
         manager.createNotificationChannel(channel);
     }
 }

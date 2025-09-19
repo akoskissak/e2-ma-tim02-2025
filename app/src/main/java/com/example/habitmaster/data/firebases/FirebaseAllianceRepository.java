@@ -31,7 +31,7 @@ public class FirebaseAllianceRepository {
                 .addOnCompleteListener(listener);
     }
 
-    public void addMemberToAlliance(String allianceId, String memberId, OnCompleteListener<Void> listener) {
+    public void addMemberToAlliance(String allianceId, String memberId) {
         Map<String, Object> memberData = new HashMap<>();
         memberData.put("userId", memberId);
 
@@ -39,8 +39,7 @@ public class FirebaseAllianceRepository {
                 .document(allianceId)
                 .collection("members")
                 .document(memberId)
-                .set(memberData)
-                .addOnCompleteListener(listener);
+                .set(memberData);
     }
 
     public void addInvitation(AllianceInvitation invitation, OnCompleteListener<Void> listener) {
