@@ -4,6 +4,7 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
+import android.database.sqlite.SQLiteStatement;
 
 import com.example.habitmaster.data.database.DatabaseHelper;
 import com.example.habitmaster.domain.models.TaskInstance;
@@ -114,6 +115,41 @@ public class TaskInstanceRepository {
         return instances;
     }
 
+    public List<TaskInstance> getByTaskIdFromDate(String taskId, LocalDate fromDate) {
+        if (taskId == null || taskId.isEmpty()) {
+            return new ArrayList<>();
+        }
+
+        SQLiteDatabase db = dbHelper.getReadableDatabase();
+        List<TaskInstance> instances = new ArrayList<>();
+
+        String selection = "taskId = ? AND date >= ?";
+        String[] selectionArgs = { taskId, fromDate.toString() }; // yyyy-MM-dd
+
+        Cursor cursor = db.query(
+                "task_instances",
+                null,
+                selection,
+                selectionArgs,
+                null,
+                null,
+                "date ASC"
+        );
+
+        if (cursor.moveToFirst()) {
+            do {
+                TaskInstance instance = mapCursorToTaskInstance(cursor);
+                instances.add(instance);
+            } while (cursor.moveToNext());
+        }
+
+        cursor.close();
+        db.close();
+
+        return instances;
+    }
+
+
 
     private TaskInstance mapCursorToTaskInstance(Cursor cursor) {
         TaskInstance instance = new TaskInstance();
@@ -204,6 +240,39 @@ public class TaskInstanceRepository {
         } catch (Exception e) {
             e.printStackTrace();
             return false;
+        }
+    }
+
+
+    public void updateAll(List<TaskInstance> instances) {
+        if (instances == null || instances.isEmpty()) return;
+
+        SQLiteDatabase db = dbHelper.getWritableDatabase();
+        db.beginTransaction();
+
+        try {
+            StringBuilder inClause = new StringBuilder();
+            String taskId = instances.get(0).getTaskId();
+
+            for (int i = 0; i < instances.size(); i++) {
+                inClause.append("?");
+                if (i < instances.size() - 1) inClause.append(",");
+            }
+
+            String sql = "UPDATE task_instances SET taskId = ? WHERE id IN (" + inClause + ")";
+            SQLiteStatement stmt = db.compileStatement(sql);
+
+            stmt.bindString(1, taskId);
+
+            for (int i = 0; i < instances.size(); i++) {
+                stmt.bindString(i + 2, instances.get(i).getId());
+            }
+
+            stmt.executeUpdateDelete();
+            db.setTransactionSuccessful();
+        } finally {
+            db.endTransaction();
+            db.close();
         }
     }
 

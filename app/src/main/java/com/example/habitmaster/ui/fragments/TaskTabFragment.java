@@ -69,7 +69,7 @@ public class TaskTabFragment extends Fragment {
                 adapter = new TasksAdapter(tasks, task -> {
                     // Launch TaskDetailActivity with taskId
                     Intent intent = new Intent(getContext(), TaskDetailActivity.class);
-                    intent.putExtra(TaskDetailActivity.EXTRA_TASK_ID, task.getTaskId());
+                    intent.putExtra(TaskDetailActivity.EXTRA_TASK, task);
                     startActivity(intent);
                 });
                 recyclerView.setAdapter(adapter);

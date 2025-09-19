@@ -15,6 +15,14 @@ public class FirebaseTaskRepository {
     public void insert(@NonNull Task task) {
         firestore.collection("tasks")
                 .document(task.getId())
-                .set(task);
+                .set(task)
+                .addOnFailureListener(Throwable::printStackTrace);;
+    }
+
+    public void update(@NonNull Task task) {
+        firestore.collection("tasks")
+                .document(task.getId())
+                .set(task)
+                .addOnFailureListener(Throwable::printStackTrace);
     }
 }

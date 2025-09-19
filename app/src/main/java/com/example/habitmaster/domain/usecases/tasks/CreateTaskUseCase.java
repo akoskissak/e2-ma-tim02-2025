@@ -1,4 +1,4 @@
-package com.example.habitmaster.domain.usecases;
+package com.example.habitmaster.domain.usecases.tasks;
 
 import com.example.habitmaster.data.firebases.FirebaseTaskInstanceRepository;
 import com.example.habitmaster.data.firebases.FirebaseTaskRepository;

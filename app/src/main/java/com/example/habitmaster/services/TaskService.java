@@ -13,10 +13,10 @@ import com.example.habitmaster.data.repositories.UserLocalRepository;
 import com.example.habitmaster.data.repositories.UserRepository;
 import com.example.habitmaster.domain.models.TaskStatus;
 import com.example.habitmaster.domain.usecases.AddUserXpUseCase;
-import com.example.habitmaster.domain.usecases.CreateTaskUseCase;
-import com.example.habitmaster.domain.usecases.DeleteTaskUseCase;
-import com.example.habitmaster.domain.usecases.GetUserTasksUseCase;
-import com.example.habitmaster.domain.usecases.UpdateTaskUseCase;
+import com.example.habitmaster.domain.usecases.tasks.CreateTaskUseCase;
+import com.example.habitmaster.domain.usecases.tasks.DeleteTaskUseCase;
+import com.example.habitmaster.domain.usecases.tasks.GetUserTasksUseCase;
+import com.example.habitmaster.domain.usecases.tasks.UpdateTaskUseCase;
 import com.example.habitmaster.utils.Prefs;
 
 import java.time.LocalDate;
@@ -47,8 +47,8 @@ public class TaskService {
         CategoryRepository categoryRepo = new CategoryRepository(context);
         this.createTaskUseCase = new CreateTaskUseCase(localRepo, remoteRepo, userRepo, userLevelProgressRepo, localTaskInstanceRepo, remoteInstanceRepo);
         this.getUserTasksUseCase = new GetUserTasksUseCase(localRepo, localTaskInstanceRepo, userRepo, categoryRepo);
-        this.updateTaskUseCase = new UpdateTaskUseCase(localRepo, localTaskInstanceRepo, userLevelProgressRepository);
-        this.deleteTaskUseCase = new DeleteTaskUseCase(localTaskInstanceRepo);
+        this.updateTaskUseCase = new UpdateTaskUseCase(localRepo, localTaskInstanceRepo, userLevelProgressRepository, remoteRepo, remoteInstanceRepo);
+        this.deleteTaskUseCase = new DeleteTaskUseCase(localTaskInstanceRepo, remoteInstanceRepo);
         this.addUserXpUseCase = new AddUserXpUseCase(new UserLocalRepository(context));
     }
 
@@ -93,9 +93,19 @@ public class TaskService {
 
     public TaskInstanceDTO getTaskById(String id) { return getUserTasksUseCase.findTaskInstanceById(id); }
 
-    public TaskInstanceDTO updateTaskInfo(TaskInstanceDTO dto) {
+    public void updateTaskInfo(TaskInstanceDTO dto, ICallback<TaskInstanceDTO> callback) {
         Prefs prefs = new Prefs(context);
-        return updateTaskUseCase.updateTaskInfo(dto, prefs.getUid());
+        updateTaskUseCase.updateTaskInfo(dto, prefs.getUid(), new ICallback<TaskInstanceDTO>() {
+            @Override
+            public void onSuccess(TaskInstanceDTO result) {
+                callback.onSuccess(result);
+            }
+
+            @Override
+            public void onError(String errorMessage) {
+                callback.onError(errorMessage);
+            }
+        });
     }
 
     public void deleteTask(String taskId, Callback callback) {

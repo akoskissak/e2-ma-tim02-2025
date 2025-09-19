@@ -14,6 +14,7 @@ import com.example.habitmaster.domain.models.TaskFrequency;
 import com.example.habitmaster.domain.models.TaskImportance;
 
 import java.time.LocalDate;
+import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -174,6 +175,9 @@ public class TaskRepository {
 
         String endDateStr = cursor.getString(cursor.getColumnIndexOrThrow("endDate"));
         task.setEndDate(endDateStr != null ? LocalDate.parse(endDateStr) : null);
+
+        String executionTimeStr = cursor.getString(cursor.getColumnIndexOrThrow("executionTime"));
+        task.setExecutionTime(executionTimeStr != null ? LocalTime.parse(executionTimeStr) : null);
 
         task.setDifficulty(TaskDifficulty.valueOf(cursor.getString(cursor.getColumnIndexOrThrow("difficulty"))));
         task.setImportance(TaskImportance.valueOf(cursor.getString(cursor.getColumnIndexOrThrow("importance"))));

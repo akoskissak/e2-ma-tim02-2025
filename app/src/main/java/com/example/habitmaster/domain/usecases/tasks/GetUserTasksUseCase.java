@@ -1,4 +1,6 @@
-package com.example.habitmaster.domain.usecases;
+package com.example.habitmaster.domain.usecases.tasks;
+
+import android.util.Log;
 
 import com.example.habitmaster.data.dtos.TaskInstanceDTO;
 import com.example.habitmaster.data.repositories.CategoryRepository;
@@ -70,8 +72,7 @@ public class GetUserTasksUseCase {
                         task.getId(),
                         task.getName(),
                         task.getDescription(),
-                        task.getCategoryId(),
-                        categoryRepo.getCategoryColorById(task.getCategoryId()),
+                        categoryRepo.getCategoryById(task.getCategoryId()),
                         task.getFrequency(),
                         task.getRepeatInterval(),
                         instance.getDate(),
@@ -87,20 +88,19 @@ public class GetUserTasksUseCase {
         // 4. Add one-time tasks as single instances
         for (Task task : oneTimeTasks) {
             dtos.add(new TaskInstanceDTO(
-                    task.getId(), // instanceId same as taskId for one-time
+                    task.getId(),
                     task.getId(),
                     task.getName(),
                     task.getDescription(),
-                    task.getCategoryId(),
-                    categoryRepo.getCategoryColorById(task.getCategoryId()),
+                    categoryRepo.getCategoryById(task.getCategoryId()),
                     task.getFrequency(),
                     task.getRepeatInterval(),
-                    task.getStartDate(), // date = startDate
+                    task.getStartDate(),
                     task.getExecutionTime(),
                     task.getDifficulty(),
                     task.getImportance(),
                     task.getXpValue(),
-                    TaskStatus.ACTIVE // default status for one-time
+                    TaskStatus.ACTIVE
             ));
         }
 
@@ -129,8 +129,8 @@ public class GetUserTasksUseCase {
             if (task == null) continue;
 
             TaskInstanceDTO dto = new TaskInstanceDTO(instance.getId(), task.getId(), task.getName(), task.getDescription(),
-                    task.getCategoryId(), categoryRepo.getCategoryColorById(task.getCategoryId()),
-                    task.getFrequency(), task.getRepeatInterval(), instance.getDate(), task.getExecutionTime(), task.getDifficulty(), task.getImportance(),
+                    categoryRepo.getCategoryById(task.getCategoryId()), task.getFrequency(), task.getRepeatInterval(),
+                    instance.getDate(), task.getExecutionTime(), task.getDifficulty(), task.getImportance(),
                     task.getXpValue(), instance.getStatus());
 
             dtos.add(dto);
@@ -169,8 +169,7 @@ public class GetUserTasksUseCase {
                     task.getId(),
                     task.getName(),
                     task.getDescription(),
-                    task.getCategoryId(),
-                    categoryRepo.getCategoryColorById(task.getCategoryId()),
+                    categoryRepo.getCategoryById(task.getCategoryId()),
                     task.getFrequency(),
                     task.getRepeatInterval(),
                     instance.getDate(),
@@ -203,8 +202,7 @@ public class GetUserTasksUseCase {
                 task.getId(),
                 task.getName(),
                 task.getDescription(),
-                task.getCategoryId(),
-                categoryRepo.getCategoryColorById(task.getCategoryId()),
+                categoryRepo.getCategoryById(task.getCategoryId()),
                 task.getFrequency(),
                 task.getRepeatInterval(),
                 instance.getDate(),
