@@ -24,6 +24,9 @@ public class AcceptAllianceInviteUseCase {
         firebaseRepo.declineOtherInvites(userId, inviteId);
 
         repo.addMemberToAlliance(allianceId, userId);
+
+        firebaseRepo.addMemberToAlliance(allianceId, userId);
+
         repo.acceptInvitation(inviteId);
 
         firebaseRepo.acceptInvite(inviteId, allianceId);

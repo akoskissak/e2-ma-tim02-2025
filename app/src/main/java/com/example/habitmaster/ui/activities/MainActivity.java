@@ -51,10 +51,6 @@ public class MainActivity extends AppCompatActivity {
         DatabaseHelper helper = new DatabaseHelper(this);
         SQLiteDatabase db = helper.getReadableDatabase();
 
-        String allianceId = "e4735959-361c-48dd-a639-5b4970e486cd";
-
-        db.execSQL("UPDATE alliances SET missionStarted = 1 WHERE id = ?", new Object[]{allianceId});
-
         EdgeToEdge.enable(this);
         setContentView(R.layout.activity_main);
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
