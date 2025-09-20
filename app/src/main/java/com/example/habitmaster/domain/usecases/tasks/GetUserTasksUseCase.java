@@ -213,4 +213,9 @@ public class GetUserTasksUseCase {
                 instance.getStatus()
         );
     }
+
+    public boolean existsUserTaskByCategoryId(String userId, String categoryId) {
+        return taskRepo.existsUserTaskByCategoryId(userId, categoryId);
+    }
+
 }

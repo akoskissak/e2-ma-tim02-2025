@@ -8,6 +8,7 @@ import com.example.habitmaster.domain.usecases.categories.AddCategoryUseCase;
 import com.example.habitmaster.domain.usecases.categories.DeleteCategoryUseCase;
 import com.example.habitmaster.domain.usecases.categories.GetUserCategoriesUseCase;
 import com.example.habitmaster.domain.usecases.categories.UpdateCategoryUseCase;
+import com.example.habitmaster.domain.usecases.tasks.GetUserTasksUseCase;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -17,6 +18,7 @@ public class CategoryService {
     private GetUserCategoriesUseCase getUserCategoriesUseCase;
     private UpdateCategoryUseCase updateCategoryUseCase;
     private DeleteCategoryUseCase deleteCategoryUseCase;
+    private TaskService taskService;
 
     public interface Callback {
         void onSuccess(Category category);
@@ -29,6 +31,7 @@ public class CategoryService {
         this.getUserCategoriesUseCase = new GetUserCategoriesUseCase(categoryRepo);
         this.updateCategoryUseCase = new UpdateCategoryUseCase(categoryRepo);
         this.deleteCategoryUseCase = new DeleteCategoryUseCase(categoryRepo);
+        this.taskService = new TaskService(context);
     }
 
     public List<Category> getUserCategories(String userId) {
@@ -67,8 +70,13 @@ public class CategoryService {
         });
     }
 
-    // TODO: Handle deleting category when there are tasks with that category
-    public void deleteCategory(String categoryId, ICallbackVoid callback) {
+    public void deleteCategory(String userId, String categoryId, ICallbackVoid callback) {
+        boolean exists = taskService.existsUserTaskByCategoryId(userId, categoryId);
+        if (exists) {
+            callback.onError("Failed to delete category. Category with tasks");
+            return;
+        }
+
         boolean success = deleteCategoryUseCase.execute(categoryId);
         if (success) {
             callback.onSuccess();

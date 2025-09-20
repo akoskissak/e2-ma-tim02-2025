@@ -150,4 +150,8 @@ public class TaskService {
             }
         });
     }
+
+    public boolean existsUserTaskByCategoryId(String userId, String categoryId) {
+        return getUserTasksUseCase.existsUserTaskByCategoryId(userId, categoryId);
+    }
 }

@@ -139,7 +139,7 @@ public class CategoriesActivity extends AppCompatActivity {
     }
 
     public void deleteCategory(String categoryId) {
-        categoryService.deleteCategory(categoryId, new ICallbackVoid() {
+        categoryService.deleteCategory(prefs.getUid(), categoryId, new ICallbackVoid() {
             @Override
             public void onSuccess() {
                 adapter.removeCategory(categoryId);

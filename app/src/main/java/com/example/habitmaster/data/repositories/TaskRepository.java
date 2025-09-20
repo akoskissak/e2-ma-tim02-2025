@@ -273,4 +273,31 @@ public class TaskRepository {
             return false;
         }
     }
+
+    public boolean existsUserTaskByCategoryId(String userId, String categoryId) {
+        try (SQLiteDatabase db = dbHelper.getReadableDatabase()) {
+            Cursor cursor = db.query(
+                    "tasks",
+                    new String[]{"id"},
+                    "user_id = ? AND category_id = ?",
+                    new String[]{userId, categoryId},
+                    null,
+                    null,
+                    null,
+                    "1"
+            );
+
+            boolean exists = (cursor != null && cursor.moveToFirst());
+
+            if (cursor != null) {
+                cursor.close();
+            }
+
+            return exists;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
 }
