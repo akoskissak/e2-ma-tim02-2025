@@ -111,6 +111,32 @@ public class CategoryRepository {
         return color;
     }
 
+    public Category getCategoryById(String categoryId) {
+        Category category = null; // default if not found
+        try (SQLiteDatabase db = dbHelper.getReadableDatabase()) {
+            Cursor cursor = db.query(
+                    DatabaseHelper.T_CATEGORIES,
+                    null, // select all columns
+                    "id = ?",
+                    new String[]{categoryId},
+                    null,
+                    null,
+                    null
+            );
+
+            if (cursor != null) {
+                if (cursor.moveToFirst()) {
+                    category = mapCursorToCategory(cursor);
+                }
+                cursor.close();
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return category;
+    }
+
+
     private void validateUniqueNameAndColor(Category category, SQLiteDatabase db, boolean isUpdate)
             throws NameNotUniqueException, ColorNotUniqueException {
 

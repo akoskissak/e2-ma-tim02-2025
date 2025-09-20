@@ -1,20 +1,22 @@
 package com.example.habitmaster.data.dtos;
 
+import com.example.habitmaster.domain.models.Category;
 import com.example.habitmaster.domain.models.TaskDifficulty;
 import com.example.habitmaster.domain.models.TaskFrequency;
 import com.example.habitmaster.domain.models.TaskImportance;
 import com.example.habitmaster.domain.models.TaskStatus;
 
+import java.io.Serializable;
 import java.time.LocalDate;
 import java.time.LocalTime;
 
-public class TaskInstanceDTO {
+public class TaskInstanceDTO implements Serializable {
+    private static final long serialVersionUID = 1L;
     private String id;
     private String taskId;
     private String name;
     private String description;
-    private String categoryId;
-    private int categoryColor;
+    private Category category;
     private TaskFrequency frequency;
     private int repeatInterval;
     private LocalDate date;
@@ -27,13 +29,12 @@ public class TaskInstanceDTO {
     public TaskInstanceDTO() {
     }
 
-    public TaskInstanceDTO(String id, String taskId, String name, String description, String categoryId, int categoryColor, TaskFrequency frequency, int repeatInterval, LocalDate date, LocalTime executionTime, TaskDifficulty difficulty, TaskImportance importance, int xpValue, TaskStatus status) {
+    public TaskInstanceDTO(String id, String taskId, String name, String description, Category category, TaskFrequency frequency, int repeatInterval, LocalDate date, LocalTime executionTime, TaskDifficulty difficulty, TaskImportance importance, int xpValue, TaskStatus status) {
         this.id = id;
         this.taskId = taskId;
         this.name = name;
         this.description = description;
-        this.categoryId = categoryId;
-        this.categoryColor = categoryColor;
+        this.category = category;
         this.frequency = frequency;
         this.repeatInterval = repeatInterval;
         this.date = date;
@@ -68,12 +69,12 @@ public class TaskInstanceDTO {
         this.description = description;
     }
 
-    public String getCategoryId() {
-        return categoryId;
+    public Category getCategory() {
+        return category;
     }
 
-    public void setCategoryId(String categoryId) {
-        this.categoryId = categoryId;
+    public void setCategory(Category category) {
+        this.category = category;
     }
 
     public TaskFrequency getFrequency() {
@@ -146,14 +147,6 @@ public class TaskInstanceDTO {
 
     public void setDate(LocalDate date) {
         this.date = date;
-    }
-
-    public int getCategoryColor() {
-        return categoryColor;
-    }
-
-    public void setCategoryColor(int categoryColor) {
-        this.categoryColor = categoryColor;
     }
 }
 

@@ -14,6 +14,7 @@ import com.example.habitmaster.domain.models.TaskFrequency;
 import com.example.habitmaster.domain.models.TaskImportance;
 
 import java.time.LocalDate;
+import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -175,6 +176,9 @@ public class TaskRepository {
         String endDateStr = cursor.getString(cursor.getColumnIndexOrThrow("endDate"));
         task.setEndDate(endDateStr != null ? LocalDate.parse(endDateStr) : null);
 
+        String executionTimeStr = cursor.getString(cursor.getColumnIndexOrThrow("executionTime"));
+        task.setExecutionTime(executionTimeStr != null ? LocalTime.parse(executionTimeStr) : null);
+
         task.setDifficulty(TaskDifficulty.valueOf(cursor.getString(cursor.getColumnIndexOrThrow("difficulty"))));
         task.setImportance(TaskImportance.valueOf(cursor.getString(cursor.getColumnIndexOrThrow("importance"))));
         task.setXpValue(cursor.getInt(cursor.getColumnIndexOrThrow("xpValue")));
@@ -269,4 +273,31 @@ public class TaskRepository {
             return false;
         }
     }
+
+    public boolean existsUserTaskByCategoryId(String userId, String categoryId) {
+        try (SQLiteDatabase db = dbHelper.getReadableDatabase()) {
+            Cursor cursor = db.query(
+                    "tasks",
+                    new String[]{"id"},
+                    "userId = ? AND categoryId = ?",
+                    new String[]{userId, categoryId},
+                    null,
+                    null,
+                    null,
+                    "1"
+            );
+
+            boolean exists = (cursor != null && cursor.moveToFirst());
+
+            if (cursor != null) {
+                cursor.close();
+            }
+
+            return exists;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
 }

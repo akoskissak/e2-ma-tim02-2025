@@ -58,7 +58,7 @@ public class TaskCalendarFragment extends Fragment {
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
         tasksAdapter = new TasksAdapter(filteredTasks, task -> {
             Intent intent = new Intent(getContext(), TaskDetailActivity.class);
-            intent.putExtra(TaskDetailActivity.EXTRA_TASK_ID, task.getTaskId());
+            intent.putExtra(TaskDetailActivity.EXTRA_TASK, task);
             startActivity(intent);
         });
         recyclerView.setAdapter(tasksAdapter);
@@ -86,7 +86,7 @@ public class TaskCalendarFragment extends Fragment {
 
     private void loadTasksFromDatabase() {
         new Thread(() -> {
-            allTasks = taskService.getAllTasks(); // Now returns List<TaskInstanceDTO>
+            allTasks = taskService.getAllTasks();
             requireActivity().runOnUiThread(() -> {
                 LocalDate today = LocalDate.now();
                 filterTasksByDate(today);
@@ -126,7 +126,7 @@ public class TaskCalendarFragment extends Fragment {
             List<Drawable> drawables = new ArrayList<>();
             for (int i = 0; i < Math.min(tasksForDay.size(), 3); i++) {
                 TaskInstanceDTO task = tasksForDay.get(i);
-                int color = task.getCategoryColor(); // Assuming TaskInstanceDTO has categoryColor
+                int color = task.getCategory().getColor(); // Assuming TaskInstanceDTO has categoryColor
                 Drawable circle = createColoredCircleDrawable(color, 48); // 48px diameter
                 drawables.add(circle);
             }

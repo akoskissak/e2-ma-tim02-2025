@@ -21,6 +21,7 @@ import com.example.habitmaster.data.dtos.TaskInstanceDTO;
 import com.example.habitmaster.domain.models.TaskDifficulty;
 import com.example.habitmaster.domain.models.TaskImportance;
 import com.example.habitmaster.domain.models.TaskStatus;
+import com.example.habitmaster.services.ICallback;
 import com.example.habitmaster.services.TaskService;
 import com.example.habitmaster.utils.Prefs;
 
@@ -29,15 +30,14 @@ import java.time.format.DateTimeFormatter;
 
 public class TaskDetailActivity extends AppCompatActivity {
 
+    public static final String EXTRA_TASK = "extra_task";
+    TextView nameText, descriptionText, categoryText, difficultyText, importanceText, startDateText, endDateText, frequencyText, xpText;
+    Prefs prefs;
     private EditText editName, editDescription;
     private Spinner spinnerDifficulty, spinnerImportance;
     private LinearLayout editExecutionTimeLayout, bottomButtonslayouts;
     private Button btnEdit, btnEditExecutionTime, btnSave, btnCancelEdit, btnDelete, btnPause, btnDone;
     private LocalTime executionTime;
-    TextView nameText, descriptionText, categoryText, difficultyText, importanceText, startDateText, endDateText, frequencyText, xpText;
-    Prefs prefs;
-    public static final String EXTRA_TASK_ID = "extra_task_id";
-
     private TaskService taskService;
     private String taskId;
     private TaskInstanceDTO task;
@@ -49,14 +49,14 @@ public class TaskDetailActivity extends AppCompatActivity {
         setContentView(R.layout.activity_task_detail);
 
         taskService = new TaskService(this);
-        taskId = getIntent().getStringExtra(EXTRA_TASK_ID);
+        task = (TaskInstanceDTO) getIntent().getSerializableExtra(EXTRA_TASK);
 
-        if (taskId == null) {
+        if (task == null) {
             finish();
             return;
         }
 
-        prefs =  new Prefs(this);
+        prefs = new Prefs(this);
 
         nameText = findViewById(R.id.textTaskName);
         descriptionText = findViewById(R.id.textTaskDescription);
@@ -69,27 +69,18 @@ public class TaskDetailActivity extends AppCompatActivity {
         xpText = findViewById(R.id.textTaskXp);
         btnPause = findViewById(R.id.btnPause);
 
-        new Thread(() -> {
-            task = taskService.getTaskById(taskId);
-            runOnUiThread(() -> {
-                if (task != null) {
-                    Log.d("Task != null", "Task is not null");
-                    nameText.setText(task.getName());
-                    descriptionText.setText("Description: " + task.getDescription());
-                    categoryText.setText("Category: " + task.getCategoryId());
-                    difficultyText.setText("Difficulty: " + task.getDifficulty().getDisplayName());
-                    importanceText.setText("Importance: " + task.getImportance().getDisplayName());
-                    startDateText.setText("Start: " + (task.getDate() != null ? task.getDate().toString() : "-"));
-//                    endDateText.setText("End: " + (task.getEndDate() != null ? task.getEndDate().toString() : "-"));
-                    frequencyText.setText("Frequency: " + task.getFrequency().name());
-                    xpText.setText("XP: " + task.getXpValue());
+        Log.d("Task != null", "Task is not null");
+        nameText.setText(task.getName());
+        descriptionText.setText("Description: " + task.getDescription());
+        categoryText.setText("Category: " + task.getCategory().getName());
+        difficultyText.setText("Difficulty: " + task.getDifficulty().getDisplayName());
+        importanceText.setText("Importance: " + task.getImportance().getDisplayName());
+        startDateText.setText("Start: " + (task.getDate() != null ? task.getDate().toString() : "-"));
+//        endDateText.setText("End: " + (task.getEndDate() != null ? task.getEndDate().toString() : "-"));
+        frequencyText.setText("Frequency: " + task.getFrequency().name());
+        xpText.setText("XP: " + task.getXpValue());
 
-                    btnPause.setText(task.getStatus() == TaskStatus.PAUSED ? "Resume" : "Pause");
-                } else {
-                    Log.d("Task == null", "Task is null");
-                }
-            });
-        }).start();
+        btnPause.setText(task.getStatus() == TaskStatus.PAUSED ? "Resume" : "Pause");
 
         btnEdit = findViewById(R.id.btnEdit);
         btnSave = findViewById(R.id.btnSave);
@@ -104,28 +95,18 @@ public class TaskDetailActivity extends AppCompatActivity {
         editExecutionTimeLayout = findViewById(R.id.editExecutionTimeLayout);
         bottomButtonslayouts = findViewById(R.id.layoutSaveAndCancelEditTask);
 
-        spinnerDifficulty.setAdapter(new ArrayAdapter<>(this,
-                android.R.layout.simple_spinner_item,
-                TaskDifficulty.values()));
-        spinnerImportance.setAdapter(new ArrayAdapter<>(this,
-                android.R.layout.simple_spinner_item,
-                TaskImportance.values()));
+        spinnerDifficulty.setAdapter(new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, TaskDifficulty.values()));
+        spinnerImportance.setAdapter(new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, TaskImportance.values()));
 
         btnEditExecutionTime.setOnClickListener(view -> {
             LocalTime currentTime = LocalTime.now();
             int hour = currentTime.getHour();
             int minute = currentTime.getMinute();
 
-            TimePickerDialog timePickerDialog = new TimePickerDialog(
-                    this,
-                    (v, hourOfDay, minuteOfHour) -> {
-                        executionTime = LocalTime.of(hourOfDay, minuteOfHour);
-                        btnEditExecutionTime.setText(executionTime.format(DateTimeFormatter.ofPattern("HH:mm")));
-                    },
-                    hour,
-                    minute,
-                    true
-            );
+            TimePickerDialog timePickerDialog = new TimePickerDialog(this, (v, hourOfDay, minuteOfHour) -> {
+                executionTime = LocalTime.of(hourOfDay, minuteOfHour);
+                btnEditExecutionTime.setText(executionTime.format(DateTimeFormatter.ofPattern("HH:mm")));
+            }, hour, minute, true);
 
             timePickerDialog.show();
         });
@@ -171,24 +152,31 @@ public class TaskDetailActivity extends AppCompatActivity {
         }
         task.setDifficulty(TaskDifficulty.values()[spinnerDifficulty.getSelectedItemPosition()]);
         task.setImportance(TaskImportance.values()[spinnerImportance.getSelectedItemPosition()]);
-        
-        new Thread(() -> {
-            taskService.updateTaskInfo(task);
 
-            runOnUiThread(() -> {
-                showEditFields(false);
+        taskService.updateTaskInfo(task, new ICallback<TaskInstanceDTO>() {
+            @Override
+            public void onSuccess(TaskInstanceDTO result) {
+                // Ensure UI updates happen on main thread
+                runOnUiThread(() -> {
+                    showEditFields(false);
 
-                nameText.setText(task.getName());
-                descriptionText.setText("Description: " + task.getDescription());
-                difficultyText.setText("Difficulty: " + task.getDifficulty().getDisplayName());
-                importanceText.setText("Importance: " + task.getImportance().getDisplayName());
-                xpText.setText("XP: " + task.getXpValue());
+                    nameText.setText(task.getName());
+                    descriptionText.setText("Description: " + task.getDescription());
+                    difficultyText.setText("Difficulty: " + task.getDifficulty().getDisplayName());
+                    importanceText.setText("Importance: " + task.getImportance().getDisplayName());
+                    xpText.setText("XP: " + task.getXpValue());
 
-                showStaticFields(true);
+                    showStaticFields(true);
 
-                Toast.makeText(this, "Task updated", Toast.LENGTH_SHORT).show();
-            });
-        }).start();
+                    Toast.makeText(TaskDetailActivity.this, "Task updated", Toast.LENGTH_SHORT).show();
+                });
+            }
+
+            @Override
+            public void onError(String errorMessage) {
+                runOnUiThread(() -> Toast.makeText(TaskDetailActivity.this, "Failed to update task: " + errorMessage, Toast.LENGTH_SHORT).show());
+            }
+        });
     }
 
     private void cancelEditing() {
@@ -216,12 +204,7 @@ public class TaskDetailActivity extends AppCompatActivity {
     }
 
     private void confirmDeleteTask() {
-        new AlertDialog.Builder(this)
-            .setTitle("Delete Task")
-            .setMessage("Are you sure you want to delete this task?")
-            .setPositiveButton("Yes", (dialog, which) -> deleteTask())
-            .setNegativeButton("No", null)
-            .show();
+        new AlertDialog.Builder(this).setTitle("Delete Task").setMessage("Are you sure you want to delete this task?").setPositiveButton("Yes", (dialog, which) -> deleteTask()).setNegativeButton("No", null).show();
     }
 
     private void deleteTask() {
@@ -248,8 +231,7 @@ public class TaskDetailActivity extends AppCompatActivity {
         var status = task.getStatus();
         if (status == TaskStatus.ACTIVE) {
             status = TaskStatus.PAUSED;
-        }
-        else if (status == TaskStatus.PAUSED) {
+        } else if (status == TaskStatus.PAUSED) {
             status = TaskStatus.ACTIVE;
         }
 
@@ -269,7 +251,8 @@ public class TaskDetailActivity extends AppCompatActivity {
                 Log.d("Pause error", "Attempting to pause");
                 String toastMessage = newStatus == TaskStatus.PAUSED ? "pause" : "resume";
                 Toast.makeText(TaskDetailActivity.this, "Failed to " + toastMessage + " task: " + errorMessage, Toast.LENGTH_SHORT).show();
-            }});
+            }
+        });
     }
 
     private void completeTask() {
