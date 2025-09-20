@@ -279,7 +279,7 @@ public class TaskRepository {
             Cursor cursor = db.query(
                     "tasks",
                     new String[]{"id"},
-                    "user_id = ? AND category_id = ?",
+                    "userId = ? AND categoryId = ?",
                     new String[]{userId, categoryId},
                     null,
                     null,
