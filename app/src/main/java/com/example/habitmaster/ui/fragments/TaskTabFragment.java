@@ -12,15 +12,20 @@ import androidx.recyclerview.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Toast;
 
 import com.example.habitmaster.R;
 import com.example.habitmaster.data.dtos.TaskInstanceDTO;
+import com.example.habitmaster.services.ICallback;
 import com.example.habitmaster.services.TaskService;
 import com.example.habitmaster.ui.activities.TaskDetailActivity;
 import com.example.habitmaster.ui.adapters.TasksAdapter;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 public class TaskTabFragment extends Fragment {
 
@@ -57,23 +62,70 @@ public class TaskTabFragment extends Fragment {
     }
 
     private void loadTasks() {
-        new Thread(() -> {
-            List<TaskInstanceDTO> tasks;
-            if (repeating) {
-                tasks = taskService.getRepeatingTasks(LocalDate.now());
-            } else {
-                tasks = taskService.getOneTimeTasks(LocalDate.now());
-            }
+        if (repeating) {
+            taskService.getRepeatingTasks(LocalDate.now(), new ICallback<List<TaskInstanceDTO>>() {
+                @Override
+                public void onSuccess(List<TaskInstanceDTO> tasks) {
+                    Map<String, TaskInstanceDTO> uniqueTasks = new LinkedHashMap<>();
+                    for (TaskInstanceDTO t : tasks) {
+                        if (!uniqueTasks.containsKey(t.getTaskId())) {
+                            uniqueTasks.put(t.getTaskId(), t);
+                        }
+                    }
+                    List<TaskInstanceDTO> displayTasks = new ArrayList<>(uniqueTasks.values());
 
-            getActivity().runOnUiThread(() -> {
-                adapter = new TasksAdapter(tasks, task -> {
-                    // Launch TaskDetailActivity with taskId
-                    Intent intent = new Intent(getContext(), TaskDetailActivity.class);
-                    intent.putExtra(TaskDetailActivity.EXTRA_TASK, task);
-                    startActivity(intent);
-                });
-                recyclerView.setAdapter(adapter);
+                    adapter = new TasksAdapter(displayTasks, task -> showRepeatingTaskPopup(task.getTaskId(), tasks));
+                    recyclerView.setAdapter(adapter);
+                }
+
+                @Override
+                public void onError(String errorMessage) {
+                    Toast.makeText(getContext(), errorMessage, Toast.LENGTH_SHORT).show();
+                }
             });
-        }).start();
+        } else {
+            taskService.getOneTimeTasks(LocalDate.now(), new ICallback<List<TaskInstanceDTO>>() {
+                @Override
+                public void onSuccess(List<TaskInstanceDTO> tasks) {
+                    adapter = new TasksAdapter(tasks, task -> {
+                        Intent intent = new Intent(getContext(), TaskDetailActivity.class);
+                        intent.putExtra(TaskDetailActivity.EXTRA_TASK, task);
+                        startActivity(intent);
+                    });
+                    recyclerView.setAdapter(adapter);
+                }
+
+                @Override
+                public void onError(String errorMessage) {
+                    Toast.makeText(getContext(), errorMessage, Toast.LENGTH_SHORT).show();
+                }
+            });
+        }
     }
+
+    private void showRepeatingTaskPopup(String taskId, List<TaskInstanceDTO> allTaskInstances) {
+        List<TaskInstanceDTO> instancesForTask = new ArrayList<>();
+        for (TaskInstanceDTO t : allTaskInstances) {
+            if (t.getTaskId().equals(taskId)) {
+                instancesForTask.add(t);
+            }
+        }
+
+        String[] dates = new String[instancesForTask.size()];
+        for (int i = 0; i < instancesForTask.size(); i++) {
+            dates[i] = instancesForTask.get(i).getDate().toString();
+        }
+
+        new androidx.appcompat.app.AlertDialog.Builder(getContext())
+                .setTitle("Task dates")
+                .setItems(dates, (dialog, which) -> {
+                    TaskInstanceDTO clickedInstance = instancesForTask.get(which);
+                    Intent intent = new Intent(getContext(), TaskDetailActivity.class);
+                    intent.putExtra(TaskDetailActivity.EXTRA_TASK, clickedInstance);
+                    startActivity(intent);
+                })
+                .setNegativeButton("Cancel", null)
+                .show();
+    }
+
 }

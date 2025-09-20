@@ -1,6 +1,7 @@
 package com.example.habitmaster.services;
 
 import android.content.Context;
+import android.os.Handler;
 
 import com.example.habitmaster.data.dtos.TaskInstanceDTO;
 import com.example.habitmaster.data.firebases.FirebaseTaskInstanceRepository;
@@ -55,19 +56,7 @@ public class TaskService {
         this.addUserXpUseCase = new AddUserXpUseCase(new UserLocalRepository(context));
     }
 
-    public void createTask(
-            String name,
-            String description,
-            String categoryId,
-            String frequency,
-            int repeatInterval,
-            String startDate,
-            String endDate,
-            String executionTime,
-            String difficulty,
-            String importance,
-            Callback callback
-    ) {
+    public void createTask(String name, String description, String categoryId, String frequency, int repeatInterval, String startDate, String endDate, String executionTime, String difficulty, String importance, Callback callback) {
         createTaskUseCase.execute(name, description, categoryId, frequency, repeatInterval, startDate, endDate, executionTime, difficulty, importance,
             new CreateTaskUseCase.Callback() {
                 @Override
@@ -86,12 +75,26 @@ public class TaskService {
         return getUserTasksUseCase.getAllTasks();
     }
 
-    public List<TaskInstanceDTO> getRepeatingTasks(LocalDate fromDate) {
-        return getUserTasksUseCase.getRepeatingTasks(fromDate);
+    public void getRepeatingTasks(LocalDate fromDate, ICallback<List<TaskInstanceDTO>> callback) {
+        executorService.execute(() -> {
+            try {
+                List<TaskInstanceDTO> tasks = getUserTasksUseCase.getRepeatingTasks(fromDate);
+                new Handler(context.getMainLooper()).post(() -> callback.onSuccess(tasks));
+            } catch (Exception e) {
+                new Handler(context.getMainLooper()).post(() -> callback.onError(e.getMessage()));
+            }
+        });
     }
 
-    public List<TaskInstanceDTO> getOneTimeTasks(LocalDate fromDate) {
-        return getUserTasksUseCase.getOneTimeTasks(fromDate);
+    public void getOneTimeTasks(LocalDate fromDate, ICallback<List<TaskInstanceDTO>> callback) {
+        executorService.execute(() -> {
+            try {
+                List<TaskInstanceDTO> tasks = getUserTasksUseCase.getOneTimeTasks(fromDate);
+                new Handler(context.getMainLooper()).post(() -> callback.onSuccess(tasks));
+            } catch (Exception e) {
+                new Handler(context.getMainLooper()).post(() -> callback.onError(e.getMessage()));
+            }
+        });
     }
 
     public TaskInstanceDTO getTaskById(String id) { return getUserTasksUseCase.findTaskInstanceById(id); }
