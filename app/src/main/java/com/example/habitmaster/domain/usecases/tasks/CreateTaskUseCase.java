@@ -31,6 +31,7 @@ public class CreateTaskUseCase {
 
     public interface Callback {
         void onSuccess();
+
         void onError(String errorMessage);
     }
 
@@ -47,19 +48,8 @@ public class CreateTaskUseCase {
         this.userLevelProgressRepository = userLevelProgressRepository;
     }
 
-    public void execute(
-            String name,
-            String description,
-            String categoryId,
-            String frequencyStr,
-            int repeatInterval,
-            String startDateStr,
-            String endDateStr,
-            String executionTimeStr,
-            String difficultyStr,
-            String importanceStr,
-            Callback callback
-    ) {
+    public void execute(String name, String description, String categoryId, String frequencyStr, int repeatInterval, String startDateStr, String endDateStr,
+                        String executionTimeStr, String difficultyStr, String importanceStr, Callback callback) {
         TaskDifficulty difficulty;
         TaskImportance importance;
         TaskFrequency frequency;
@@ -70,19 +60,19 @@ public class CreateTaskUseCase {
         try {
             difficulty = TaskDifficulty.fromDisplayName(difficultyStr);
         } catch (IllegalArgumentException e) {
-            difficulty = TaskDifficulty.EASY; // fallback default
+            difficulty = TaskDifficulty.EASY;
         }
 
         try {
             importance = TaskImportance.fromDisplayName(importanceStr);
         } catch (IllegalArgumentException e) {
-            importance = TaskImportance.NORMAL; // fallback default
+            importance = TaskImportance.NORMAL;
         }
 
         try {
             frequency = TaskFrequency.valueOf(frequencyStr.toUpperCase());
         } catch (IllegalArgumentException e) {
-            frequency = TaskFrequency.DAILY; // fallback default
+            frequency = TaskFrequency.DAILY;
         }
 
         if (frequency != TaskFrequency.ONCE) {
@@ -134,20 +124,7 @@ public class CreateTaskUseCase {
 
         String userId = userRepository.currentUid();
         String id = UUID.randomUUID().toString();
-        Task task = new Task(
-                id,
-                userId,
-                name,
-                description,
-                categoryId,
-                frequency,
-                repeatInterval,
-                startDate,
-                endDate,
-                executionTime,
-                difficulty,
-                importance
-        );
+        Task task = new Task(id, userId, name, description, categoryId, frequency, repeatInterval, startDate, endDate, executionTime, difficulty, importance);
         UserLevelProgress progress = userLevelProgressRepository.getUserLevelProgress(userId);
         task.calculateXp(progress);
 
@@ -158,10 +135,10 @@ public class CreateTaskUseCase {
             List<LocalDate> dates = generateDatesForTask(task);
             for (LocalDate date : dates) {
                 TaskInstance taskInstance = new TaskInstance(
-                    UUID.randomUUID().toString(),
-                    task.getId(),
-                    date,
-                    TaskStatus.ACTIVE
+                        UUID.randomUUID().toString(),
+                        task.getId(),
+                        date,
+                        TaskStatus.ACTIVE
                 );
                 localInstanceRepo.insert(taskInstance);
                 remoteTaskInstanceRepository.insert(taskInstance);
@@ -184,26 +161,41 @@ public class CreateTaskUseCase {
             return dates;
         }
 
-        LocalDate current = start;
-        while (!current.isAfter(end)) {
-            dates.add(current);
+        if (task.getFrequency() == TaskFrequency.ONCE) {
+            dates.add(start);
+            return dates;
+        }
 
+        int interval = task.getRepeatInterval();
+        int multiplier = 0;
+        LocalDate current;
+
+        while (true) {
             switch (task.getFrequency()) {
                 case DAILY:
-                    current = current.plusDays(task.getRepeatInterval());
+                    current = start.plusDays(interval * multiplier);
                     break;
                 case WEEKLY:
-                    current = current.plusWeeks(task.getRepeatInterval());
+                    current = start.plusWeeks(interval * multiplier);
                     break;
                 case MONTHLY:
-                    current = current.plusMonths(task.getRepeatInterval());
+                    current = start.plusMonths(interval * multiplier);
                     break;
-                case ONCE:
+                case YEARLY:
+                    current = start.plusYears(interval * multiplier);
+                    break;
                 default:
-                    current = end.plusDays(1); // prekid
-                    break;
+                    return dates;
             }
+
+            if (current.isAfter(end)) {
+                break;
+            }
+
+            dates.add(current);
+            multiplier++;
         }
+
         return dates;
     }
 
