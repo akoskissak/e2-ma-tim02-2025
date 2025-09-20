@@ -21,8 +21,11 @@ import com.example.habitmaster.utils.Prefs;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 public class TaskService {
+    private final ExecutorService executorService = Executors.newFixedThreadPool(4);
     private CreateTaskUseCase createTaskUseCase;
     private GetUserTasksUseCase getUserTasksUseCase;
     private UpdateTaskUseCase updateTaskUseCase;
@@ -94,16 +97,22 @@ public class TaskService {
     public TaskInstanceDTO getTaskById(String id) { return getUserTasksUseCase.findTaskInstanceById(id); }
 
     public void updateTaskInfo(TaskInstanceDTO dto, ICallback<TaskInstanceDTO> callback) {
-        Prefs prefs = new Prefs(context);
-        updateTaskUseCase.updateTaskInfo(dto, prefs.getUid(), new ICallback<TaskInstanceDTO>() {
-            @Override
-            public void onSuccess(TaskInstanceDTO result) {
-                callback.onSuccess(result);
-            }
+        executorService.execute(() -> {
+            try {
+                Prefs prefs = new Prefs(context);
+                updateTaskUseCase.updateTaskInfo(dto, prefs.getUid(), new ICallback<TaskInstanceDTO>() {
+                    @Override
+                    public void onSuccess(TaskInstanceDTO result) {
+                        callback.onSuccess(result);
+                    }
 
-            @Override
-            public void onError(String errorMessage) {
-                callback.onError(errorMessage);
+                    @Override
+                    public void onError(String errorMessage) {
+                        callback.onError(errorMessage);
+                    }
+                });
+            } catch (Exception e) {
+                callback.onError("Error: " + e.getMessage());
             }
         });
     }
