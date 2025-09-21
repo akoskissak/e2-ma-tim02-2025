@@ -4,7 +4,6 @@ import android.graphics.drawable.AnimationDrawable;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
-import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
@@ -14,19 +13,26 @@ import android.widget.Toast;
 
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.habitmaster.R;
 import com.example.habitmaster.data.dtos.BossFightResult;
 import com.example.habitmaster.domain.models.Boss;
 import com.example.habitmaster.domain.models.User;
+import com.example.habitmaster.domain.models.UserEquipment;
 import com.example.habitmaster.services.BossService;
 import com.example.habitmaster.services.ICallback;
 import com.example.habitmaster.services.TaskService;
+import com.example.habitmaster.services.UserEquipmentService;
 import com.example.habitmaster.services.UserService;
+import com.example.habitmaster.ui.adapters.ActiveEquipmentAdapter;
 import com.example.habitmaster.utils.EquipmentDrawableMapper;
 
-import java.text.BreakIterator;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Locale;
+import java.util.stream.Collectors;
 
 public class BossFightActivity extends AppCompatActivity {
 
@@ -46,6 +52,12 @@ public class BossFightActivity extends AppCompatActivity {
     private boolean chestAnimationFinished = false;
     private View darkBackground;
     private View rewardLayout;
+    private TextView tvEquipmentTitle;
+
+    private RecyclerView activeEquipmentRecyclerView;
+    private ActiveEquipmentAdapter activeEquipmentAdapter;
+    private List<UserEquipment> activeEquipmentList = new ArrayList<>();
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -54,12 +66,19 @@ public class BossFightActivity extends AppCompatActivity {
 
         bossHpBar = findViewById(R.id.bossHpBar);
         userPpBar = findViewById(R.id.userPpBar);
-        activeEquipment = findViewById(R.id.activeEquipment);
         attackButton = findViewById(R.id.attackButton);
         remainingAttacksText = findViewById(R.id.remainingAttacks);
         attackChanceText = findViewById(R.id.attackChance);
         bossHpText = findViewById(R.id.bossHpText);
         userPpText = findViewById(R.id.userPpText);
+
+        activeEquipmentRecyclerView = findViewById(R.id.activeEquipmentRecyclerView);
+        activeEquipmentRecyclerView.setLayoutManager(
+                new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false)
+        );
+        activeEquipmentAdapter = new ActiveEquipmentAdapter(activeEquipmentList, new UserEquipmentService(this), null);
+        activeEquipmentRecyclerView.setAdapter(activeEquipmentAdapter);
+        tvEquipmentTitle = findViewById(R.id.tvEquipmentTitle);
 
         rewardEquipmentIcon = findViewById(R.id.rewardEquipmentIcon);
         rewardCoinsText = findViewById(R.id.rewardCoinsText);
@@ -132,8 +151,33 @@ public class BossFightActivity extends AppCompatActivity {
             bossHpText.setText(String.format("%s/%s HP", (int) currentHp, (int) maxHp));
             userPpText.setText(String.format("%s PP", currentUser.getPowerPoints()));
 
-            // TODO: postavi sliku aktivne opreme ako postoji
-            // activeEquipment.setImageResource(...);
+            UserEquipmentService equipmentService = new UserEquipmentService(this);
+            equipmentService.getAllUserEquipment(currentUser.getId(), new ICallback<List<UserEquipment>>() {
+                @Override
+                public void onSuccess(List<UserEquipment> result) {
+                    List<UserEquipment> activatedList = result.stream()
+                            .filter(UserEquipment::isActivated)
+                            .collect(Collectors.toList());
+
+                    activeEquipmentList.clear();
+                    activeEquipmentList.addAll(activatedList);
+                    activeEquipmentAdapter.notifyDataSetChanged();
+
+                    if (activatedList.isEmpty()) {
+                        tvEquipmentTitle.setText("No active equipment");
+                        activeEquipmentRecyclerView.setVisibility(View.GONE);
+                    } else {
+                        tvEquipmentTitle.setText("Active equipments");
+                        activeEquipmentRecyclerView.setVisibility(View.VISIBLE);
+                    }
+                }
+
+                @Override
+                public void onError(String errorMessage) {
+                    Toast.makeText(BossFightActivity.this, "Error loading active equipment", Toast.LENGTH_SHORT).show();
+                    tvEquipmentTitle.setText("No active equipment");
+                }
+            });
 
             remainingAttacksText.setText(String.format("%d/5", currentBoss.getRemainingAttacks()));
         }

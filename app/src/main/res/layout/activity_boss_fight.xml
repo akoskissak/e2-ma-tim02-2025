@@ -86,18 +86,32 @@
                 android:shadowRadius="2"/>
         </FrameLayout>
 
-
         <!-- Aktivna oprema -->
-        <ImageView
-            android:id="@+id/activeEquipment"
-            android:layout_width="64dp"
-            android:layout_height="64dp"
-            android:src="@drawable/boots"
-            android:contentDescription="@string/active_equipment"
+        <TextView
+            android:id="@+id/tvEquipmentTitle"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:text="Active equipments"
+            android:textSize="16sp"
+            android:textColor="@android:color/black"
+            android:gravity="center"
             app:layout_constraintTop_toBottomOf="@id/userPpFrameLayout"
             app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            android:layout_marginTop="16dp"/>
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/activeEquipmentRecyclerView"
+            android:layout_width="0dp"
+            android:layout_height="80dp"
             android:layout_marginTop="16dp"
-            android:layout_marginStart="16dp" />
+            app:layout_constraintTop_toBottomOf="@id/tvEquipmentTitle"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            android:clipToPadding="false"
+            android:paddingStart="16dp"
+            android:paddingEnd="16dp"
+            android:orientation="horizontal"/>
 
         <!-- Dugme za napad -->
         <Button
@@ -105,7 +119,7 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:text="@string/attack"
-            app:layout_constraintTop_toBottomOf="@id/activeEquipment"
+            app:layout_constraintTop_toBottomOf="@id/activeEquipmentRecyclerView"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             android:layout_marginTop="24dp"
