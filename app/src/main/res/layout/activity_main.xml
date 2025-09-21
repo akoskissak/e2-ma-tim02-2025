@@ -99,6 +99,13 @@
                 android:text="@string/follow_requests"
                 android:layout_marginBottom="8dp"/>
 
+            <Button
+                android:id="@+id/btnBossFight"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/boss_fight"
+                android:layout_marginBottom="8dp"/>
+
         </LinearLayout>
     </ScrollView>
 

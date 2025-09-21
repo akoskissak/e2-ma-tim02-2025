@@ -27,6 +27,7 @@ public class TaskInstanceRepository {
         values.put("id", instance.getId());
         values.put("taskId", instance.getTaskId());
         values.put("date", instance.getDate().toString()); // ISO format YYYY-MM-DD
+        values.put("createdAt", instance.getCreatedAt().toString()); // ISO format YYYY-MM-DD
         values.put("status", instance.getStatus().name());
         db.insert("task_instances", null, values);
         db.close();
@@ -164,6 +165,13 @@ public class TaskInstanceRepository {
             instance.setDate(null);
         }
 
+        String createdAt = cursor.getString(cursor.getColumnIndexOrThrow("createdAt"));
+        if (createdAt != null) {
+            instance.setCreatedAt(LocalDate.parse(createdAt));
+        } else {
+            instance.setDate(null);
+        }
+
         String statusStr = cursor.getString(cursor.getColumnIndexOrThrow("status"));
         if (statusStr != null) {
             try {
@@ -200,7 +208,7 @@ public class TaskInstanceRepository {
         try {
             db = dbHelper.getReadableDatabase();
 
-            String[] columns = {"id", "taskId", "date", "status"};
+            String[] columns = {"id", "taskId", "date", "createdAt", "status"};
             String selection = "id = ?";
             String[] selectionArgs = {id};
 
@@ -276,5 +284,46 @@ public class TaskInstanceRepository {
         }
     }
 
+
+    public List<TaskInstance> getValuableUserTaskInstances(String userId, LocalDate from, LocalDate to) {
+        List<TaskInstance> instances = new ArrayList<>();
+        SQLiteDatabase db = null;
+        Cursor cursor = null;
+
+        try {
+            db = dbHelper.getReadableDatabase();
+
+            // JOIN task_instances sa tasks da bi se došao do userId
+            String sql = "SELECT ti.id, ti.taskId, ti.date, ti.createdAt, ti.status " +
+                    "FROM task_instances ti " +
+                    "JOIN tasks t ON ti.taskId = t.id " +
+                    "WHERE t.userId = ? AND t.xpValue > 0 AND ti.createdAt BETWEEN ? AND ? AND ti.date <= ?" +
+                    "ORDER BY ti.date ASC";
+
+            String[] selectionArgs = {
+                    userId,
+                    from.toString(), // yyyy-MM-dd
+                    to.toString(),
+                    LocalDate.now().toString()
+            };
+
+            cursor = db.rawQuery(sql, selectionArgs);
+
+            if (cursor.moveToFirst()) {
+                do {
+                    TaskInstance instance = mapCursorToTaskInstance(cursor);
+                    instances.add(instance);
+                } while (cursor.moveToNext());
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            if (cursor != null) cursor.close();
+            if (db != null) db.close();
+        }
+
+        return instances;
+    }
 
 }

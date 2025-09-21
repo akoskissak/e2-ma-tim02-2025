@@ -9,6 +9,7 @@ import com.example.habitmaster.data.database.DatabaseHelper;
 import com.example.habitmaster.domain.models.User;
 import com.example.habitmaster.domain.models.UserLevelProgress;
 
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -31,6 +32,7 @@ public class UserLocalRepository {
         cv.put("activated", u.isActivated() ? 1 : 0);
         cv.put("createdAt", u.getCreatedAt());
         cv.put("level", u.getLevel());
+        cv.put("levelStartDate", u.getLevelStartDate().toString());
         cv.put("title", u.getTitle());
         cv.put("powerPoints", u.getPowerPoints());
         cv.put("xp", u.getXp());
@@ -76,6 +78,12 @@ public class UserLocalRepository {
         u.setActivated(c.getInt(c.getColumnIndexOrThrow("activated")) == 1);
         u.setCreatedAt(c.getLong(c.getColumnIndexOrThrow("createdAt")));
         u.setLevel(c.getInt(c.getColumnIndexOrThrow("level")));
+        String levelStartDateStr = c.getString(c.getColumnIndexOrThrow("levelStartDate"));
+        if (levelStartDateStr != null) {
+            u.setLevelStartDate(LocalDate.parse(levelStartDateStr));
+        } else {
+            u.setLevelStartDate(LocalDate.now());
+        }
         u.setTitle(c.getString(c.getColumnIndexOrThrow("title")));
         u.setPowerPoints(c.getInt(c.getColumnIndexOrThrow("powerPoints")));
         u.setXp(c.getInt(c.getColumnIndexOrThrow("xp")));
@@ -225,6 +233,7 @@ public class UserLocalRepository {
             userValues.put("title", title);
             userValues.put("powerPoints", powerPoints);
             userValues.put("xp", currentXp);
+            userValues.put("levelStartDate", LocalDate.now().toString());
 
             // dodavanje novcica prvi 200 pa za svaki sledeci 20% vise nego prethodnog
 
@@ -245,4 +254,62 @@ public class UserLocalRepository {
         c.close();
         return null;
     }
+
+    public LocalDate getUserLevelStartDate(String userId) {
+        SQLiteDatabase db = helper.getReadableDatabase();
+        Cursor cursor = null;
+        LocalDate startDate = null;
+
+        try {
+            cursor = db.query(
+                    DatabaseHelper.T_USERS,
+                    new String[]{"levelStartDate"},
+                    "id = ?",
+                    new String[]{userId},
+                    null, null, null
+            );
+
+            if (cursor != null && cursor.moveToFirst()) {
+                String dateStr = cursor.getString(cursor.getColumnIndexOrThrow("levelStartDate"));
+                if (dateStr != null) {
+                    startDate = LocalDate.parse(dateStr);
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            if (cursor != null) cursor.close();
+            db.close();
+        }
+
+        return startDate;
+    }
+
+    public int getUserLevel(String userId) {
+        SQLiteDatabase db = helper.getReadableDatabase();
+        Cursor cursor = null;
+        int level = -1;
+
+        try {
+            cursor = db.query(
+                    DatabaseHelper.T_USERS,
+                    new String[]{"level"},
+                    "id = ?",
+                    new String[]{userId},
+                    null, null, null
+            );
+
+            if (cursor != null && cursor.moveToFirst()) {
+                level = cursor.getInt(cursor.getColumnIndexOrThrow("level"));
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            if (cursor != null) cursor.close();
+            db.close();
+        }
+
+        return level;
+    }
+
 }

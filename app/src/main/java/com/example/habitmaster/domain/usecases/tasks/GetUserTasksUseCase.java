@@ -64,6 +64,7 @@ public class GetUserTasksUseCase {
                     .collect(Collectors.toMap(Task::getId, t -> t));
 
             for (TaskInstance instance : instances) {
+                Log.d("GetUserTasksUC:", "getAllTasks: " + instance.getId());
                 Task task = taskMap.get(instance.getTaskId());
                 if (task == null) continue;
 
@@ -85,10 +86,15 @@ public class GetUserTasksUseCase {
             }
         }
 
-        // 4. Add one-time tasks as single instances
+        List<String> oneTimeTaskIds = oneTimeTasks.stream()
+                .map(Task::getId)
+                .collect(Collectors.toList());
+        List<TaskInstance> oneTimeInstances = taskInstanceRepo.getByTaskIds(oneTimeTaskIds);
+        Map<String, String> oneTimeInstanceMap = oneTimeInstances.stream()
+                .collect(Collectors.toMap(TaskInstance::getTaskId, TaskInstance::getId));
         for (Task task : oneTimeTasks) {
             dtos.add(new TaskInstanceDTO(
-                    task.getId(),
+                    oneTimeInstanceMap.get(task.getId()), // Gets instanceId from map
                     task.getId(),
                     task.getName(),
                     task.getDescription(),
@@ -216,6 +222,10 @@ public class GetUserTasksUseCase {
 
     public boolean existsUserTaskByCategoryId(String userId, String categoryId) {
         return taskRepo.existsUserTaskByCategoryId(userId, categoryId);
+    }
+
+    public List<TaskInstance> getValuableUserTaskInstances(String userId, LocalDate from, LocalDate to) {
+        return taskInstanceRepo.getValuableUserTaskInstances(userId, from, to);
     }
 
 }

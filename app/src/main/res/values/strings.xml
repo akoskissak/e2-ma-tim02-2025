@@ -115,4 +115,6 @@
     <string name="insert_text">Insert text</string>
     <string name="send">Send</string>
     <string name="chat">Chat:</string>
+    <string name="boss_fight">Boss Fight</string>
+    <string name="attack">Attack</string>
 </resources>

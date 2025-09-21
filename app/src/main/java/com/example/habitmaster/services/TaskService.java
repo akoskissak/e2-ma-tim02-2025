@@ -14,6 +14,7 @@ import com.example.habitmaster.data.repositories.UserLocalRepository;
 import com.example.habitmaster.data.repositories.UserRepository;
 import com.example.habitmaster.domain.models.TaskStatus;
 import com.example.habitmaster.domain.usecases.AddUserXpUseCase;
+import com.example.habitmaster.domain.usecases.GetUserLevelStartDateUseCase;
 import com.example.habitmaster.domain.usecases.tasks.CreateTaskUseCase;
 import com.example.habitmaster.domain.usecases.tasks.DeleteTaskUseCase;
 import com.example.habitmaster.domain.usecases.tasks.GetUserTasksUseCase;
@@ -32,6 +33,7 @@ public class TaskService {
     private UpdateTaskUseCase updateTaskUseCase;
     private DeleteTaskUseCase deleteTaskUseCase;
     private AddUserXpUseCase addUserXpUseCase;
+    private final GetUserLevelStartDateUseCase getUserLevelStartDateUseCase;
     private final Context context;
 
     public interface Callback {
@@ -54,6 +56,7 @@ public class TaskService {
         this.updateTaskUseCase = new UpdateTaskUseCase(localRepo, localTaskInstanceRepo, userLevelProgressRepository, remoteRepo, remoteInstanceRepo);
         this.deleteTaskUseCase = new DeleteTaskUseCase(localTaskInstanceRepo, remoteInstanceRepo);
         this.addUserXpUseCase = new AddUserXpUseCase(new UserLocalRepository(context));
+        getUserLevelStartDateUseCase = new GetUserLevelStartDateUseCase(context);
     }
 
     public void createTask(String name, String description, String categoryId, String frequency, int repeatInterval, String startDate, String endDate, String executionTime, String difficulty, String importance, Callback callback) {
@@ -165,5 +168,29 @@ public class TaskService {
 
     public boolean existsUserTaskByCategoryId(String userId, String categoryId) {
         return getUserTasksUseCase.existsUserTaskByCategoryId(userId, categoryId);
+    }
+
+    public double getUserStageSuccessRate(String userId) {
+        var levelStartDate = getUserLevelStartDateUseCase.execute(userId);
+        var valuableTaskInstances = getUserTasksUseCase.getValuableUserTaskInstances(userId, levelStartDate, LocalDate.now());
+
+        if (valuableTaskInstances == null || valuableTaskInstances.isEmpty()) {
+            return 0.0;
+        }
+
+        long excluded = valuableTaskInstances.stream()
+                .filter(ti -> ti.getStatus() == TaskStatus.PAUSED || ti.getStatus() == TaskStatus.CANCELLED)
+                .count();
+
+        long total = valuableTaskInstances.size() - excluded;
+        if (total == 0) {
+            return 0.0;
+        }
+
+        long completed = valuableTaskInstances.stream()
+                .filter(ti -> ti.getStatus() == TaskStatus.COMPLETED)
+                .count();
+
+        return (double) completed / total;
     }
 }

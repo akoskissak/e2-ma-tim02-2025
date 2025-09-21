@@ -6,7 +6,7 @@ import android.database.sqlite.SQLiteOpenHelper;
 
 public class DatabaseHelper extends SQLiteOpenHelper {
     public static final String DB_NAME = "habitmaster.db";
-    public static final int DB_VERSION = 3;
+    public static final int DB_VERSION = 9;
 
     public static final String T_USERS = "users";
     public static final String T_USER_LEVEL_PROGRESS = "user_level_progress";
@@ -19,6 +19,8 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     public static final String T_ALLIANCE_INVITES = "alliance_invites";
     public static final String T_ALLIANCE_MEMBERS = "alliance_members";
     public static final String T_FOLLOW_REQUESTS = "follow_requests";
+    public static final String T_BOSSES = "bosses";
+    public static final String T_USER_BOSS_STATUSES = "user_boss_statuses";
 
     public DatabaseHelper(Context context) {
         super(context, DB_NAME, null, DB_VERSION);
@@ -34,6 +36,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 "activated INTEGER NOT NULL DEFAULT 0, " +
                 "createdAt INTEGER NOT NULL," +
                 "level INTEGER DEFAULT 1," +
+                "levelStartDate TEXT, " +
                 "title TEXT," +
                 "powerPoints INTEGER DEFAULT 0," +
                 "xp INTEGER DEFAULT 0," +
@@ -76,6 +79,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
             "id TEXT PRIMARY KEY, " +
             "taskId TEXT NOT NULL, " +
             "date TEXT NOT NULL, " +
+            "createdAt TEXT NOT NULL, " +
             "status TEXT NOT NULL, " +
             "FOREIGN KEY(taskId) REFERENCES " + T_TASKS + "(id) ON DELETE CASCADE, " +
             "UNIQUE(taskId, date)" +
@@ -149,6 +153,15 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 "FOREIGN KEY(toUserId) REFERENCES " + T_USERS + "(id) ON DELETE CASCADE" +
                 ");");
 
+        db.execSQL("CREATE TABLE " + T_BOSSES + " (" +
+                "id TEXT PRIMARY KEY, " +
+                "userId TEXT NOT NULL, " +
+                "level INTEGER NOT NULL, " +
+                "maxHp REAL NOT NULL, " +
+                "currentHp REAL NOT NULL, " +
+                "remainingAttacks INTEGER NOT NULL," +
+                "rewardCoins REAL NOT NULL" +
+                ")");
     }
 
     @Override
@@ -160,9 +173,12 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         db.execSQL("DROP TABLE IF EXISTS " + T_CATEGORIES);
         db.execSQL("DROP TABLE IF EXISTS " + T_EQUIPMENT);
         db.execSQL("DROP TABLE IF EXISTS " + T_ALLIANCES);
+        db.execSQL("DROP TABLE IF EXISTS " + T_FRIENDS);
         db.execSQL("DROP TABLE IF EXISTS " + T_ALLIANCE_INVITES);
         db.execSQL("DROP TABLE IF EXISTS " + T_ALLIANCE_MEMBERS);
         db.execSQL("DROP TABLE IF EXISTS " + T_FOLLOW_REQUESTS);
+        db.execSQL("DROP TABLE IF EXISTS " + T_BOSSES);
+        db.execSQL("DROP TABLE IF EXISTS " + T_USER_BOSS_STATUSES);
         onCreate(db);
     }
 }
