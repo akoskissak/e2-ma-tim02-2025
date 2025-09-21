@@ -138,6 +138,7 @@ public class CreateTaskUseCase {
                         UUID.randomUUID().toString(),
                         task.getId(),
                         date,
+                        LocalDate.now(),
                         TaskStatus.ACTIVE
                 );
                 localInstanceRepo.insert(taskInstance);

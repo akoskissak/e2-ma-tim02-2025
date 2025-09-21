@@ -14,6 +14,7 @@ import com.example.habitmaster.domain.usecases.GetUserStatisticsUseCase;
 import com.example.habitmaster.domain.usecases.GetUserUseCase;
 import com.example.habitmaster.domain.usecases.LoginUserUseCase;
 import com.example.habitmaster.domain.usecases.RegisterUserUseCase;
+import com.example.habitmaster.domain.usecases.users.GetUserLevelUseCase;
 
 public class UserService {
     private final RegisterUserUseCase registerUC;
@@ -25,6 +26,7 @@ public class UserService {
     private final GetCurrentUserUseCase getCurrentUserUC;
     private final GetUserByUsernameUseCase getUserByUsernameUC;
     private final GetUserByIdUseCase getUserByIdUC;
+    private final GetUserLevelUseCase getUserLevelUseCase;
 
     public UserService(Context ctx){
         this.registerUC = new RegisterUserUseCase(ctx);
@@ -36,6 +38,7 @@ public class UserService {
         this.getCurrentUserUC = new GetCurrentUserUseCase(ctx);
         this.getUserByUsernameUC = new GetUserByUsernameUseCase(ctx);
         this.getUserByIdUC = new GetUserByIdUseCase(ctx);
+        this.getUserLevelUseCase = new GetUserLevelUseCase(ctx);
     }
 
     public void register(String email, String pass, String confirm, String username, String avatarName, ICallback<User> callback){
@@ -72,5 +75,14 @@ public class UserService {
 
     public void findUserById(String userId, ICallback<User> callback) {
         getUserByIdUC.execute(userId, callback);
+    }
+
+    public void getUserLevel(String userId, ICallback<Integer> callback) {
+        var userLevel = getUserLevelUseCase.getUserLevel(userId);
+        if (userLevel > -1) {
+            callback.onSuccess(userLevel);
+        } else {
+            callback.onError("Error while retrieving user level");
+        }
     }
 }

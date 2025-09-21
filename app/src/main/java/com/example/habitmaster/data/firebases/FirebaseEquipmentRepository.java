@@ -43,4 +43,12 @@ public class FirebaseEquipmentRepository {
                     .delete();
         }
     }
+
+    public void updateArmor(UserEquipment armor, OnCompleteListener<Void> listener) {
+        db.collection("equipment")
+                .document(armor.getId())
+                .update("bonusValue", armor.getBonusValue())
+                .addOnCompleteListener(listener);
+    }
+
 }

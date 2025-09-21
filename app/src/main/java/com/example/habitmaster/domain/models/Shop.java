@@ -7,6 +7,11 @@ import java.util.List;
 
 public class Shop {
     private final List<Equipment> itemsForSale;
+    public static Equipment Sword = new Equipment("sword", "Mač +5% PP", EquipmentType.WEAPON, BonusType.PERM_PP_INCREASE, 0.05, -1, -1, R.drawable.sword);
+    public static Equipment BowAndArrow = new Equipment("bowAndArrow", "Luk i strela +5% PP", EquipmentType.WEAPON, BonusType.PERM_COINS_INCREASE, 0.05, -1, -1, R.drawable.bow_and_arrow);
+    public static String GLOVES_ID = "gloves";
+    public static String SHIELD_ID = "shield";
+    public static String BOOTS_ID = "boots";
 
     public Shop() {
         itemsForSale = new ArrayList<>();
@@ -30,19 +35,28 @@ public class Shop {
 
         // Odeca
         itemsForSale.add(new Equipment(
-                "gloves", "Rukavice +10% PP", EquipmentType.ARMOR,
+                GLOVES_ID, "Rukavice +10% PP", EquipmentType.ARMOR,
                 BonusType.TEMP_PP_INCREASE, 0.10, 2, 60, R.drawable.gloves));
 
         itemsForSale.add(new Equipment(
-                "shield", "Stit +10% sanse uspeha", EquipmentType.ARMOR,
+                SHIELD_ID, "Stit +10% sanse uspeha", EquipmentType.ARMOR,
                 BonusType.ATTACK_CHANCE_INCREASE, 0.10, 2, 60, R.drawable.shield));
 
         itemsForSale.add(new Equipment(
-                "boots", "Cizme +40% sansa dodatnog napada", EquipmentType.ARMOR,
+                BOOTS_ID, "Cizme +40% sansa dodatnog napada", EquipmentType.ARMOR,
                 BonusType.EXTRA_ATTACK_CHANCE, 0.40, 2, 80, R.drawable.boots));
     }
 
     public List<Equipment> getItemsForSale() {
         return itemsForSale;
+    }
+
+    public Equipment getItemById(String equipmentId) {
+        for (Equipment e : itemsForSale) {
+            if (equipmentId.equals(e.getId())) {
+                return e;
+            }
+        }
+        return null;
     }
 }

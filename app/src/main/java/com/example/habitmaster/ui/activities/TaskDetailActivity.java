@@ -50,6 +50,7 @@ public class TaskDetailActivity extends AppCompatActivity {
 
         taskService = new TaskService(this);
         task = (TaskInstanceDTO) getIntent().getSerializableExtra(EXTRA_TASK);
+        taskId = task.getTaskId();
 
         if (task == null) {
             finish();
@@ -258,6 +259,7 @@ public class TaskDetailActivity extends AppCompatActivity {
     private void completeTask() {
         if (task == null) return;
 
+        Log.d("COMPLETE TASK", "completeTask: " + task.getId());
         taskService.completeTask(prefs.getUid(), task, new TaskService.Callback() {
             @Override
             public void onSuccess() {

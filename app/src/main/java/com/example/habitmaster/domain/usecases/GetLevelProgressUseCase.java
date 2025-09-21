@@ -19,7 +19,7 @@ public class GetLevelProgressUseCase {
 
     public void execute(ICallback<UserLevelProgress> callback) {
         try {
-            String userId =getCurrentUserId();
+            String userId = getCurrentUserId();
             if(userId == null) {
                 callback.onError("No user logged in");
                 return;

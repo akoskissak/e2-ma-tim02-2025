@@ -11,6 +11,7 @@ import android.database.sqlite.SQLiteDatabase;
 import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.View;
 import android.widget.Button;
 import android.widget.Toast;
 
@@ -26,11 +27,14 @@ import androidx.core.view.WindowInsetsCompat;
 
 import com.example.habitmaster.R;
 import com.example.habitmaster.data.database.DatabaseHelper;
+import com.example.habitmaster.services.ICallback;
+import com.example.habitmaster.services.UserService;
 import com.example.habitmaster.utils.Prefs;
 
 public class MainActivity extends AppCompatActivity {
     private static final int NOTIFICATION_PERMISSION_REQUEST_CODE = 1001;
     private Prefs prefs;
+    private Button btnBossFight;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -126,6 +130,34 @@ public class MainActivity extends AppCompatActivity {
         Button btnFollowRequests = findViewById(R.id.btnFollowRequests);
         btnFollowRequests.setOnClickListener(v -> {
             startActivity(new Intent(this, FollowRequestsActivity.class));
+        });
+
+        btnBossFight = findViewById(R.id.btnBossFight);
+        btnBossFight.setOnClickListener(v -> {
+            startActivity(new Intent(this, BossFightActivity.class));
+        });
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        UserService userService = new UserService(this);
+        userService.getUserLevel(prefs.getUid(), new ICallback<Integer>() {
+            @Override
+            public void onSuccess(Integer userLevel) {
+                Log.d("USER_LEVEL", "user level: " + userLevel);
+                if (userLevel > 0) {
+                    btnBossFight.setEnabled(true);
+                } else {
+                    btnBossFight.setEnabled(false);
+                }
+            }
+
+            @Override
+            public void onError(String errorMessage) {
+                btnBossFight.setEnabled(false);
+                Toast.makeText(MainActivity.this, errorMessage, Toast.LENGTH_SHORT).show();
+            }
         });
     }
 

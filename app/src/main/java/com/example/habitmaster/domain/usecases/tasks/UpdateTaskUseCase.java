@@ -118,10 +118,18 @@ public class UpdateTaskUseCase {
             return;
         }
 
-        if (taskInstance.getStatus() == TaskStatus.PAUSED
-                && newStatus == TaskStatus.COMPLETED) {
-            callback.onError("Task is paused");
-            return;
+        if (newStatus == TaskStatus.COMPLETED) {
+            if (taskInstance.getStatus() == TaskStatus.PAUSED) {
+                callback.onError("Task is paused");
+                return;
+            } else {
+                var threeDaysAgo = LocalDate.now().minusDays(3);
+                if (taskInstance.getDate().isBefore(threeDaysAgo) || taskInstance.getDate().isAfter(LocalDate.now())) {
+                    callback.onError("Cannot complete future tasks");
+                    return;
+                }
+            }
+
         }
 
         if (taskInstanceRepo.updateStatus(taskInstanceId, newStatus)){

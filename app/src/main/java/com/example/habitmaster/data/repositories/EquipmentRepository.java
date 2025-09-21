@@ -28,8 +28,7 @@ public class EquipmentRepository {
     }
 
     public void addEquipment(UserEquipment equipment) {
-        SQLiteDatabase db = helper.getWritableDatabase();
-        try {
+        try (SQLiteDatabase db = helper.getWritableDatabase()) {
             ContentValues cv = new ContentValues();
             cv.put("id", equipment.getId());
             cv.put("userId", equipment.getUserId());
@@ -43,8 +42,6 @@ public class EquipmentRepository {
             db.insert(DatabaseHelper.T_EQUIPMENT, null, cv);
         } catch (Exception e) {
             e.printStackTrace();
-        } finally {
-            db.close();
         }
 
         firebaseRepo.addEquipment(equipment, task -> {
@@ -89,6 +86,15 @@ public class EquipmentRepository {
         cv.put("bonusValue", weapon.getBonusValue());
 
         db.update(DatabaseHelper.T_EQUIPMENT, cv, "id = ?", new String[]{weapon.getId()});
+        db.close();
+    }
+
+    public void updateBonusValue(UserEquipment equipment) {
+        SQLiteDatabase db = helper.getWritableDatabase();
+        ContentValues cv = new ContentValues();
+        cv.put("bonusValue", equipment.getBonusValue());
+
+        db.update(DatabaseHelper.T_EQUIPMENT, cv, "id = ?", new String[]{equipment.getId()});
         db.close();
     }
 
@@ -215,4 +221,27 @@ public class EquipmentRepository {
         db.close();
         return equipment;
     }
+
+    public void updateArmor(UserEquipment armor) {
+        try (SQLiteDatabase db = helper.getWritableDatabase()) {
+            ContentValues cv = new ContentValues();
+            cv.put("bonusValue", armor.getBonusValue());
+
+            db.update(
+                    DatabaseHelper.T_EQUIPMENT,
+                    cv,
+                    "id = ?",
+                    new String[]{armor.getId()}
+            );
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        firebaseRepo.updateArmor(armor, task -> {
+            if (!task.isSuccessful()) {
+                Log.e("EquipmentRepository", "Greška pri ažuriranju armora", task.getException());
+            }
+        });
+    }
+
 }

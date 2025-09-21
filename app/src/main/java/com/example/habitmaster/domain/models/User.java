@@ -1,5 +1,7 @@
 package com.example.habitmaster.domain.models;
 
+import java.time.LocalDate;
+
 public class User {
     private String id;
     private String email;
@@ -8,6 +10,7 @@ public class User {
     private boolean activated;
     private long createdAt;
     private int level;
+    private LocalDate levelStartDate;
     private String title;
     private int powerPoints;
     private int xp;
@@ -15,7 +18,8 @@ public class User {
     private int badgesCount;
     private String badges;
 
-    public User() {}
+    public User() {
+    }
 
     public User(String id, String email, String username, String avatarName, boolean activated, long createdAt) {
         this.id = id;
@@ -25,6 +29,7 @@ public class User {
         this.activated = activated;
         this.createdAt = createdAt;
         this.level = 0;
+        this.levelStartDate = LocalDate.now();
         this.title = "Rookie";
         this.powerPoints = 0;
         this.xp = 0;
@@ -34,9 +39,9 @@ public class User {
     }
 
     public int getPreviousLevelReward() {
-        if(level <= 1) return 200;
+        if (level <= 1) return 200;
         int reward = 200;
-        for(int i = 2; i <= level; i++) {
+        for (int i = 2; i <= level; i++) {
             reward = (int) (reward * 1.2);
         }
         return reward;
@@ -94,8 +99,14 @@ public class User {
         return level;
     }
 
-    public void setLevel(int level) {
-        this.level = level;
+    public void setLevel(int level) { this.level = level; }
+
+    public LocalDate getLevelStartDate() {
+        return levelStartDate;
+    }
+
+    public void setLevelStartDate(LocalDate levelStartDate) {
+        this.levelStartDate = levelStartDate;
     }
 
     public String getTitle() {
