@@ -1,6 +1,8 @@
 package com.example.habitmaster.ui.activities;
 
 import android.graphics.drawable.AnimationDrawable;
+import android.hardware.Sensor;
+import android.hardware.SensorManager;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
@@ -28,6 +30,7 @@ import com.example.habitmaster.services.UserEquipmentService;
 import com.example.habitmaster.services.UserService;
 import com.example.habitmaster.ui.adapters.ActiveEquipmentAdapter;
 import com.example.habitmaster.utils.EquipmentDrawableMapper;
+import com.example.habitmaster.utils.ShakeDetector;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -57,6 +60,11 @@ public class BossFightActivity extends AppCompatActivity {
     private RecyclerView activeEquipmentRecyclerView;
     private ActiveEquipmentAdapter activeEquipmentAdapter;
     private List<UserEquipment> activeEquipmentList = new ArrayList<>();
+
+    private SensorManager sensorManager;
+    private Sensor accelerometer;
+    private ShakeDetector shakeDetector;
+
 
 
     @Override
@@ -94,6 +102,9 @@ public class BossFightActivity extends AppCompatActivity {
         chestAnimationView.setBackgroundResource(R.drawable.chest_animation);
         chestAnimation = (AnimationDrawable) chestAnimationView.getBackground();
 
+        sensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
+        accelerometer = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
+        shakeDetector = new ShakeDetector();
     }
 
     @Override
@@ -101,6 +112,14 @@ public class BossFightActivity extends AppCompatActivity {
         super.onResume();
         setAttackChance();
         darkBackground = findViewById(R.id.darkBackground);
+
+        sensorManager.registerListener(shakeDetector, accelerometer, SensorManager.SENSOR_DELAY_UI);
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        sensorManager.unregisterListener(shakeDetector);
     }
 
     private void setAttackChance() {
@@ -207,10 +226,22 @@ public class BossFightActivity extends AppCompatActivity {
                                 equipmentIcon = EquipmentDrawableMapper.getAvatarResId(rewardedEquipment.getEquipmentId());
                                 chestAnimationView.setOnClickListener(v -> showChestAnimationAndReward((int) rewardCoins, equipmentIcon));
                                 darkBackground.setOnClickListener(v -> showChestAnimationAndReward((int) rewardCoins, equipmentIcon));
+                                shakeDetector.setOnShakeListener(() -> {
+                                    if (currentBoss.getCurrentHp() == 0) {
+                                        int coins = (int) currentBoss.getRewardCoins();
+                                        showChestAnimationAndReward(coins, equipmentIcon);
+                                    }
+                                });
                             } else {
                                 equipmentIcon = null;
                                 darkBackground.setOnClickListener(v -> showChestAnimationAndReward((int) rewardCoins, equipmentIcon));
                                 darkBackground.setOnClickListener(v -> showChestAnimationAndReward((int) rewardCoins, equipmentIcon));
+                                shakeDetector.setOnShakeListener(() -> {
+                                    if (currentBoss.getCurrentHp() == 0) {
+                                        int coins = (int) currentBoss.getRewardCoins();
+                                        showChestAnimationAndReward(coins, equipmentIcon);
+                                    }
+                                });
                             }
 
                             darkBackground.setVisibility(View.VISIBLE);
