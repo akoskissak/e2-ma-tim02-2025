@@ -51,7 +51,6 @@ public class BossFightActivity extends AppCompatActivity {
     private double stageSuccessRate;
 
     private ImageView chestAnimationView, rewardEquipmentIcon;
-    private AnimationDrawable chestAnimation;
     private boolean chestAnimationFinished = false;
     private View darkBackground;
     private View rewardLayout;
@@ -100,11 +99,12 @@ public class BossFightActivity extends AppCompatActivity {
 
         chestAnimationView = findViewById(R.id.chestAnimationView);
         chestAnimationView.setBackgroundResource(R.drawable.chest_animation);
-        chestAnimation = (AnimationDrawable) chestAnimationView.getBackground();
 
         sensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
         accelerometer = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
         shakeDetector = new ShakeDetector();
+
+        shakeDetector.setOnShakeListener(this::performAttack);
     }
 
     @Override
