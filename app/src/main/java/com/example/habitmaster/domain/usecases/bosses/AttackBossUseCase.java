@@ -81,7 +81,7 @@ public class AttackBossUseCase {
         }
     }
 
-    private void getBossReward(String userId, Boss boss, ICallback<UserEquipment> callback) {
+    public void getBossReward(String userId, Boss boss, ICallback<UserEquipment> callback) {
         getUserByIdUseCase.execute(userId, new ICallback<User>() {
             @Override
             public void onSuccess(User user) {
