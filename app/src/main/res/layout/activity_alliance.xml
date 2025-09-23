@@ -20,13 +20,26 @@
             android:gravity="center"
             android:paddingBottom="20dp" />
 
-        <TextView
-            android:id="@+id/tvAllianceName"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:textSize="30sp"
-            android:textStyle="bold"
-            android:paddingBottom="8dp" />
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+            <TextView
+                android:id="@+id/tvAllianceName"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="2"
+                android:textSize="30sp"
+                android:textStyle="bold"
+                android:paddingBottom="8dp" />
+            <Button
+                android:id="@+id/btnAllianceMission"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:visibility="invisible"
+                android:layout_gravity="center"
+                android:text="Start mission"/>
+        </LinearLayout>
 
         <LinearLayout
             android:layout_width="wrap_content"
