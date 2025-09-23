@@ -1,5 +1,8 @@
 package com.example.habitmaster.ui.activities;
 
+import static java.security.AccessController.getContext;
+
+import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
@@ -15,8 +18,10 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.example.habitmaster.R;
 import com.example.habitmaster.domain.models.Alliance;
 import com.example.habitmaster.domain.models.AllianceMessage;
+import com.example.habitmaster.domain.models.AllianceMission;
 import com.example.habitmaster.domain.models.User;
 import com.example.habitmaster.services.AllianceChatService;
+import com.example.habitmaster.services.AllianceMissionService;
 import com.example.habitmaster.services.AllianceService;
 import com.example.habitmaster.services.ICallback;
 import com.example.habitmaster.services.ICallbackVoid;
@@ -37,11 +42,13 @@ public class AllianceActivity extends AppCompatActivity {
     private AllianceMembersAdapter membersAdapter;
     private AllianceChatAdapter chatAdapter;
     private AllianceChatService chatService;
-    private Button btnDeleteAlliance, btnSend;
+    private Button btnDeleteAlliance, btnSend, btnAllianceMission;
     private Alliance currentAlliance;
     private String currentUserId, currentUsername;
     private ListenerRegistration listenerRegistration;
     private List<String> membersList = new ArrayList<>();
+    private AllianceMissionService allianceMissionService;
+    private boolean isLeader = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -64,6 +71,8 @@ public class AllianceActivity extends AppCompatActivity {
         membersAdapter = new AllianceMembersAdapter(membersList);
         recyclerViewMembers.setAdapter(membersAdapter);
 
+        btnAllianceMission = findViewById(R.id.btnAllianceMission);
+
         String allianceId = getIntent().getStringExtra("allianceId");
         AllianceService allianceService = new AllianceService(this);
         chatService = new AllianceChatService();
@@ -75,14 +84,16 @@ public class AllianceActivity extends AppCompatActivity {
         chatAdapter = new AllianceChatAdapter(currentUserId);
         recyclerChat.setAdapter(chatAdapter);
 
-        if(allianceId != null) {
+        allianceMissionService = new AllianceMissionService(this);
+
+        if (allianceId != null) {
             loadAllianceById(allianceId, allianceService);
         } else {
             loadAllianceByUserId(currentUserId, allianceService);
         }
 
         btnDeleteAlliance.setOnClickListener(v -> {
-            if(currentAlliance != null) {
+            if (currentAlliance != null) {
                 allianceService.deleteAlliance(currentUserId, new ICallbackVoid() {
                     @Override
                     public void onSuccess() {
@@ -101,6 +112,56 @@ public class AllianceActivity extends AppCompatActivity {
         });
     }
 
+    private void loadOngoingAllianceMission(String allianceId) {
+        allianceMissionService.getOngoingAllianceMissionByAllianceId(allianceId, new ICallback<AllianceMission>() {
+            @Override
+            public void onSuccess(AllianceMission result) {
+                runOnUiThread(() -> {
+                    btnAllianceMission.setText(R.string.mission_progress);
+                    btnAllianceMission.setOnClickListener(v -> openMissionProgress(result));
+                    btnAllianceMission.setVisibility(View.VISIBLE);
+                });
+            }
+
+            @Override
+            public void onError(String errorMessage) {
+                runOnUiThread(() -> {
+                    if (isLeader) {
+                        btnAllianceMission.setText(R.string.start_mission);
+                        btnAllianceMission.setOnClickListener(v -> startAllianceMission());
+                        btnAllianceMission.setVisibility(View.VISIBLE);
+                    }
+                });
+            }
+        });
+    }
+
+    private void openMissionProgress(AllianceMission allianceMission) {
+        Intent intent = new Intent(getBaseContext(), AllianceMissionProgressActivity.class);
+        intent.putExtra(AllianceMissionProgressActivity.ALLIANCE_MISSION_ID, allianceMission.getId());
+        intent.putExtra(AllianceMissionProgressActivity.BOSS_MAX_HP, allianceMission.getBossMaxHp());
+        intent.putExtra(AllianceMissionProgressActivity.BOSS_CURRENT_HP, allianceMission.getBossCurrentHp());
+        startActivity(intent);
+    }
+
+    private void startAllianceMission() {
+        allianceMissionService.startAllianceMission(currentUserId, new ICallback<AllianceMission>() {
+            @Override
+            public void onSuccess(AllianceMission result) {
+                runOnUiThread(() -> {
+                    btnAllianceMission.setText(R.string.mission_progress);
+                    btnAllianceMission.setOnClickListener(v -> openMissionProgress(result));
+                    Toast.makeText(AllianceActivity.this, "Mission started", Toast.LENGTH_SHORT).show();
+                });
+            }
+
+            @Override
+            public void onError(String errorMessage) {
+                runOnUiThread(() -> Toast.makeText(AllianceActivity.this, "Failed: " + errorMessage, Toast.LENGTH_SHORT).show());
+            }
+        });
+    }
+
     private void loadAllianceById(String allianceId, AllianceService allianceService) {
         allianceService.getAlliance(allianceId, new ICallback<>() {
             @Override
@@ -110,6 +171,9 @@ public class AllianceActivity extends AppCompatActivity {
                 btnSend.setOnClickListener(v -> sendMessage(result.getId(), currentUsername));
                 loadAllianceMembers(allianceId, allianceService);
                 loadMessagesAndSubscribe(result.getId());
+                isLeader = result.getLeaderId().equals(currentUserId);
+
+                loadOngoingAllianceMission(allianceId);
             }
 
             @Override
@@ -124,12 +188,15 @@ public class AllianceActivity extends AppCompatActivity {
         allianceService.getAllianceByUserId(currentUserId, new ICallback<>() {
             @Override
             public void onSuccess(Alliance result) {
-                if(result != null) {
+                if (result != null) {
                     loadLeaderAndShowAlliance(result);
                     // za chat
                     btnSend.setOnClickListener(v -> sendMessage(result.getId(), currentUsername));
                     loadAllianceMembers(result.getId(), allianceService);
                     loadMessagesAndSubscribe(result.getId());
+                    isLeader = result.getLeaderId().equals(currentUserId);
+
+                    loadOngoingAllianceMission(result.getId());
                 } else {
                     showNoAlliance();
                 }
@@ -183,9 +250,9 @@ public class AllianceActivity extends AppCompatActivity {
     }
 
     private void checkDeleteButtonVisibility() {
-        if(currentAlliance == null) return;
+        if (currentAlliance == null) return;
 
-        if(currentAlliance.getLeaderId().equals(currentUserId) && !currentAlliance.isMissionStarted()) {
+        if (currentAlliance.getLeaderId().equals(currentUserId) && !currentAlliance.isMissionStarted()) {
             btnDeleteAlliance.setVisibility(View.VISIBLE);
         } else {
             btnDeleteAlliance.setVisibility(View.GONE);

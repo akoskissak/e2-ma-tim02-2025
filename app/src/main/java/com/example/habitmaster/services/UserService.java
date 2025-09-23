@@ -15,6 +15,10 @@ import com.example.habitmaster.domain.usecases.GetUserUseCase;
 import com.example.habitmaster.domain.usecases.LoginUserUseCase;
 import com.example.habitmaster.domain.usecases.RegisterUserUseCase;
 import com.example.habitmaster.domain.usecases.users.GetUserLevelUseCase;
+import com.example.habitmaster.domain.usecases.users.MapIdsToUsernamesUseCase;
+
+import java.util.List;
+import java.util.Map;
 
 public class UserService {
     private final RegisterUserUseCase registerUC;
@@ -27,6 +31,7 @@ public class UserService {
     private final GetUserByUsernameUseCase getUserByUsernameUC;
     private final GetUserByIdUseCase getUserByIdUC;
     private final GetUserLevelUseCase getUserLevelUseCase;
+    private final MapIdsToUsernamesUseCase mapIdsToUsernamesUseCase;
 
     public UserService(Context ctx){
         this.registerUC = new RegisterUserUseCase(ctx);
@@ -39,6 +44,7 @@ public class UserService {
         this.getUserByUsernameUC = new GetUserByUsernameUseCase(ctx);
         this.getUserByIdUC = new GetUserByIdUseCase(ctx);
         this.getUserLevelUseCase = new GetUserLevelUseCase(ctx);
+        this.mapIdsToUsernamesUseCase = new MapIdsToUsernamesUseCase(ctx);
     }
 
     public void register(String email, String pass, String confirm, String username, String avatarName, ICallback<User> callback){
@@ -83,6 +89,15 @@ public class UserService {
             callback.onSuccess(userLevel);
         } else {
             callback.onError("Error while retrieving user level");
+        }
+    }
+
+    public void mapIdsToUsernames(List<String> userIds, ICallback<Map<String, String>> callback) {
+        var map = mapIdsToUsernamesUseCase.execute(userIds);
+        if (map.isEmpty()) {
+            callback.onError("No users in alliance");
+        } else {
+            callback.onSuccess(map);
         }
     }
 }
