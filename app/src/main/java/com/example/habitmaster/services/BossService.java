@@ -8,6 +8,7 @@ import com.example.habitmaster.domain.models.Boss;
 import com.example.habitmaster.domain.usecases.bosses.AttackBossUseCase;
 import com.example.habitmaster.domain.usecases.bosses.GetOrCreateBossUseCase;
 
+import java.util.List;
 import java.util.Random;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;

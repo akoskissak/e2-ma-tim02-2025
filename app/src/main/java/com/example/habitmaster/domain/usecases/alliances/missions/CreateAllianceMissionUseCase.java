@@ -3,6 +3,7 @@ package com.example.habitmaster.domain.usecases.alliances.missions;
 import android.content.Context;
 
 import com.example.habitmaster.data.firebases.FirebaseAllianceMissionRepository;
+import com.example.habitmaster.data.firebases.FirebaseAllianceRepository;
 import com.example.habitmaster.data.firebases.FirebaseAllianceUserMissionRepository;
 import com.example.habitmaster.data.repositories.AllianceMissionRepository;
 import com.example.habitmaster.data.repositories.AllianceRepository;
@@ -21,6 +22,7 @@ public class CreateAllianceMissionUseCase {
     private final FirebaseAllianceMissionRepository remoteMissionRepo;
     private final AllianceUserMissionRepository localUserMissionRepo;
     private final FirebaseAllianceUserMissionRepository remoteUserMissionRepo;
+    private final FirebaseAllianceRepository remoteAllianceRepo;
 
     public CreateAllianceMissionUseCase(Context context) {
         this.localAllianceRepo = new AllianceRepository(context);
@@ -28,6 +30,7 @@ public class CreateAllianceMissionUseCase {
         this.localUserMissionRepo = new AllianceUserMissionRepository(context);
         this.remoteMissionRepo = new FirebaseAllianceMissionRepository();
         this.remoteUserMissionRepo = new FirebaseAllianceUserMissionRepository();
+        this.remoteAllianceRepo = new FirebaseAllianceRepository();
     }
 
     public AllianceMission execute(Alliance alliance) {
@@ -51,6 +54,7 @@ public class CreateAllianceMissionUseCase {
 
         alliance.setMissionStarted(true);
         localAllianceRepo.updateMissionStarted(alliance.getId(), true);
+        remoteAllianceRepo.updateMissionStarted(alliance.getId(), true);
 
         return newMission;
     }

@@ -1,6 +1,5 @@
 package com.example.habitmaster.domain.models;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 public class AllianceMission {
@@ -21,7 +20,7 @@ public class AllianceMission {
         this.endDateTime = startDateTime.plusWeeks(2); // Duration 2 weeks
         this.status = AllianceMissionStatus.ONGOING;
         this.bossMaxHp = 100 * memberCount;
-        this.bossCurrentHp = 100 * memberCount; // OVDE SE I LEADER RACUNA KAO MEMBER
+        this.bossCurrentHp = 100 * memberCount - 10 * memberCount; // OVDE SE I LEADER RACUNA KAO MEMBER
     }
 
     public String getId() {
@@ -93,6 +92,24 @@ public class AllianceMission {
         if (bossCurrentHp <= 0 ) {
             bossCurrentHp = 0;
             status = AllianceMissionStatus.COMPLETED;
+        }
+    }
+
+    public void increaseCurrentHp(int value) {
+        if (this.bossCurrentHp + value <= this.bossMaxHp) {
+            this.bossCurrentHp += value;
+        } else {
+            this.bossCurrentHp = this.bossMaxHp;
+        }
+    }
+
+    public boolean finishMission() {
+        if (bossCurrentHp <= 0) {
+            status = AllianceMissionStatus.COMPLETED;
+            return true;
+        } else {
+            status = AllianceMissionStatus.FAILED;
+            return false;
         }
     }
 }

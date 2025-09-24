@@ -1,6 +1,7 @@
 package com.example.habitmaster.services;
 
 import android.content.Context;
+import android.util.Log;
 
 import com.example.habitmaster.domain.models.Alliance;
 import com.example.habitmaster.domain.models.AllianceInvitation;
@@ -17,11 +18,15 @@ import com.example.habitmaster.domain.usecases.GetAllianceInvitationByIdUseCase;
 import com.example.habitmaster.domain.usecases.GetAllianceMembersUseCase;
 import com.example.habitmaster.domain.usecases.GetAllianceUseCase;
 import com.example.habitmaster.domain.usecases.alliances.HasUserSentMessageTodayUseCase;
+import com.example.habitmaster.domain.usecases.users.AddBadgesAndHalfBossRewardUseCase;
 
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 public class AllianceService {
+    private final ExecutorService executorService = Executors.newFixedThreadPool(2);
     private final CreateAllianceUseCase createAllianceUC;
     private final GetAllianceUseCase getAllianceUC;
     private final GetAllianceByUserIdUseCase getAllianceByUserIdUC;
@@ -33,6 +38,7 @@ public class AllianceService {
     private final AllianceMissionService allianceMissionService;
     private final AllianceUserMissionService allianceUserMissionService;
     private final HasUserSentMessageTodayUseCase hasUserSentMessageTodayUC;
+    private final AddBadgesAndHalfBossRewardUseCase addBadgesAndHalfBossRewardUseCase;
 
     public AllianceService(Context ctx) {
         this.createAllianceUC = new CreateAllianceUseCase(ctx);
@@ -45,7 +51,8 @@ public class AllianceService {
         this.declineAllianceInviteUC = new DeclineAllianceInviteUseCase(ctx);
         this.allianceMissionService = new AllianceMissionService(ctx);
         this.allianceUserMissionService = new AllianceUserMissionService(ctx);
-        this.hasUserSentMessageTodayUC = new HasUserSentMessageTodayUseCase();
+        this.hasUserSentMessageTodayUC = new HasUserSentMessageTodayUseCase(ctx);
+        this.addBadgesAndHalfBossRewardUseCase = new AddBadgesAndHalfBossRewardUseCase(ctx);
     }
 
     public void createAlliance(String allianceName, String leaderId, String leaderUsername, Set<String> memberIds, ICallback<String> callback) {
@@ -81,9 +88,11 @@ public class AllianceService {
     }
 
     public void tryUpdateAllianceProgress(String userId, AllianceMissionProgressType progressType) {
+        Log.d("tryUpdateAllianceProgress", "Progress type: " + progressType);
         getAllianceByUserId(userId, new ICallback<Alliance>() {
             @Override
             public void onSuccess(Alliance alliance) {
+                Log.d("tryUpdateAllianceProgress", "Is mission started: " + alliance.isMissionStarted());
                 if (!alliance.isMissionStarted()) {
                     return;
                 }
@@ -91,6 +100,7 @@ public class AllianceService {
                 allianceMissionService.getOngoingAllianceMissionByAllianceId(alliance.getId(), new ICallback<AllianceMission>() {
                     @Override
                     public void onSuccess(AllianceMission allianceMission) {
+                        Log.d("tryUpdateAllianceProgress", "GET ONGOING ALLIANCE MISSION: " + allianceMission.getStatus().toString());
                         var userMission = allianceUserMissionService.getByUserIdAndMissionId(userId, allianceMission.getId());
                         if (userMission == null) {
                             return;
@@ -133,11 +143,31 @@ public class AllianceService {
                                 }
                                 break;
                             case MESSAGE_SENT:
-                                userMission.setMessagesSentDays(userMission.getMessagesSentDays() + 1);
-                                userMission.calculateTotalDamage();
-                                allianceUserMissionService.update(userMission);
-                                allianceMission.decreaseCurrentHp(AllianceUserMission.DAMAGE_MESSAGE_SENT);
-                                break;
+                                Log.d("ALLIANCE SEND MESSAGE", "progress type: " + progressType.toString());
+                                hasUserSentMessageTodayUC.execute(userId, allianceMission.getAllianceId(), allianceMission.getStartDateTime(), new ICallback<Boolean>() {
+                                            @Override
+                                            public void onSuccess(Boolean alreadySent) {
+                                                if (alreadySent) {
+                                                    Log.d("ALLIANCE SEND MESSAGE", "ALREADY SENT ");
+                                                    return;
+                                                }
+
+                                                userMission.setMessagesSentDays(userMission.getMessagesSentDays() + 1);
+                                                userMission.calculateTotalDamage();
+                                                allianceUserMissionService.update(userMission);
+                                                Log.d("ALLIANCE SEND MESSAGE", "UPDATED ");
+                                                allianceMission.decreaseCurrentHp(AllianceUserMission.DAMAGE_MESSAGE_SENT);
+
+                                                allianceMissionService.update(allianceMission);
+                                            }
+
+                                            @Override
+                                            public void onError(String errorMessage) {
+
+                                            }
+                                        }
+                                );
+                                return;
                         }
 
                         allianceMissionService.update(allianceMission);
@@ -173,6 +203,45 @@ public class AllianceService {
             public void onError(String errorMessage) {
                 callback.onError(errorMessage);
             }
+        });
+    }
+
+    public void checkIsMissionFinishedAndAddCoinsAndBadges(String userId, ICallback<List<String>> callback) {
+        executorService.execute(() -> {
+            getAllianceByUserIdUC.execute(userId, new ICallback<Alliance>() {
+                @Override
+                public void onSuccess(Alliance alliance) {
+                    allianceMissionService.checkIsMissionFinishedByAllianceId(alliance.getId(), new ICallback<Boolean>() {
+                        @Override
+                        public void onSuccess(Boolean result) {
+                            getAllianceMembersUC.execute(alliance.getId(), new ICallback<List<String>>() {
+                                @Override
+                                public void onSuccess(List<String> members) {
+                                    members.add(alliance.getLeaderId());
+
+                                    addBadgesAndHalfBossRewardUseCase.execute(members);
+                                    callback.onSuccess(members);
+                                }
+
+                                @Override
+                                public void onError(String errorMessage) {
+                                    callback.onError(errorMessage);
+                                }
+                            });
+                        }
+
+                        @Override
+                        public void onError(String errorMessage) {
+                            callback.onError(errorMessage);
+                        }
+                    });
+                }
+
+                @Override
+                public void onError(String errorMessage) {
+                    callback.onError(errorMessage);
+                }
+            });
         });
     }
 }

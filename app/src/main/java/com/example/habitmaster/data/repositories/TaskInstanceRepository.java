@@ -326,4 +326,46 @@ public class TaskInstanceRepository {
         return instances;
     }
 
+    public List<TaskInstance> detectMissedByUserId(String userId) {
+        List<TaskInstance> instances = new ArrayList<>();
+        SQLiteDatabase db = null;
+        Cursor cursor = null;
+
+        try {
+            db = dbHelper.getReadableDatabase();
+
+            // Danas - 4 dana
+            String threeDaysAgo = LocalDate.now().minusDays(4).toString(); // yyyy-MM-dd
+
+            // SQL query: join task_instances sa tasks da dobijemo userId
+            String sql = "SELECT ti.id, ti.taskId, ti.date, ti.createdAt, ti.status " +
+                    "FROM task_instances ti " +
+                    "JOIN tasks t ON ti.taskId = t.id " +
+                    "WHERE t.userId = ? AND ti.status = ? AND ti.date <= ? " +
+                    "ORDER BY ti.date ASC";
+
+            String[] selectionArgs = {
+                    userId,
+                    TaskStatus.ACTIVE.name(),
+                    threeDaysAgo
+            };
+
+            cursor = db.rawQuery(sql, selectionArgs);
+
+            if (cursor.moveToFirst()) {
+                do {
+                    TaskInstance instance = mapCursorToTaskInstance(cursor);
+                    instances.add(instance);
+                } while (cursor.moveToNext());
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            if (cursor != null) cursor.close();
+            if (db != null) db.close();
+        }
+
+        return instances;
+    }
 }

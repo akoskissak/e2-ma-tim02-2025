@@ -15,4 +15,8 @@ public class GetAllianceMissionUseCase {
     public AllianceMission getOngoingByAllianceId(String allianceId) {
         return localRepo.getOngoingByAllianceId(allianceId);
     }
+
+    public AllianceMission getById(String id) {
+        return localRepo.getById(id);
+    }
 }
