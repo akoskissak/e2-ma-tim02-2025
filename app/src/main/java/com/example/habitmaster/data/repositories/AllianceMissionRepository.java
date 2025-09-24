@@ -34,14 +34,14 @@ public class AllianceMissionRepository {
         db.close();
     }
 
-    public AllianceMission getByAllianceId(String allianceId) {
+    public AllianceMission getOngoingByAllianceId(String allianceId) {
         SQLiteDatabase db = helper.getReadableDatabase();
 
         Cursor cursor = db.query(
                 DatabaseHelper.T_ALLIANCE_MISSIONS,
                 null,  // sve kolone
-                "allianceId = ?",
-                new String[]{allianceId},
+                "allianceId = ? AND status = ?",
+                new String[]{allianceId, AllianceMissionStatus.ONGOING.name()},
                 null,
                 null,
                 null
@@ -69,6 +69,24 @@ public class AllianceMissionRepository {
         mission.setBossCurrentHp(cursor.getInt(cursor.getColumnIndexOrThrow("bossCurrentHp")));
 
         return mission;
+    }
+
+    public void update(AllianceMission allianceMission) {
+        SQLiteDatabase db = helper.getWritableDatabase();
+        ContentValues values = new ContentValues();
+
+        values.put("allianceId", allianceMission.getAllianceId());
+        values.put("startDateTime", allianceMission.getStartDateTime().toString());
+        values.put("endDateTime", allianceMission.getEndDateTime().toString());
+        values.put("status", allianceMission.getStatus().name());
+        values.put("bossMaxHp", allianceMission.getBossMaxHp());
+        values.put("bossCurrentHp", allianceMission.getBossCurrentHp());
+
+        String whereClause = "id = ?";
+        String[] whereArgs = { allianceMission.getId() };
+
+        db.update(DatabaseHelper.T_ALLIANCE_MISSIONS, values, whereClause, whereArgs);
+        db.close();
     }
 
 }

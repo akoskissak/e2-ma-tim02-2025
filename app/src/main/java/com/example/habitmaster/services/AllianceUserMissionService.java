@@ -4,6 +4,7 @@ import android.content.Context;
 
 import com.example.habitmaster.domain.models.AllianceUserMission;
 import com.example.habitmaster.domain.usecases.alliances.userMissions.GetAllianceUserMissionUseCase;
+import com.example.habitmaster.domain.usecases.alliances.userMissions.UpdateAllianceUserMissionUseCase;
 
 import java.util.List;
 import java.util.concurrent.ExecutorService;
@@ -13,11 +14,13 @@ public class AllianceUserMissionService {
 
     private final ExecutorService executorService = Executors.newFixedThreadPool(4);
     private final GetAllianceUserMissionUseCase getAllianceUserMissionUC;
+    private final UpdateAllianceUserMissionUseCase updateAllianceUserMissionUseCase;
     public AllianceUserMissionService(Context context) {
         this.getAllianceUserMissionUC = new GetAllianceUserMissionUseCase(context);
+        this.updateAllianceUserMissionUseCase = new UpdateAllianceUserMissionUseCase(context);
     }
 
-    public void getAllUserAllianceUserMissionsByMissionId(String missionId, ICallback<List<AllianceUserMission>> callback) {
+    public void getAllByMissionId(String missionId, ICallback<List<AllianceUserMission>> callback) {
         executorService.execute(() -> {
             var all = getAllianceUserMissionUC.getAllUserMissionsByMissionId(missionId);
             if (all.isEmpty()) {
@@ -26,5 +29,13 @@ public class AllianceUserMissionService {
                 callback.onSuccess(all);
             }
         });
+    }
+
+    public AllianceUserMission getByUserIdAndMissionId(String userId, String missionId) {
+        return getAllianceUserMissionUC.getByUserIdAndMissionId(userId, missionId);
+    }
+
+    public void update(AllianceUserMission userMission) {
+        updateAllianceUserMissionUseCase.update(userMission);
     }
 }

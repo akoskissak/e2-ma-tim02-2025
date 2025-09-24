@@ -12,7 +12,7 @@ public class GetAllianceMissionUseCase {
         this.localRepo = new AllianceMissionRepository(context);
     }
 
-    public AllianceMission getByAllianceId(String allianceId) {
-        return localRepo.getByAllianceId(allianceId);
+    public AllianceMission getOngoingByAllianceId(String allianceId) {
+        return localRepo.getOngoingByAllianceId(allianceId);
     }
 }

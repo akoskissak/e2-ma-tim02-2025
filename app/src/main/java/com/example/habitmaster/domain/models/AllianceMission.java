@@ -87,4 +87,12 @@ public class AllianceMission {
             bossCurrentHp = 0;
         }
     }
+
+    public void decreaseCurrentHp(int value) {
+        this.bossCurrentHp -= value;
+        if (bossCurrentHp <= 0 ) {
+            bossCurrentHp = 0;
+            status = AllianceMissionStatus.COMPLETED;
+        }
+    }
 }

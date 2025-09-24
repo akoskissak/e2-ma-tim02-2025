@@ -48,6 +48,7 @@ public class AllianceActivity extends AppCompatActivity {
     private ListenerRegistration listenerRegistration;
     private List<String> membersList = new ArrayList<>();
     private AllianceMissionService allianceMissionService;
+    private AllianceService allianceService;
     private boolean isLeader = false;
 
     @Override
@@ -74,8 +75,8 @@ public class AllianceActivity extends AppCompatActivity {
         btnAllianceMission = findViewById(R.id.btnAllianceMission);
 
         String allianceId = getIntent().getStringExtra("allianceId");
-        AllianceService allianceService = new AllianceService(this);
-        chatService = new AllianceChatService();
+        allianceService = new AllianceService(this);
+        chatService = new AllianceChatService(this);
 
         Prefs prefs = new Prefs(this);
         currentUserId = prefs.getUid();
@@ -145,7 +146,7 @@ public class AllianceActivity extends AppCompatActivity {
     }
 
     private void startAllianceMission() {
-        allianceMissionService.startAllianceMission(currentUserId, new ICallback<AllianceMission>() {
+        allianceService.startAllianceMission(currentUserId, new ICallback<AllianceMission>() {
             @Override
             public void onSuccess(AllianceMission result) {
                 runOnUiThread(() -> {

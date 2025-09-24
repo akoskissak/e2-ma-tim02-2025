@@ -6,6 +6,7 @@ import com.example.habitmaster.domain.models.Alliance;
 import com.example.habitmaster.domain.models.AllianceMission;
 import com.example.habitmaster.domain.usecases.alliances.missions.CreateAllianceMissionUseCase;
 import com.example.habitmaster.domain.usecases.alliances.missions.GetAllianceMissionUseCase;
+import com.example.habitmaster.domain.usecases.alliances.missions.UpdateAllianceMissionUseCase;
 
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -13,45 +14,39 @@ import java.util.concurrent.Executors;
 public class AllianceMissionService {
 
     private final ExecutorService executorService = Executors.newFixedThreadPool(4);
-    private final AllianceService allianceService;
     private final CreateAllianceMissionUseCase createAllianceMissionUseCase;
     private final GetAllianceMissionUseCase getAllianceMissionUseCase;
+    private final UpdateAllianceMissionUseCase updateAllianceMissionUseCase;
     public AllianceMissionService(Context context) {
-        this.allianceService = new AllianceService(context);
         this.createAllianceMissionUseCase = new CreateAllianceMissionUseCase(context);
         this.getAllianceMissionUseCase = new GetAllianceMissionUseCase(context);
+        this.updateAllianceMissionUseCase = new UpdateAllianceMissionUseCase(context);
     }
 
-    public void startAllianceMission(String leaderId, ICallback<AllianceMission> callback) {
+    public void startAllianceMission(Alliance alliance, ICallback<AllianceMission> callback) {
+        if (alliance.isMissionStarted()) {
+            callback.onError("Alliance mission already started");
+            return;
+        }
+
         executorService.execute(() -> {
-            allianceService.getAllianceByUserId(leaderId, new ICallback<Alliance>() {
-                @Override
-                public void onSuccess(Alliance alliance) {
-                    if (!alliance.getLeaderId().equals(leaderId)) {
-                        callback.onError("User is not a leader of alliance");
-                        return;
-                    }
-
-                    var allianceMission = createAllianceMissionUseCase.execute(leaderId, alliance.getId());
-                    callback.onSuccess(allianceMission);
-                }
-
-                @Override
-                public void onError(String errorMessage) {
-                    callback.onError(errorMessage);
-                }
-            });
+            var allianceMission = createAllianceMissionUseCase.execute(alliance);
+            callback.onSuccess(allianceMission);
         });
     }
 
     public void getOngoingAllianceMissionByAllianceId(String allianceId, ICallback<AllianceMission> callback) {
         executorService.execute(() -> {
-            var ongoingAllianceMission = getAllianceMissionUseCase.getByAllianceId(allianceId);
+            var ongoingAllianceMission = getAllianceMissionUseCase.getOngoingByAllianceId(allianceId);
             if (ongoingAllianceMission != null) {
                 callback.onSuccess(ongoingAllianceMission);
             } else {
                 callback.onError("Alliance mission not found");
             }
         });
+    }
+
+    public void update(AllianceMission allianceMission) {
+        updateAllianceMissionUseCase.execute(allianceMission);
     }
 }

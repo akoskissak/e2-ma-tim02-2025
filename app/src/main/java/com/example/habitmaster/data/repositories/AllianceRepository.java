@@ -244,4 +244,20 @@ public class AllianceRepository {
                 new String[]{userId, acceptedInviteId});
         db.close();
     }
+
+    public void updateMissionStarted(String allianceId, boolean missionStarted) {
+        SQLiteDatabase db = helper.getWritableDatabase();
+        ContentValues values = new ContentValues();
+        values.put("missionStarted", missionStarted ? 1 : 0);
+
+        db.update(
+                DatabaseHelper.T_ALLIANCES,
+                values,
+                "id = ?",
+                new String[]{allianceId}
+        );
+
+        db.close();
+    }
+
 }

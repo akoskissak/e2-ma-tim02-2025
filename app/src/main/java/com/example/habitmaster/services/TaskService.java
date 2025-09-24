@@ -12,6 +12,9 @@ import com.example.habitmaster.data.repositories.TaskRepository;
 import com.example.habitmaster.data.repositories.UserLevelProgressRepository;
 import com.example.habitmaster.data.repositories.UserLocalRepository;
 import com.example.habitmaster.data.repositories.UserRepository;
+import com.example.habitmaster.domain.models.AllianceMissionProgressType;
+import com.example.habitmaster.domain.models.TaskDifficulty;
+import com.example.habitmaster.domain.models.TaskImportance;
 import com.example.habitmaster.domain.models.TaskStatus;
 import com.example.habitmaster.domain.usecases.AddUserXpUseCase;
 import com.example.habitmaster.domain.usecases.GetUserLevelStartDateUseCase;
@@ -34,10 +37,12 @@ public class TaskService {
     private DeleteTaskUseCase deleteTaskUseCase;
     private AddUserXpUseCase addUserXpUseCase;
     private final GetUserLevelStartDateUseCase getUserLevelStartDateUseCase;
+    private final AllianceService allianceService;
     private final Context context;
 
     public interface Callback {
         void onSuccess();
+
         void onError(String errorMessage);
     }
 
@@ -56,22 +61,23 @@ public class TaskService {
         this.updateTaskUseCase = new UpdateTaskUseCase(localRepo, localTaskInstanceRepo, userLevelProgressRepository, remoteRepo, remoteInstanceRepo);
         this.deleteTaskUseCase = new DeleteTaskUseCase(localTaskInstanceRepo, remoteInstanceRepo);
         this.addUserXpUseCase = new AddUserXpUseCase(new UserLocalRepository(context));
-        getUserLevelStartDateUseCase = new GetUserLevelStartDateUseCase(context);
+        this.getUserLevelStartDateUseCase = new GetUserLevelStartDateUseCase(context);
+        this.allianceService = new AllianceService(context);
     }
 
     public void createTask(String name, String description, String categoryId, String frequency, int repeatInterval, String startDate, String endDate, String executionTime, String difficulty, String importance, Callback callback) {
         createTaskUseCase.execute(name, description, categoryId, frequency, repeatInterval, startDate, endDate, executionTime, difficulty, importance,
-            new CreateTaskUseCase.Callback() {
-                @Override
-                public void onSuccess() {
-                    callback.onSuccess();
-                }
+                new CreateTaskUseCase.Callback() {
+                    @Override
+                    public void onSuccess() {
+                        callback.onSuccess();
+                    }
 
-                @Override
-                public void onError(String errorMessage) {
-                    callback.onError(errorMessage);
-                }
-            });
+                    @Override
+                    public void onError(String errorMessage) {
+                        callback.onError(errorMessage);
+                    }
+                });
     }
 
     public List<TaskInstanceDTO> getAllTasks() {
@@ -100,7 +106,9 @@ public class TaskService {
         });
     }
 
-    public TaskInstanceDTO getTaskById(String id) { return getUserTasksUseCase.findTaskInstanceById(id); }
+    public TaskInstanceDTO getTaskById(String id) {
+        return getUserTasksUseCase.findTaskInstanceById(id);
+    }
 
     public void updateTaskInfo(TaskInstanceDTO dto, ICallback<TaskInstanceDTO> callback) {
         executorService.execute(() -> {
@@ -155,6 +163,17 @@ public class TaskService {
         updateTaskStatus(userId, dto.getId(), TaskStatus.COMPLETED, new Callback() {
             @Override
             public void onSuccess() {
+                if (dto.getDifficulty() == TaskDifficulty.EASY && dto.getImportance() == TaskImportance.NORMAL) {
+                    allianceService.tryUpdateAllianceProgress(userId, AllianceMissionProgressType.SOLVED_TASK2);
+                } else if (dto.getDifficulty() == TaskDifficulty.VERY_EASY
+                        || dto.getDifficulty() == TaskDifficulty.EASY
+                        || dto.getImportance() == TaskImportance.NORMAL
+                        || dto.getImportance() == TaskImportance.IMPORTANT) {
+                    allianceService.tryUpdateAllianceProgress(userId, AllianceMissionProgressType.SOLVED_TASK1);
+                } else {
+                    allianceService.tryUpdateAllianceProgress(userId, AllianceMissionProgressType.SOLVED_OTHER_TASK);
+                }
+
                 addUserXpUseCase.execute(userId, dto.getXpValue());
                 callback.onSuccess();
             }

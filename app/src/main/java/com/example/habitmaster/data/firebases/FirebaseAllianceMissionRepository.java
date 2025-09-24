@@ -1,6 +1,7 @@
 package com.example.habitmaster.data.firebases;
 
 import com.example.habitmaster.domain.models.AllianceMission;
+import com.example.habitmaster.domain.models.AllianceUserMission;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.firebase.firestore.FirebaseFirestore;
 
@@ -28,4 +29,26 @@ public class FirebaseAllianceMissionRepository {
                 .document(mission.getId())
                 .set(missionData);
     }
+
+    public void update(AllianceMission allianceMission) {
+        Map<String, Object> missionData = new HashMap<>();
+        missionData.put("allianceId", allianceMission.getAllianceId());
+        missionData.put("startDateTime", allianceMission.getStartDateTime().toString());
+        missionData.put("endDateTime", allianceMission.getEndDateTime().toString());
+        missionData.put("status", allianceMission.getStatus().name());
+        missionData.put("bossMaxHp", allianceMission.getBossMaxHp());
+        missionData.put("bossCurrentHp", allianceMission.getBossCurrentHp());
+
+        db.collection("alliances_missions")
+                .document(allianceMission.getId())
+                .update(missionData)
+                .addOnCompleteListener(task -> {
+                    if (task.isSuccessful()) {
+                        System.out.println("Alliance mission updated successfully in Firebase");
+                    } else {
+                        System.err.println("Failed to update alliance mission: " + task.getException());
+                    }
+                });
+    }
+
 }
