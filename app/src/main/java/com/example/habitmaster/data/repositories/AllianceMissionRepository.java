@@ -89,4 +89,26 @@ public class AllianceMissionRepository {
         db.close();
     }
 
+    public AllianceMission getById(String id) {
+        SQLiteDatabase db = helper.getReadableDatabase();
+
+        Cursor cursor = db.query(
+                DatabaseHelper.T_ALLIANCE_MISSIONS,
+                null,  // sve kolone
+                "id = ?",
+                new String[]{id},
+                null,
+                null,
+                null
+        );
+
+        AllianceMission mission = null;
+        if (cursor.moveToFirst()) {
+            mission = mapCursorToAllianceMission(cursor);
+        }
+
+        cursor.close();
+        db.close();
+        return mission;
+    }
 }

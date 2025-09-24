@@ -8,6 +8,7 @@ import com.example.habitmaster.domain.usecases.alliances.missions.CreateAlliance
 import com.example.habitmaster.domain.usecases.alliances.missions.GetAllianceMissionUseCase;
 import com.example.habitmaster.domain.usecases.alliances.missions.UpdateAllianceMissionUseCase;
 
+import java.time.LocalDateTime;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -17,6 +18,7 @@ public class AllianceMissionService {
     private final CreateAllianceMissionUseCase createAllianceMissionUseCase;
     private final GetAllianceMissionUseCase getAllianceMissionUseCase;
     private final UpdateAllianceMissionUseCase updateAllianceMissionUseCase;
+
     public AllianceMissionService(Context context) {
         this.createAllianceMissionUseCase = new CreateAllianceMissionUseCase(context);
         this.getAllianceMissionUseCase = new GetAllianceMissionUseCase(context);
@@ -48,5 +50,30 @@ public class AllianceMissionService {
 
     public void update(AllianceMission allianceMission) {
         updateAllianceMissionUseCase.execute(allianceMission);
+    }
+
+    public void checkIsMissionFinishedByAllianceId(String allianceId, ICallback<Boolean> callback) {
+        getOngoingAllianceMissionByAllianceId(allianceId, new ICallback<AllianceMission>() {
+            @Override
+            public void onSuccess(AllianceMission mission) {
+                if (mission.getEndDateTime().isBefore(LocalDateTime.now())) {
+                    callback.onSuccess(mission.finishMission());
+                }
+            }
+
+            @Override
+            public void onError(String errorMessage) {
+                callback.onError(errorMessage);
+            }
+        });
+    }
+
+    public void getMissionById(String missionId, ICallback<AllianceMission> callback) {
+        var mission = getAllianceMissionUseCase.getById(missionId);
+        if (mission != null) {
+            callback.onSuccess(mission);
+        } else {
+            callback.onError("Mission not found");
+        }
     }
 }

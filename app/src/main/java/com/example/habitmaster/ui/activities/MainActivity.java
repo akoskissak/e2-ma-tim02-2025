@@ -26,9 +26,14 @@ import com.example.habitmaster.data.database.DatabaseHelper;
 import com.example.habitmaster.services.AllianceChatListenerService;
 import com.example.habitmaster.services.AllianceInviteListenerService;
 import com.example.habitmaster.services.AllianceMemberListenerService;
+import com.example.habitmaster.services.AllianceService;
 import com.example.habitmaster.services.ICallback;
+import com.example.habitmaster.services.TaskService;
+import com.example.habitmaster.services.UserEquipmentService;
 import com.example.habitmaster.services.UserService;
 import com.example.habitmaster.utils.Prefs;
+
+import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
     private static final int NOTIFICATION_PERMISSION_REQUEST_CODE = 1001;
@@ -46,6 +51,11 @@ public class MainActivity extends AppCompatActivity {
             finish();
             return;
         }
+
+        TaskService taskService = new TaskService(this);
+        taskService.checkMissedTasks(prefs.getUid());
+
+        checkIsAllianceMissionFinished();
 
         // da uvek bude mode day
         AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO);
@@ -154,6 +164,22 @@ public class MainActivity extends AppCompatActivity {
         btnBossFight = findViewById(R.id.btnBossFight);
         btnBossFight.setOnClickListener(v -> {
             startActivity(new Intent(this, BossFightActivity.class));
+        });
+    }
+
+    private void checkIsAllianceMissionFinished() {
+        AllianceService allianceService = new AllianceService(this);
+        allianceService.checkIsMissionFinishedAndAddCoinsAndBadges(prefs.getUid(), new ICallback<List<String>>() {
+            @Override
+            public void onSuccess(List<String> allMembers) {
+                var userEquipmentService = new UserEquipmentService(MainActivity.this);
+                userEquipmentService.addMissionRewards(allMembers);
+            }
+
+            @Override
+            public void onError(String errorMessage) {
+
+            }
         });
     }
 
