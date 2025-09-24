@@ -85,7 +85,12 @@ public class CreateTaskActivity extends AppCompatActivity {
         repeatingIntervalNumberPicker = findViewById(R.id.repeatingIntervalNumberPicker);
 
         taskDatePickerLayout.setVisibility(LinearLayout.GONE);
-        oneTimeDatePickerLayout.setVisibility(LinearLayout.GONE);
+        oneTimeDatePickerLayout.setVisibility(LinearLayout.VISIBLE);
+
+        RadioButton oneTimeRadioButton = findViewById(R.id.oneTimeRadio); // proveri ID u layoutu
+        if (oneTimeRadioButton != null) {
+            oneTimeRadioButton.setChecked(true);
+        }
 
         Calendar calendar = Calendar.getInstance();
         startYear = endYear = calendar.get(Calendar.YEAR);
@@ -96,6 +101,9 @@ public class CreateTaskActivity extends AppCompatActivity {
         startDateButton.setText((startMonth + 1) + "/" + startDay + "/" + startYear);
         endDateButton.setText((endMonth + 1) + "/" + endDay + "/" + endYear);
         oneTimeDateButton.setText((startMonth + 1) + "/" + startDay + "/" + startYear);
+
+        executionTime = LocalTime.now();
+        btnTaskExecutionTime.setText(executionTime.format(DateTimeFormatter.ofPattern("HH:mm")));
 
         taskService = new TaskService(this);
 
