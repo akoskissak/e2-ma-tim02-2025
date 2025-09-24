@@ -33,7 +33,7 @@ public class AllianceUserMission implements Serializable {
         this.bossFightHits = 0;
         this.solvedTasks = 0;
         this.solvedOtherTasks = 0;
-        this.noUnresolvedTasks = false;
+        this.noUnresolvedTasks = true;
         this.messagesSentDays = 0;
         this.totalDamage = 0;
     }

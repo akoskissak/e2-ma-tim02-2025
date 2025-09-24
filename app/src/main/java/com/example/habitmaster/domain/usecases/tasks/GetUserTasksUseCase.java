@@ -31,7 +31,7 @@ public class GetUserTasksUseCase {
         this.categoryRepo = categoryRepo;
     }
 
-    public List<TaskInstanceDTO> getAllTasks() {
+    public List<TaskInstanceDTO> getAllTasksInstances() {
         String userId = userRepository.currentUid();
 
         // 1. Get all tasks
@@ -228,4 +228,11 @@ public class GetUserTasksUseCase {
         return taskInstanceRepo.getValuableUserTaskInstances(userId, from, to);
     }
 
+    public List<TaskInstance> detectMissedUserTaskInstances(String userId) {
+        return taskInstanceRepo.detectMissedByUserId(userId);
+    }
+
+    public List<Task> getAllUserTasks(String userId) {
+        return taskRepo.getAllUserTasks(userId);
+    }
 }

@@ -35,6 +35,7 @@ public class FirebaseAllianceRepository {
     private ListenerRegistration messageSubListener;
     private ListenerRegistration memberListener;
     private ListenerRegistration membersSubListener;
+
     public FirebaseAllianceRepository() {
         this.db = FirebaseFirestore.getInstance();
     }
@@ -114,7 +115,7 @@ public class FirebaseAllianceRepository {
         db.collectionGroup("members")
                 .get()
                 .addOnSuccessListener(snapshot -> {
-                    if (snapshot.isEmpty()){
+                    if (snapshot.isEmpty()) {
                         tcs.setResult(null);
                         return;
                     }
@@ -159,7 +160,7 @@ public class FirebaseAllianceRepository {
                 });
     }
 
-    public void acceptInvite(String invitationId,String allianceId) {
+    public void acceptInvite(String invitationId, String allianceId) {
         DocumentReference inviteRef = db.collection("alliances")
                 .document(allianceId)
                 .collection("invites")
@@ -391,7 +392,8 @@ public class FirebaseAllianceRepository {
                                                     if (!querySnapshot.isEmpty()) {
                                                         DocumentSnapshot userDoc = querySnapshot.getDocuments().get(0);
                                                         String username = userDoc.getString("username");
-                                                        if (username != null) newMemberName = username;
+                                                        if (username != null)
+                                                            newMemberName = username;
                                                     }
                                                     Log.d("AllianceRepo", "Pronađen username=" + newMemberName);
 
@@ -527,6 +529,14 @@ public class FirebaseAllianceRepository {
                     Log.e("FirebaseRepo", "Greška pri dohvatanju members", e);
                     onSuccess.onSuccess(new ArrayList<>());
                 });
+    }
+
+    public void updateMissionStarted(String allianceId, boolean missionStarted) {
+        db.collection("alliances")
+                .document(allianceId)
+                .update("missionStarted", missionStarted)
+                .addOnSuccessListener(aVoid -> Log.d("FirebaseRepo", "missionStarted ažuriran na " + missionStarted + " za allianceId=" + allianceId))
+                .addOnFailureListener(e -> Log.e("FirebaseRepo", "Greška pri ažuriranju missionStarted za allianceId=" + allianceId, e));
     }
 
 }

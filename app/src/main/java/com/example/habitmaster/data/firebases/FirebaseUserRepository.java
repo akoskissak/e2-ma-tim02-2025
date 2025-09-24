@@ -19,6 +19,7 @@ import com.google.firebase.firestore.FirebaseFirestore;
 
 import java.time.LocalDate;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.function.Consumer;
 
@@ -226,6 +227,23 @@ public class FirebaseUserRepository {
                     }
                 })
                 .addOnFailureListener(onFailure);
+    }
+
+    public void update(User user) {
+        if (user == null || user.getId() == null || user.getId().isEmpty()) return;
+
+        Map<String, Object> userMap = userToMap(user);
+
+        db.collection("users")
+                .document(user.getId())
+                .set(userMap)
+                .addOnSuccessListener(aVoid -> {
+                    System.out.println("User " + user.getId() + " updated successfully.");
+                    local.insert(user);
+                })
+                .addOnFailureListener(e -> {
+                    System.err.println("Failed to update user " + user.getId() + ": " + e.getMessage());
+                });
     }
 
 }
