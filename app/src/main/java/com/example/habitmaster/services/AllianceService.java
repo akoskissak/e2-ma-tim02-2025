@@ -35,11 +35,11 @@ public class AllianceService {
 
     public AllianceService(Context ctx) {
         this.createAllianceUC = new CreateAllianceUseCase(ctx);
-        this.getAllianceUC = new GetAllianceUseCase(ctx);
-        this.getAllianceByUserIdUC = new GetAllianceByUserIdUseCase(ctx);
+        this.getAllianceUC = new GetAllianceUseCase();
+        this.getAllianceByUserIdUC = new GetAllianceByUserIdUseCase();
         this.deleteAllianceUC = new DeleteAllianceUseCase(ctx);
-        this.getAllianceMembersUC = new GetAllianceMembersUseCase(ctx);
-        this.getAllianceInvitationByIdUC = new GetAllianceInvitationByIdUseCase(ctx);
+        this.getAllianceMembersUC = new GetAllianceMembersUseCase();
+        this.getAllianceInvitationByIdUC = new GetAllianceInvitationByIdUseCase();
         this.acceptAllianceInviteUC = new AcceptAllianceInviteUseCase(ctx);
         this.declineAllianceInviteUC = new DeclineAllianceInviteUseCase(ctx);
         this.allianceMissionService = new AllianceMissionService(ctx);
@@ -66,8 +66,8 @@ public class AllianceService {
         getAllianceMembersUC.execute(allianceId, callback);
     }
 
-    public void getAllianceInvitationById(String allianceInvitationId, ICallback<AllianceInvitation> callback) {
-        getAllianceInvitationByIdUC.execute(allianceInvitationId, callback);
+    public void getAllianceInvitationById(String allianceInvitationId, String allianceId, ICallback<AllianceInvitation> callback) {
+        getAllianceInvitationByIdUC.execute(allianceInvitationId, allianceId, callback);
     }
 
     public void acceptAllianceInvite(String inviteId, String userId, String allianceId) {

@@ -28,11 +28,12 @@ public class FirebaseAllianceChatRepository {
                 .addOnFailureListener(e -> callback.onError(e.getMessage()));
     }
 
-    public ListenerRegistration listenForMessages(String allianceId, ICallback<AllianceMessage> callback) {
+    public ListenerRegistration listenForMessages(String allianceId, long lastTimestamp, ICallback<AllianceMessage> callback) {
         return db.collection("alliances")
                 .document(allianceId)
                 .collection("messages")
                 .orderBy("timestamp", Query.Direction.ASCENDING)
+                .whereGreaterThan("timestamp", lastTimestamp)
                 .addSnapshotListener((snapshots, e) -> {
                     if (e != null) {
                         callback.onError(e.getMessage());

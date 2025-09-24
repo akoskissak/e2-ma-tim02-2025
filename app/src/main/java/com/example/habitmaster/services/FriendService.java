@@ -28,44 +28,44 @@ public class FriendService {
 
     public FriendService(Context ctx) {
         this.addFriendUC = new AddFriendUseCase(ctx);
-        this.removeFriendUC = new RemoveFriendUseCase(ctx);
-        this.getFriendsUC = new GetFriendsUseCase(ctx);
-        this.isAlreadyFriendUC = new IsAlreadyFriendUseCase(ctx);
+        this.removeFriendUC = new RemoveFriendUseCase();
+        this.getFriendsUC = new GetFriendsUseCase();
+        this.isAlreadyFriendUC = new IsAlreadyFriendUseCase();
         this.sendFollowRequestUC = new SendFollowRequestUseCase(ctx);
         this.respondFollowRequestUC = new RespondFollowRequestUseCase(ctx);
-        this.getFollowRequestsUC = new GetFollowRequestsUseCase(ctx);
-        this.isFollowRequestPendingUC = new IsFollowRequestPendingUserCase(ctx);
+        this.getFollowRequestsUC = new GetFollowRequestsUseCase();
+        this.isFollowRequestPendingUC = new IsFollowRequestPendingUserCase();
     }
 
-    public void addFriend(Friend friend, String currentUserId) {
-        addFriendUC.execute(friend, currentUserId);
+    public void addFriend(Friend friend, String currentUserId, ICallback<Void> callback) {
+        addFriendUC.execute(friend, currentUserId, callback);
     }
 
     public void sendFollowRequest(String fromUserId, String toUserId) {
         sendFollowRequestUC.execute(fromUserId, toUserId);
     }
 
-    public void respondFollowRequest(FollowRequest request, boolean accept, String currentUserId){
-        respondFollowRequestUC.execute(request, accept, currentUserId);
+    public void respondFollowRequest(FollowRequest request, boolean accept, String currentUserId, ICallback<Void> callback){
+        respondFollowRequestUC.execute(request, accept, currentUserId, callback);
     }
 
     public void getFollowRequests(String currentUserId, ICallback<List<FollowRequestWithUsername>> callback) {
         getFollowRequestsUC.execute(currentUserId, callback);
     }
 
-    public void removeFriend(String friendUserId, String currentUserId) {
-        removeFriendUC.execute(friendUserId, currentUserId);
+    public void removeFriend(String friendUserId, String currentUserId, ICallback<Void> callback) {
+        removeFriendUC.execute(friendUserId, currentUserId, callback);
     }
 
     public void getFriends(String currentUserId, ICallback<List<Friend>> callback) {
         getFriendsUC.execute(currentUserId, callback);
     }
 
-    public boolean isAlreadyFriend(String currentUserId, String viewedUserId) {
-        return isAlreadyFriendUC.execute(currentUserId, viewedUserId);
+    public void isAlreadyFriend(String currentUserId, String viewedUserId, ICallback<Boolean> callback) {
+        isAlreadyFriendUC.execute(currentUserId, viewedUserId, callback);
     }
 
-    public boolean isFollowRequestPending(String fromUserId, String toUserId) {
-        return isFollowRequestPendingUC.execute(fromUserId, toUserId);
+    public void isFollowRequestPending(String fromUserId, String toUserId, ICallback<Boolean> callback) {
+        isFollowRequestPendingUC.execute(fromUserId, toUserId, callback);
     }
 }

@@ -39,8 +39,8 @@ public class AllianceChatService {
         });
     }
 
-    public ListenerRegistration subscribeToMessages(String allianceId, ICallback<AllianceMessage> callback) {
-        return observeMessagesUC.execute(allianceId, callback);
+    public ListenerRegistration subscribeToMessages(String allianceId, long lastTimestamp, ICallback<AllianceMessage> callback) {
+        return observeMessagesUC.execute(allianceId, lastTimestamp, callback);
     }
 
     public void loadAllMessages(String allianceId, ICallback<List<AllianceMessage>> callback) {

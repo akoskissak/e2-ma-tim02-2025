@@ -177,33 +177,59 @@ public class ProfileActivity extends AppCompatActivity {
 
                 followButton.setVisibility(View.VISIBLE);
 
-                boolean isFriend = friendService.isAlreadyFriend(loggedInUserId, user.getId());
+                friendService.isAlreadyFriend(loggedInUserId, user.getId(), new ICallback<>() {
+                    @Override
+                    public void onSuccess(Boolean isFriend) {
+                        friendService.isFollowRequestPending(loggedInUserId, user.getId(), new ICallback<>() {
+                            @Override
+                            public void onSuccess(Boolean result) {
+                                if (isFriend) {
+                                    followButton.setText("Unfollow");
+                                } else if (result) {
+                                    followButton.setText("Requested");
+                                    followButton.setEnabled(false);
+                                } else {
+                                    followButton.setText("Request to follow");
+                                }
+                                followButton.setOnClickListener(v -> {
+                                    if (!isFriend && !result) {
+                                        friendService.sendFollowRequest(loggedInUserId, user.getId());
 
-                boolean isRequested = friendService.isFollowRequestPending(loggedInUserId, user.getId());
+                                        Toast.makeText(ProfileActivity.this, "Friend request sent to " + user.getUsername(), Toast.LENGTH_SHORT).show();
+                                        followButton.setText("Requested");
+                                        followButton.setEnabled(false);
+                                    } else if (isFriend){
+                                        friendService.removeFriend(user.getId(), loggedInUserId, new ICallback<>() {
+                                            @Override
+                                            public void onSuccess(Void result) {
+                                                Toast.makeText(ProfileActivity.this, "Unfollowed " + user.getUsername(), Toast.LENGTH_SHORT).show();
+                                                followButton.setText("Request to follow");
+                                                followButton.setEnabled(true);
+                                            }
 
-                if (isFriend) {
-                    followButton.setText("Unfollow");
-                } else if (isRequested) {
-                    followButton.setText("Requested");
-                    followButton.setEnabled(false);
-                } else {
-                    followButton.setText("Request to follow");
-                }
+                                            @Override
+                                            public void onError(String errorMessage) {
+                                                Toast.makeText(ProfileActivity.this, errorMessage, Toast.LENGTH_SHORT).show();
+                                            }
+                                        });
 
-                followButton.setOnClickListener(v -> {
-                    if (!isFriend && !isRequested) {
-                        friendService.sendFollowRequest(loggedInUserId, user.getId());
+                                    }
+                                });
+                            }
 
-                        Toast.makeText(ProfileActivity.this, "Friend request sent to " + user.getUsername(), Toast.LENGTH_SHORT).show();
-                        followButton.setText("Requested");
-                        followButton.setEnabled(false);
-                    } else if (isFriend){
-                        friendService.removeFriend(user.getId(), loggedInUserId);
-                        Toast.makeText(ProfileActivity.this, "Unfollowed " + user.getUsername(), Toast.LENGTH_SHORT).show();
-                        followButton.setText("Request to follow");
-                        followButton.setEnabled(true);
+                            @Override
+                            public void onError(String errorMessage) {
+                                Toast.makeText(ProfileActivity.this, errorMessage, Toast.LENGTH_SHORT).show();
+                            }
+                        });
+                    }
+
+                    @Override
+                    public void onError(String errorMessage) {
+                        Toast.makeText(ProfileActivity.this, errorMessage, Toast.LENGTH_SHORT).show();
                     }
                 });
+
             }
 
             @Override

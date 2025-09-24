@@ -72,15 +72,32 @@ public class FollowRequestsActivity extends AppCompatActivity {
     }
 
     private void acceptRequest(FollowRequest request) {
-        friendService.respondFollowRequest(request, true, currentUserId);
+        friendService.respondFollowRequest(request, true, currentUserId, new ICallback<Void>() {
+            @Override
+            public void onSuccess(Void result) {
+                Toast.makeText(FollowRequestsActivity.this, "Prijatelj prihvacen", Toast.LENGTH_SHORT).show();
+                loadRequests();
+            }
 
-        Toast.makeText(this, "Prijatelj prihvacen", Toast.LENGTH_SHORT).show();
-        loadRequests();
+            @Override
+            public void onError(String errorMessage) {
+                Toast.makeText(FollowRequestsActivity.this, errorMessage, Toast.LENGTH_SHORT).show();
+            }
+        });
     }
 
     private void declineRequest(FollowRequest request) {
-        friendService.respondFollowRequest(request, false, currentUserId);
-        Toast.makeText(this, "Zahtev odbijen", Toast.LENGTH_SHORT).show();
-        loadRequests();
+        friendService.respondFollowRequest(request, false, currentUserId, new ICallback<Void>() {
+            @Override
+            public void onSuccess(Void result) {
+                Toast.makeText(FollowRequestsActivity.this, "Zahtev odbijen", Toast.LENGTH_SHORT).show();
+                loadRequests();
+            }
+
+            @Override
+            public void onError(String errorMessage) {
+                Toast.makeText(FollowRequestsActivity.this, errorMessage, Toast.LENGTH_SHORT).show();
+            }
+        });
     }
 }

@@ -40,34 +40,6 @@ public class AllianceRepository {
         db.close();
     }
 
-    public Alliance getAllianceById(String allianceId) {
-        SQLiteDatabase db = helper.getReadableDatabase();
-        Cursor cursor = db.query(
-                DatabaseHelper.T_ALLIANCES,
-                new String[]{"id", "name", "leaderId", "missionStarted"},
-                "id = ?",
-                new String[]{allianceId},
-                null, null, null
-        );
-
-        if (cursor.moveToFirst()) {
-            boolean missionStarted = cursor.getInt(cursor.getColumnIndexOrThrow("missionStarted")) == 1;
-            Alliance alliance = new Alliance(
-                    cursor.getString(cursor.getColumnIndexOrThrow("id")),
-                    cursor.getString(cursor.getColumnIndexOrThrow("name")),
-                    cursor.getString(cursor.getColumnIndexOrThrow("leaderId")),
-                    missionStarted
-            );
-            cursor.close();
-            db.close();
-            return alliance;
-        }
-
-        cursor.close();
-        db.close();
-        return null;
-    }
-
     public Alliance getAllianceByUserId(String userId) {
         SQLiteDatabase db = helper.getReadableDatabase();
         Cursor cursor = db.rawQuery(
@@ -161,51 +133,6 @@ public class AllianceRepository {
         db.close();
     }
 
-    public AllianceInvitation getAllianceInvitationById(String invitationId) {
-        SQLiteDatabase db = helper.getReadableDatabase();
-        Cursor cursor = db.query(
-                DatabaseHelper.T_ALLIANCE_INVITES,
-                new String[]{"id", "allianceId", "fromUserId", "toUserId", "status"},
-                "id = ? AND status = ?",
-                new String[]{invitationId, AllianceInviteStatus.PENDING.name()},
-                null, null, null
-        );
-
-        if (cursor.moveToFirst()) {
-            AllianceInvitation invitation = new AllianceInvitation(
-                    cursor.getString(cursor.getColumnIndexOrThrow("id")),
-                    cursor.getString(cursor.getColumnIndexOrThrow("allianceId")),
-                    cursor.getString(cursor.getColumnIndexOrThrow("fromUserId")),
-                    cursor.getString(cursor.getColumnIndexOrThrow("toUserId")),
-                    AllianceInviteStatus.valueOf(cursor.getString(cursor.getColumnIndexOrThrow("status")))
-            );
-            cursor.close();
-            db.close();
-            return invitation;
-        }
-
-        cursor.close();
-        db.close();
-        return null;
-    }
-    public List<String> getMembersByAllianceId(String allianceId) {
-        SQLiteDatabase db = helper.getReadableDatabase();
-        Cursor cursor = db.rawQuery(
-                "SELECT u.username FROM " + DatabaseHelper.T_USERS + " u " +
-                        "JOIN " + DatabaseHelper.T_ALLIANCE_MEMBERS + " m ON u.id = m.userId " +
-                        "WHERE m.allianceId = ?",
-                new String[]{allianceId}
-        );
-
-        List<String> usernames = new ArrayList<>();
-        while(cursor.moveToNext()) {
-            usernames.add(cursor.getString(cursor.getColumnIndexOrThrow("username")));
-        }
-
-        cursor.close();
-        db.close();
-        return usernames;
-    }
 
     public List<String> getMemberIdsByAllianceId(String allianceId) {
         SQLiteDatabase db = helper.getReadableDatabase();

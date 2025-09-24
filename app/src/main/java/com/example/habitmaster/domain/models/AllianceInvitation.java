@@ -7,6 +7,7 @@ public class AllianceInvitation {
     private String toUserId;
     private AllianceInviteStatus status;
 
+    public AllianceInvitation() {}
     public AllianceInvitation(String id, String allianceId, String fromUserId, String toUserId, AllianceInviteStatus status) {
         this.id = id;
         this.allianceId = allianceId;
