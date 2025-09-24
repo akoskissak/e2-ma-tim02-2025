@@ -17,6 +17,9 @@
         android:theme="@style/Theme.HabitMaster"
         tools:ignore="ForegroundServicePermission">
         <activity
+            android:name=".ui.activities.AllianceMissionProgressActivity"
+            android:exported="false" />
+        <activity
             android:name=".ui.activities.BossFightActivity"
             android:exported="false" />
         <activity

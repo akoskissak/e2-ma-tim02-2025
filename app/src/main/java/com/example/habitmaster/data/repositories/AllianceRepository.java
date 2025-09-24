@@ -10,7 +10,9 @@ import com.example.habitmaster.domain.models.AllianceInvitation;
 import com.example.habitmaster.domain.models.AllianceInviteStatus;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class AllianceRepository {
     private final DatabaseHelper helper;
@@ -132,6 +134,25 @@ public class AllianceRepository {
     }
 
 
+    public List<String> getMemberIdsByAllianceId(String allianceId) {
+        SQLiteDatabase db = helper.getReadableDatabase();
+        Cursor cursor = db.rawQuery(
+                "SELECT m.userId FROM " + DatabaseHelper.T_ALLIANCE_MEMBERS + " m " +
+                        "WHERE m.allianceId = ?",
+                new String[]{allianceId}
+        );
+
+        List<String> userIds = new ArrayList<>();
+        while (cursor.moveToNext()) {
+            userIds.add(cursor.getString(cursor.getColumnIndexOrThrow("userId")));
+        }
+
+        cursor.close();
+        db.close();
+        return userIds;
+    }
+
+
     public void leaveAlliance(String userId) {
         SQLiteDatabase db = helper.getWritableDatabase();
         db.delete(DatabaseHelper.T_ALLIANCE_MEMBERS,
@@ -150,4 +171,20 @@ public class AllianceRepository {
                 new String[]{userId, acceptedInviteId});
         db.close();
     }
+
+    public void updateMissionStarted(String allianceId, boolean missionStarted) {
+        SQLiteDatabase db = helper.getWritableDatabase();
+        ContentValues values = new ContentValues();
+        values.put("missionStarted", missionStarted ? 1 : 0);
+
+        db.update(
+                DatabaseHelper.T_ALLIANCES,
+                values,
+                "id = ?",
+                new String[]{allianceId}
+        );
+
+        db.close();
+    }
+
 }

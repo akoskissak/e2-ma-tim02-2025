@@ -1,8 +1,8 @@
 package com.example.habitmaster.services;
 
 import android.content.Context;
-import android.util.Log;
 
+import com.example.habitmaster.domain.models.AllianceMissionProgressType;
 import com.example.habitmaster.domain.models.DisplayEquipment;
 import com.example.habitmaster.domain.models.Equipment;
 import com.example.habitmaster.domain.models.User;
@@ -18,11 +18,13 @@ public class ShopService {
     private final User currentUser;
     private final AddEquipmentUseCase addEquipmentUC;
     private final UpdateUserCoinsUseCase updateUserCoinsUC;
+    private final AllianceService allianceService;
 
     public ShopService(User user, Context ctx) {
         this.currentUser = user;
         this.addEquipmentUC = new AddEquipmentUseCase(ctx);
         this.updateUserCoinsUC = new UpdateUserCoinsUseCase(ctx);
+        this.allianceService = new AllianceService(ctx);
     }
 
     public int calculateCost(Equipment equipment, int previousReward) {
@@ -53,11 +55,14 @@ public class ShopService {
                 equipment.getDuration(),
                 equipment.getBonusValue(),
                 equipment.getBonusType()
-        ) {};
+        ) {
+        };
 
 
-        updateUserCoinsUC.execute(currentUser.getId(),newCoins);
+        updateUserCoinsUC.execute(currentUser.getId(), newCoins);
         addEquipmentUC.execute(userEquipment);
+
+        allianceService.tryUpdateAllianceProgress(currentUser.getId(), AllianceMissionProgressType.SHOP_PURCHASE);
 
         callback.onSuccess(userEquipment);
     }

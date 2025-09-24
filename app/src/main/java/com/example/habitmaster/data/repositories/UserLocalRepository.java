@@ -11,7 +11,10 @@ import com.example.habitmaster.domain.models.UserLevelProgress;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 public class UserLocalRepository {
     private final DatabaseHelper helper;
@@ -311,5 +314,41 @@ public class UserLocalRepository {
 
         return level;
     }
+
+    public Map<String, String> mapIdsToUsernames(List<String> userIds) {
+        Map<String, String> result = new HashMap<>();
+        if (userIds == null || userIds.isEmpty()) return result;
+
+        SQLiteDatabase db = helper.getReadableDatabase();
+        StringBuilder placeholders = new StringBuilder();
+        for (int i = 0; i < userIds.size(); i++) {
+            placeholders.append("?");
+            if (i < userIds.size() - 1) placeholders.append(",");
+        }
+
+        Cursor cursor = db.rawQuery(
+                "SELECT id, username FROM " + DatabaseHelper.T_USERS + " WHERE id IN (" + placeholders.toString() + ")",
+                userIds.toArray(new String[0])
+        );
+
+        while (cursor.moveToNext()) {
+            result.put(
+                    cursor.getString(cursor.getColumnIndexOrThrow("id")),
+                    cursor.getString(cursor.getColumnIndexOrThrow("username"))
+            );
+        }
+
+        cursor.close();
+        db.close();
+
+        Map<String, String> ordered = new LinkedHashMap<>();
+        for (String userId : userIds) {
+            if (result.containsKey(userId)) {
+                ordered.put(userId, result.get(userId));
+            }
+        }
+        return ordered;
+    }
+
 
 }
