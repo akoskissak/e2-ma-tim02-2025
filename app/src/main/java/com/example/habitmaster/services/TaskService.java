@@ -6,6 +6,7 @@ import android.os.Handler;
 import com.example.habitmaster.data.dtos.TaskInstanceDTO;
 import com.example.habitmaster.data.firebases.FirebaseTaskInstanceRepository;
 import com.example.habitmaster.data.firebases.FirebaseTaskRepository;
+import com.example.habitmaster.data.firebases.FirebaseUserRepository;
 import com.example.habitmaster.data.repositories.CategoryRepository;
 import com.example.habitmaster.data.repositories.TaskInstanceRepository;
 import com.example.habitmaster.data.repositories.TaskRepository;
@@ -60,7 +61,7 @@ public class TaskService {
         this.getUserTasksUseCase = new GetUserTasksUseCase(localRepo, localTaskInstanceRepo, userRepo, categoryRepo);
         this.updateTaskUseCase = new UpdateTaskUseCase(localRepo, localTaskInstanceRepo, userLevelProgressRepository, remoteRepo, remoteInstanceRepo);
         this.deleteTaskUseCase = new DeleteTaskUseCase(localTaskInstanceRepo, remoteInstanceRepo);
-        this.addUserXpUseCase = new AddUserXpUseCase(new UserLocalRepository(context));
+        this.addUserXpUseCase = new AddUserXpUseCase(new UserLocalRepository(context), new FirebaseUserRepository(context));
         this.getUserLevelStartDateUseCase = new GetUserLevelStartDateUseCase(context);
         this.allianceService = new AllianceService(context);
     }

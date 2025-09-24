@@ -228,4 +228,47 @@ public class FirebaseUserRepository {
                 .addOnFailureListener(onFailure);
     }
 
+    public void update(User user) {
+        if (user == null || user.getId() == null || user.getId().isEmpty()) return;
+
+        Map<String, Object> userMap = userToMap(user);
+
+        db.collection("users")
+                .document(user.getId())
+                .set(userMap)
+                .addOnSuccessListener(aVoid -> {
+                    System.out.println("User " + user.getId() + " updated successfully.");
+                    local.insert(user);
+                })
+                .addOnFailureListener(e -> {
+                    System.err.println("Failed to update user " + user.getId() + ": " + e.getMessage());
+                });
+    }
+
+    public void addXp(String userId, int xp) {
+        if (userId == null || userId.isEmpty()) {
+            return;
+        }
+
+        db.collection("users").document(userId).get()
+                .addOnSuccessListener(documentSnapshot -> {
+                    if (!documentSnapshot.exists()) {
+                        return;
+                    }
+
+                    db.runTransaction(transaction -> {
+                        Long currentXp = documentSnapshot.getLong("xp");
+                        if (currentXp == null) currentXp = 0L;
+
+                        long newXp = currentXp + xp;
+                        transaction.update(db.collection("users").document(userId), "xp", newXp);
+
+                        // Ovde možeš pozvati metodu koja proverava levelUp, npr:
+                        // checkAndLevelUpFirebase(transaction, userId, newXp);
+
+                        return null;
+                    });
+                });
+    }
+
 }

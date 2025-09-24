@@ -50,6 +50,11 @@ public class CreateTaskUseCase {
 
     public void execute(String name, String description, String categoryId, String frequencyStr, int repeatInterval, String startDateStr, String endDateStr,
                         String executionTimeStr, String difficultyStr, String importanceStr, Callback callback) {
+
+        if (!validateTaskData(name, categoryId, frequencyStr, startDateStr, endDateStr, executionTimeStr, callback)) {
+            return;
+        }
+
         TaskDifficulty difficulty;
         TaskImportance importance;
         TaskFrequency frequency;
@@ -150,6 +155,26 @@ public class CreateTaskUseCase {
         } catch (Exception e) {
             callback.onError("Failed to create task: " + e.getMessage());
         }
+    }
+
+    private boolean validateTaskData(String name, String categoryId, String frequencyStr, String startDateStr, String endDateStr, String executionTimeStr, Callback callback) {
+        if (name == null || name.trim().isEmpty()) {
+            callback.onError("Task name cannot be empty");
+            return false;
+        }
+        if (categoryId == null || categoryId.trim().isEmpty()) {
+            callback.onError("Category must be selected");
+            return false;
+        }
+        if (frequencyStr == null || frequencyStr.trim().isEmpty()) {
+            callback.onError("Frequency must be selected");
+            return false;
+        }
+        if (executionTimeStr == null || executionTimeStr.trim().isEmpty()) {
+            callback.onError("Execution time must be selected");
+            return false;
+        }
+        return true;
     }
 
     private List<LocalDate> generateDatesForTask(Task task) {

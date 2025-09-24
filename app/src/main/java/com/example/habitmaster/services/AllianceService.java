@@ -16,6 +16,7 @@ import com.example.habitmaster.domain.usecases.GetAllianceByUserIdUseCase;
 import com.example.habitmaster.domain.usecases.GetAllianceInvitationByIdUseCase;
 import com.example.habitmaster.domain.usecases.GetAllianceMembersUseCase;
 import com.example.habitmaster.domain.usecases.GetAllianceUseCase;
+import com.example.habitmaster.domain.usecases.alliances.HasUserSentMessageTodayUseCase;
 
 import java.util.List;
 import java.util.Set;
@@ -44,6 +45,7 @@ public class AllianceService {
         this.declineAllianceInviteUC = new DeclineAllianceInviteUseCase(ctx);
         this.allianceMissionService = new AllianceMissionService(ctx);
         this.allianceUserMissionService = new AllianceUserMissionService(ctx);
+        this.hasUserSentMessageTodayUC = new HasUserSentMessageTodayUseCase();
     }
 
     public void createAlliance(String allianceName, String leaderId, String leaderUsername, Set<String> memberIds, ICallback<String> callback) {

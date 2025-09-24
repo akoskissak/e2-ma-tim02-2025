@@ -173,18 +173,45 @@ public class CreateTaskActivity extends AppCompatActivity {
                     if (isStart) {
                         startYear = y; startMonth = m; startDay = d;
                         if (isRepeating) {
-                            startDateButton.setText((m+1) + "/" + d + "/" + y);
+                            startDateButton.setText((m + 1) + "/" + d + "/" + y);
                         } else {
-                            oneTimeDateButton.setText((m+1) + "/" + d + "/" + y);
+                            oneTimeDateButton.setText((m + 1) + "/" + d + "/" + y);
                         }
+
+                        // Ako je endDate već pre startDate, postavi ga na startDate
+                        Calendar startCal = Calendar.getInstance();
+                        startCal.set(startYear, startMonth, startDay);
+                        Calendar endCal = Calendar.getInstance();
+                        endCal.set(endYear, endMonth, endDay);
+
+                        if (endCal.before(startCal)) {
+                            endYear = startYear;
+                            endMonth = startMonth;
+                            endDay = startDay;
+                            endDateButton.setText((endMonth + 1) + "/" + endDay + "/" + endYear);
+                        }
+
                     } else {
                         endYear = y; endMonth = m; endDay = d;
-                        endDateButton.setText((m+1) + "/" + d + "/" + y);
+                        endDateButton.setText((m + 1) + "/" + d + "/" + y);
                     }
                 }, year, month, day
         );
+
+        // Spreči odabir datuma u prošlosti
+        Calendar minDate = Calendar.getInstance(); // danas
+        datePickerDialog.getDatePicker().setMinDate(minDate.getTimeInMillis());
+
+        // Ako biramo endDate, setuj minimalni datum na startDate
+        if (!isStart) {
+            Calendar startDateCal = Calendar.getInstance();
+            startDateCal.set(startYear, startMonth, startDay);
+            datePickerDialog.getDatePicker().setMinDate(startDateCal.getTimeInMillis());
+        }
+
         datePickerDialog.show();
     }
+
 
     private void createTask() {
         String name = taskNameEdit.getText().toString().trim();
