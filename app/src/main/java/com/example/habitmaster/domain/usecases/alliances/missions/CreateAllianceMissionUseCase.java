@@ -7,6 +7,7 @@ import com.example.habitmaster.data.firebases.FirebaseAllianceUserMissionReposit
 import com.example.habitmaster.data.repositories.AllianceMissionRepository;
 import com.example.habitmaster.data.repositories.AllianceRepository;
 import com.example.habitmaster.data.repositories.AllianceUserMissionRepository;
+import com.example.habitmaster.domain.models.Alliance;
 import com.example.habitmaster.domain.models.AllianceMission;
 import com.example.habitmaster.domain.models.AllianceUserMission;
 
@@ -29,11 +30,11 @@ public class CreateAllianceMissionUseCase {
         this.remoteUserMissionRepo = new FirebaseAllianceUserMissionRepository();
     }
 
-    public AllianceMission execute(String leaderId, String allianceId) {
-        var memberIds = localAllianceRepo.getMemberIdsByAllianceId(allianceId);
+    public AllianceMission execute(Alliance alliance) {
+        var memberIds = localAllianceRepo.getMemberIdsByAllianceId(alliance.getId());
 
         AllianceMission newMission = new AllianceMission(UUID.randomUUID().toString(),
-                allianceId, LocalDateTime.now(), memberIds.size() + 1); // +1 FOR LEADER
+                alliance.getId(), LocalDateTime.now(), memberIds.size() + 1); // +1 FOR LEADER
         localMissionRepo.insert(newMission);
         remoteMissionRepo.insert(newMission);
 
@@ -44,9 +45,12 @@ public class CreateAllianceMissionUseCase {
             remoteUserMissionRepo.insert(newUserMission);
         }
 
-        AllianceUserMission newLeaderMission = new AllianceUserMission(UUID.randomUUID().toString(), leaderId, missionId);
+        AllianceUserMission newLeaderMission = new AllianceUserMission(UUID.randomUUID().toString(), alliance.getLeaderId(), missionId);
         localUserMissionRepo.insert(newLeaderMission);
         remoteUserMissionRepo.insert(newLeaderMission);
+
+        alliance.setMissionStarted(true);
+        localAllianceRepo.updateMissionStarted(alliance.getId(), true);
 
         return newMission;
     }

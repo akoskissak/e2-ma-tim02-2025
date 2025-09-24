@@ -18,4 +18,8 @@ public class GetAllianceUserMissionUseCase {
     public List<AllianceUserMission> getAllUserMissionsByMissionId(String missionId) {
         return localRepo.getAllByMissionId(missionId);
     }
+
+    public AllianceUserMission getByUserIdAndMissionId(String userId, String missionId) {
+        return localRepo.getByUserIdAndMissionId(userId, missionId);
+    }
 }

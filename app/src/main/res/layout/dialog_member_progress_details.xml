@@ -19,12 +19,6 @@
             android:layout_marginBottom="12dp" />
 
         <TextView
-            android:id="@+id/tvDamageDealt"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Damage dealt:" />
-
-        <TextView
             android:id="@+id/tvShopPurchases"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"

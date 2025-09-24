@@ -184,7 +184,6 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                         "id TEXT PRIMARY KEY, " +
                         "userId TEXT NOT NULL, " +
                         "missionId TEXT NOT NULL, " +
-                        "damageDealt INTEGER DEFAULT 0, " +
                         "shopPurchases INTEGER DEFAULT 0, " +
                         "bossFightHits INTEGER DEFAULT 0, " +
                         "solvedTasks INTEGER DEFAULT 0, " +

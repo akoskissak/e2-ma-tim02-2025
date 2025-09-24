@@ -4,10 +4,17 @@ import java.io.Serializable;
 
 public class AllianceUserMission implements Serializable {
     private static final long serialVersionUID = 1L;
+
+    public static final int DAMAGE_SHOP_PURCHASE = 2;
+    public static final int DAMAGE_BOSS_FIGHT_HIT = 2;
+    public static final int DAMAGE_SOLVED_TASK = 1;
+    public static final int DAMAGE_SOLVED_OTHER_TASK = 4;
+    public static final int DAMAGE_NO_UNRESOLVED_TASKS = 10;
+    public static final int DAMAGE_MESSAGE_SENT = 4;
+
     private String id;
     private String userId;
     private String missionId;
-    private int damageDealt;
     private int shopPurchases;              // max 5
     private int bossFightHits;              // max 10
     private int solvedTasks;                // max 10
@@ -22,7 +29,6 @@ public class AllianceUserMission implements Serializable {
         this.id = id;
         this.userId = userId;
         this.missionId = missionId;
-        this.damageDealt = 0;
         this.shopPurchases = 0;
         this.bossFightHits = 0;
         this.solvedTasks = 0;
@@ -34,14 +40,68 @@ public class AllianceUserMission implements Serializable {
 
     public int calculateTotalDamage() {
         int damage = 0;
-        damage += Math.min(shopPurchases, 5) * 2;
-        damage += Math.min(bossFightHits, 10) * 2;
-        damage += Math.min(solvedTasks, 10);
-        damage += Math.min(solvedOtherTasks, 6) * 4;
-//        if (noUnresolvedTasks) damage += 10; // Proveriti ovo
-        damage += messagesSentDays * 4;
+        damage += Math.min(shopPurchases, 5) * DAMAGE_SHOP_PURCHASE;
+        damage += Math.min(bossFightHits, 10) * DAMAGE_BOSS_FIGHT_HIT;
+        damage += Math.min(solvedTasks, 10) * DAMAGE_SOLVED_TASK;
+        damage += Math.min(solvedOtherTasks, 6) * DAMAGE_SOLVED_OTHER_TASK;
+        if (noUnresolvedTasks) damage += DAMAGE_NO_UNRESOLVED_TASKS; // Proveriti ovo
+        damage += messagesSentDays * DAMAGE_MESSAGE_SENT;
         this.totalDamage = damage;
         return damage;
+    }
+
+    public boolean tryIncreaseShopPurchases() {
+        if (shopPurchases < 5) {
+            shopPurchases++;
+            calculateTotalDamage();
+            return true;
+        }
+
+        return false;
+    }
+
+    public boolean tryIncreaseBossFightHits() {
+        if (bossFightHits < 10) {
+            bossFightHits++;
+            calculateTotalDamage();
+            return true;
+        }
+
+        return false;
+    }
+
+    public boolean tryIncreaseSolvedTasks1() {
+        if (solvedTasks < 10) {
+            solvedTasks++;
+            calculateTotalDamage();
+            return true;
+        }
+
+        return false;
+    }
+
+    public boolean tryIncreaseSolvedTasks2() {
+        if ((solvedTasks + 2) <= 10) {
+            solvedTasks += 2;
+            calculateTotalDamage();
+            return true;
+        } else if ((solvedTasks + 1) <= 10) {
+            solvedTasks += 1;
+            calculateTotalDamage();
+            return true;
+        }
+
+        return false;
+    }
+
+    public boolean tryIncreaseSolvedOtherTasks() {
+        if (solvedOtherTasks < 6) {
+            solvedOtherTasks++;
+            calculateTotalDamage();
+            return true;
+        }
+
+        return false;
     }
 
     public String getId() {
@@ -66,14 +126,6 @@ public class AllianceUserMission implements Serializable {
 
     public void setMissionId(String missionId) {
         this.missionId = missionId;
-    }
-
-    public int getDamageDealt() {
-        return damageDealt;
-    }
-
-    public void setDamageDealt(int damageDealt) {
-        this.damageDealt = damageDealt;
     }
 
     public int getShopPurchases() {

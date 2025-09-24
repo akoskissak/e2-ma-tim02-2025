@@ -2,6 +2,7 @@ package com.example.habitmaster.ui.activities;
 
 import android.os.Bundle;
 import android.widget.ProgressBar;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
@@ -9,9 +10,7 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.habitmaster.R;
-import com.example.habitmaster.domain.models.AllianceMission;
 import com.example.habitmaster.domain.models.AllianceUserMission;
-import com.example.habitmaster.services.AllianceService;
 import com.example.habitmaster.services.AllianceUserMissionService;
 import com.example.habitmaster.services.ICallback;
 import com.example.habitmaster.services.UserService;
@@ -19,7 +18,6 @@ import com.example.habitmaster.ui.adapters.MembersProgressAdapter;
 import com.example.habitmaster.ui.fragments.MemberDetailsDialogFragment;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -35,18 +33,21 @@ public class AllianceMissionProgressActivity extends AppCompatActivity {
         setContentView(R.layout.activity_alliance_mission_progress);
 
         ProgressBar progressAllianceBar = findViewById(R.id.progressBarAlliance);
+        TextView tvProgressText = findViewById(R.id.tvProgressText);
 
         String missionId = getIntent().getStringExtra(ALLIANCE_MISSION_ID);
         int bossMaxHp = getIntent().getIntExtra(BOSS_MAX_HP, 100);
         int bossCurrentHp = getIntent().getIntExtra(BOSS_CURRENT_HP, 0);
+
         progressAllianceBar.setProgress(bossCurrentHp / bossMaxHp);
+        tvProgressText.setText(String.format("%d/%d dmg", bossMaxHp - bossCurrentHp, bossMaxHp));
 
         loadData(missionId);
     }
 
     private void loadData(String missionId) {
         AllianceUserMissionService allianceUserMissionService = new AllianceUserMissionService(this);
-        allianceUserMissionService.getAllUserAllianceUserMissionsByMissionId(missionId, new ICallback<List<AllianceUserMission>>() {
+        allianceUserMissionService.getAllByMissionId(missionId, new ICallback<List<AllianceUserMission>>() {
             @Override
             public void onSuccess(List<AllianceUserMission> allianceUserMissions) {
                 List<String> userIds = new ArrayList<>();

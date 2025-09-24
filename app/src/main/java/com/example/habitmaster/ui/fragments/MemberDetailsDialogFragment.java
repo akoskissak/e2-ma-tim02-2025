@@ -36,7 +36,6 @@ public class MemberDetailsDialogFragment extends DialogFragment {
         View v = inflater.inflate(R.layout.dialog_member_progress_details, container, false);
 
         TextView tvUsername = v.findViewById(R.id.tvDialogUsername);
-        TextView tvDamageDealt = v.findViewById(R.id.tvDamageDealt);
         TextView tvShopPurchases = v.findViewById(R.id.tvShopPurchases);
         TextView tvBossHits = v.findViewById(R.id.tvBossHits);
         TextView tvSolvedTasks = v.findViewById(R.id.tvSolvedTasks);
@@ -51,7 +50,6 @@ public class MemberDetailsDialogFragment extends DialogFragment {
         tvUsername.setText(username);
 
         if (mission != null) {
-            tvDamageDealt.setText("Damage dealt: " + mission.getDamageDealt());
             tvShopPurchases.setText("Shop purchases: " + mission.getShopPurchases() + "/5");
             tvBossHits.setText("Boss fight hits: " + mission.getBossFightHits() + "/10");
             tvSolvedTasks.setText("Solved tasks: " + mission.getSolvedTasks() + "/10");
