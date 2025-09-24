@@ -12,6 +12,7 @@ import com.example.habitmaster.domain.models.UserLevelProgress;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -339,7 +340,14 @@ public class UserLocalRepository {
 
         cursor.close();
         db.close();
-        return result;
+
+        Map<String, String> ordered = new LinkedHashMap<>();
+        for (String userId : userIds) {
+            if (result.containsKey(userId)) {
+                ordered.put(userId, result.get(userId));
+            }
+        }
+        return ordered;
     }
 
 
