@@ -14,7 +14,8 @@
         android:label="@string/app_name"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
-        android:theme="@style/Theme.HabitMaster">
+        android:theme="@style/Theme.HabitMaster"
+        tools:ignore="ForegroundServicePermission">
         <activity
             android:name=".ui.activities.BossFightActivity"
             android:exported="false" />
@@ -71,10 +72,19 @@
             android:exported="false" />
 
         <service
-            android:name=".services.InviteForegroundService"
-            android:exported="false"
+            android:name=".services.AllianceInviteListenerService"
             android:foregroundServiceType="remoteMessaging"
-            tools:ignore="ForegroundServicePermission" />
+            android:exported="false" />
+
+        <service
+            android:name=".services.AllianceMemberListenerService"
+            android:foregroundServiceType="remoteMessaging"
+            android:exported="false" />
+
+        <service android:name=".services.AllianceChatListenerService"
+            android:foregroundServiceType="remoteMessaging"
+            android:exported="false" />
+
 
         <receiver
             android:name=".receivers.InviteActionReceiver"

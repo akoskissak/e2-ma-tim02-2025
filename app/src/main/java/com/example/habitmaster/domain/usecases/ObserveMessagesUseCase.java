@@ -12,7 +12,7 @@ public class ObserveMessagesUseCase {
         this.repo = new FirebaseAllianceChatRepository();
     }
 
-    public ListenerRegistration execute(String allianceId, ICallback<AllianceMessage> callback) {
-        return repo.listenForMessages(allianceId, callback);
+    public ListenerRegistration execute(String allianceId, long lastTimestamp, ICallback<AllianceMessage> callback) {
+        return repo.listenForMessages(allianceId, lastTimestamp, callback);
     }
 }

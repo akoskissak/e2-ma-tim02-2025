@@ -1,10 +1,6 @@
 package com.example.habitmaster.domain.usecases;
 
 import android.content.Context;
-import android.content.Intent;
-import android.util.Log;
-
-import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 
 import com.example.habitmaster.data.firebases.FirebaseAllianceRepository;
 import com.example.habitmaster.data.repositories.AllianceRepository;
@@ -12,9 +8,7 @@ import com.example.habitmaster.domain.models.Alliance;
 import com.example.habitmaster.domain.models.AllianceInvitation;
 import com.example.habitmaster.domain.models.AllianceInviteStatus;
 import com.example.habitmaster.services.ICallback;
-import com.example.habitmaster.utils.NotificationHelper;
 
-import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
@@ -55,8 +49,6 @@ public class CreateAllianceUseCase {
                 String inviteId = UUID.randomUUID().toString();
                 AllianceInvitation invitation = new AllianceInvitation(inviteId, allianceId, leaderUserId, memberId, AllianceInviteStatus.PENDING);
                 repo.addInvitation(invitation);
-
-                NotificationHelper.showInviteNotification(ctx, invitation.getId(), leaderUsername);
             }
         }
 

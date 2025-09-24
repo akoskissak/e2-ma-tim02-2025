@@ -3,28 +3,24 @@ package com.example.habitmaster.receivers;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
-import android.util.Log;
 import android.widget.Toast;
 
 import androidx.core.app.NotificationManagerCompat;
 
 import com.example.habitmaster.domain.models.Alliance;
 import com.example.habitmaster.domain.models.AllianceInvitation;
-import com.example.habitmaster.domain.models.User;
 import com.example.habitmaster.services.AllianceService;
 import com.example.habitmaster.services.ICallback;
-import com.example.habitmaster.services.InviteForegroundService;
-import com.example.habitmaster.services.UserService;
-import com.example.habitmaster.utils.NotificationHelper;
+import com.example.habitmaster.ui.activities.AllianceActivity;
 
 public class InviteActionReceiver extends BroadcastReceiver {
     @Override
     public void onReceive(Context context, Intent intent) {
         String inviteId = intent.getStringExtra("inviteId");
-        Intent stopServiceIntent = new Intent(context, InviteForegroundService.class);
+        String allianceId = intent.getStringExtra("allianceId");
 
         AllianceService allianceService = new AllianceService(context);
-        allianceService.getAllianceInvitationById(inviteId, new ICallback<>() {
+        allianceService.getAllianceInvitationById(inviteId, allianceId, new ICallback<>() {
             @Override
             public void onSuccess(AllianceInvitation invitationResult) {
 
@@ -41,14 +37,10 @@ public class InviteActionReceiver extends BroadcastReceiver {
                             }
 
                             allianceService.acceptAllianceInvite(inviteId, targetUserId, invitationResult.getAllianceId());
-                            sendLeaderNotification(context, invitationResult.getFromUserId(), targetUserId);
-                            NotificationManagerCompat.from(context).cancel(inviteId.hashCode());
-                            context.stopService(stopServiceIntent);
                         } else if ("ACTION_DECLINE_INVITE".equals(intent.getAction())) {
                             allianceService.declineAllianceInvite(inviteId, invitationResult.getAllianceId());
-                            NotificationManagerCompat.from(context).cancel(inviteId.hashCode());
-                            context.stopService(stopServiceIntent);
                         }
+                        NotificationManagerCompat.from(context).cancel(inviteId.hashCode());
                     }
 
                     @Override
@@ -56,13 +48,11 @@ public class InviteActionReceiver extends BroadcastReceiver {
                         // Nije jos u savezu
                         if ("ACTION_ACCEPT_INVITE".equals(intent.getAction())) {
                             allianceService.acceptAllianceInvite(inviteId, targetUserId, invitationResult.getAllianceId());
-                            sendLeaderNotification(context, invitationResult.getFromUserId(), targetUserId);
                         } else if ("ACTION_DECLINE_INVITE".equals(intent.getAction())) {
                             allianceService.declineAllianceInvite(inviteId, invitationResult.getAllianceId());
                         }
 
                         NotificationManagerCompat.from(context).cancel(inviteId.hashCode());
-                        context.stopService(stopServiceIntent);
                     }
                 });
             }
@@ -73,22 +63,4 @@ public class InviteActionReceiver extends BroadcastReceiver {
             }
         });
     }
-
-    private void sendLeaderNotification(Context context, String leaderUserId, String newMemberUserId) {
-        UserService userService = new UserService(context);
-        userService.findUserById(newMemberUserId, new ICallback<>() {
-            @Override
-            public void onSuccess(User user) {
-                String newMemberName = user.getUsername();
-
-                NotificationHelper.notifyLeaderNewMember(context, leaderUserId, newMemberName);
-            }
-
-            @Override
-            public void onError(String errorMessage) {
-                Toast.makeText(context, errorMessage, Toast.LENGTH_SHORT).show();
-            }
-        });
-    }
-
 }

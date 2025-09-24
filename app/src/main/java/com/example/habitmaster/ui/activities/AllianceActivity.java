@@ -23,7 +23,6 @@ import com.example.habitmaster.services.ICallbackVoid;
 import com.example.habitmaster.services.UserService;
 import com.example.habitmaster.ui.adapters.AllianceChatAdapter;
 import com.example.habitmaster.ui.adapters.AllianceMembersAdapter;
-import com.example.habitmaster.utils.NotificationHelper;
 import com.example.habitmaster.utils.Prefs;
 import com.google.firebase.firestore.ListenerRegistration;
 
@@ -149,8 +148,6 @@ public class AllianceActivity extends AppCompatActivity {
         userService.findUserById(alliance.getLeaderId(), new ICallback<>() {
             @Override
             public void onSuccess(User leader) {
-                membersList.clear();
-                membersList.add(leader.getUsername());
                 showAlliance(alliance.getName(), leader.getUsername());
                 checkDeleteButtonVisibility();
             }
@@ -217,9 +214,7 @@ public class AllianceActivity extends AppCompatActivity {
         chatService.sendMessage(allianceId, currentUserId, currentUsername, text, new ICallbackVoid() {
             @Override
             public void onSuccess() {
-
                 input.setText("");
-                NotificationHelper.notifyNewMessage(AllianceActivity.this, currentUsername, text);
             }
 
             @Override
@@ -234,7 +229,7 @@ public class AllianceActivity extends AppCompatActivity {
         chatService.loadAllMessages(allianceId, new ICallback<>() {
             @Override
             public void onSuccess(List<AllianceMessage> messages) {
-
+                long lastTimestamp = messages.isEmpty() ? 0 : messages.get(messages.size() - 1).getTimestamp();
                 for (AllianceMessage msg : messages) {
                     Log.d("AllianceChatDebug", "Message: " + msg.getContent()
                             + ", User: " + msg.getSenderUsername()
@@ -245,7 +240,7 @@ public class AllianceActivity extends AppCompatActivity {
                 chatAdapter.setMessages(messages);
                 recyclerChat.scrollToPosition(chatAdapter.getItemCount() - 1);
 
-                subscribeToMessages(allianceId);
+                subscribeToMessages(allianceId, lastTimestamp);
             }
 
             @Override
@@ -256,8 +251,8 @@ public class AllianceActivity extends AppCompatActivity {
     }
 
 
-    private void subscribeToMessages(String allianceId) {
-        listenerRegistration = chatService.subscribeToMessages(allianceId, new ICallback<>() {
+    private void subscribeToMessages(String allianceId, long lastTimestamp) {
+        listenerRegistration = chatService.subscribeToMessages(allianceId, lastTimestamp, new ICallback<>() {
             @Override
             public void onSuccess(AllianceMessage message) {
                 chatAdapter.addMessage(message);
