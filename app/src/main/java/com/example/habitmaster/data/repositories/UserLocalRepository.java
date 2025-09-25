@@ -4,8 +4,10 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
+import android.util.Log;
 
 import com.example.habitmaster.data.database.DatabaseHelper;
+import com.example.habitmaster.data.firebases.FirebaseUserLevelProgressRepository;
 import com.example.habitmaster.domain.models.User;
 import com.example.habitmaster.domain.models.UserLevelProgress;
 
@@ -18,10 +20,12 @@ import java.util.Map;
 
 public class UserLocalRepository {
     private final DatabaseHelper helper;
+    private final FirebaseUserLevelProgressRepository firebaseUserLevelProgressRepository;
     private final UserLevelProgressRepository userLevelProgressRepository;
 
     public UserLocalRepository(Context ctx) {
         this.helper = new DatabaseHelper(ctx);
+        this.firebaseUserLevelProgressRepository = new FirebaseUserLevelProgressRepository();
         this.userLevelProgressRepository = new UserLevelProgressRepository(ctx);
     }
 
@@ -237,8 +241,6 @@ public class UserLocalRepository {
             userValues.put("powerPoints", powerPoints);
             userValues.put("xp", currentXp);
             userValues.put("levelStartDate", LocalDate.now().toString());
-
-            // dodavanje novcica prvi 200 pa za svaki sledeci 20% vise nego prethodnog
 
             db.update(DatabaseHelper.T_USERS, userValues, "id = ?", new String[]{userId});
 
