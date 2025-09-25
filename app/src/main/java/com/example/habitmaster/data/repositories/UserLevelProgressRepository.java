@@ -72,15 +72,6 @@ public class UserLevelProgressRepository {
         } finally {
             db.close();
         }
-
-        firebaseRepo.saveUserLevelProgress(progress, task -> {
-            if (task.isSuccessful()) {
-                Log.d("Firebase", "Progress updated successfully!");
-            } else {
-                Log.e("Firebase", "Error updating progress", task.getException());
-            }
-        });
-
     }
 
     public void createUserLevelProgress(UserLevelProgress progress) {

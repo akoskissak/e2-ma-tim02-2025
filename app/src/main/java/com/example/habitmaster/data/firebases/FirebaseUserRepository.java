@@ -1,9 +1,11 @@
 package com.example.habitmaster.data.firebases;
 
 import android.content.Context;
+import android.util.Log;
 
 import com.example.habitmaster.data.repositories.UserLocalRepository;
 import com.example.habitmaster.domain.models.User;
+import com.example.habitmaster.domain.models.UserLevelProgress;
 import com.example.habitmaster.services.ICallback;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
@@ -14,8 +16,11 @@ import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.EmailAuthProvider;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.FirebaseFirestoreException;
+import com.google.firebase.firestore.Transaction;
 
 import java.time.LocalDate;
 import java.util.HashMap;
@@ -26,9 +31,12 @@ public class FirebaseUserRepository {
     private final FirebaseAuth auth = FirebaseAuth.getInstance();
     private final FirebaseFirestore db = FirebaseFirestore.getInstance();
     private final UserLocalRepository local;
+    private final FirebaseUserLevelProgressRepository firebaseUserLevelProgressRepository;
 
     public FirebaseUserRepository(Context ctx) {
+
         this.local = new UserLocalRepository(ctx);
+        this.firebaseUserLevelProgressRepository = new FirebaseUserLevelProgressRepository();
     }
 
     public void createAuthUser(String email, String password, OnCompleteListener<AuthResult> listener) {
@@ -257,18 +265,109 @@ public class FirebaseUserRepository {
                     }
 
                     db.runTransaction(transaction -> {
+                        DocumentReference userRef = db.collection("users").document(userId);
+                        DocumentSnapshot snapshot = transaction.get(userRef);
+
+                        if (!snapshot.exists()) {
+                            Log.w("LevelUp", "User document ne postoji za userId=" + userId);
+                            return null;
+                        }
+
                         Long currentXp = documentSnapshot.getLong("xp");
                         if (currentXp == null) currentXp = 0L;
 
                         long newXp = currentXp + xp;
-                        transaction.update(db.collection("users").document(userId), "xp", newXp);
 
-                        // Ovde možeš pozvati metodu koja proverava levelUp, npr:
-                        // checkAndLevelUpFirebase(transaction, userId, newXp);
+                        checkAndLevelUpFirebase(transaction, userId, newXp);
 
                         return null;
                     });
                 });
     }
 
+    private void checkAndLevelUpFirebase(Transaction transaction, String userId, long currentXp) {
+        try {
+            DocumentReference userRef = db.collection("users").document(userId);
+            DocumentReference progressRef = db.collection("userLevelProgress").document(userId);
+
+            DocumentSnapshot snapshot = transaction.get(userRef);
+            DocumentSnapshot progressSnap = transaction.get(progressRef);
+
+
+
+            Long level = snapshot.getLong("level");
+            String title = snapshot.getString("title");
+            Long powerPoints = snapshot.getLong("powerPoints");
+
+            if (level == null) level = 0L;
+            if (powerPoints == null) powerPoints = 0L;
+            if (title == null) title = "Rookie";
+
+            Log.d("LevelUp", "Pre level-up: level=" + level + ", xp=" + currentXp + ", pp=" + powerPoints);
+
+            UserLevelProgress progress = null;
+            if (progressSnap.exists()) {
+                progress = progressSnap.toObject(UserLevelProgress.class);
+            }
+
+            if (progress == null) {
+                Log.w("LevelUp", "Nema progress dokumenta za userId=" + userId);
+                return;
+            }
+
+            boolean leveledUp = false;
+
+            while (currentXp >= progress.getRequiredXp()) {
+                level++;
+                currentXp -= progress.getRequiredXp();
+
+                int prevRequired = progress.getRequiredXp();
+                progress.updateRequiredXp(prevRequired);
+
+                if (level == 1) {
+                    powerPoints = 40L;
+                } else {
+                    powerPoints = Math.round(powerPoints + (3.0 / 4.0) * powerPoints);
+                }
+
+                progress.updateXpValuesOnLevelUp();
+
+                switch (level.intValue()) {
+                    case 0:
+                        title = "Rookie";
+                        break;
+                    case 1:
+                        title = "Adventurer";
+                        break;
+                    case 2:
+                        title = "Hero";
+                        break;
+                    default:
+                        title = "Hero lvl" + level;
+                        break;
+                }
+
+                leveledUp = true;
+            }
+
+            if (leveledUp) {
+                Map<String, Object> userUpdates = new HashMap<>();
+                userUpdates.put("level", level);
+                userUpdates.put("title", title);
+                userUpdates.put("powerPoints", powerPoints);
+                userUpdates.put("xp", currentXp);
+                userUpdates.put("levelStartDate", LocalDate.now().toString());
+
+                transaction.update(userRef, userUpdates);
+
+                transaction.set(progressRef, progress);
+                Log.d("LevelUp", "User i progress uspešno ažurirani u Firestore");
+            } else {
+                transaction.update(userRef, "xp", currentXp);
+                Log.d("LevelUp", "Nema level up-a, ostaje level=" + level + ", xp=" + currentXp);
+            }
+        } catch (FirebaseFirestoreException e) {
+            Log.e("LevelUp", "Greška tokom transakcije: " + e.getMessage(), e);
+        }
+    }
 }

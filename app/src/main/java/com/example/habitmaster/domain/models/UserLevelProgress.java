@@ -14,6 +14,8 @@ public class UserLevelProgress {
     private int extremelyImportantXp = 10;
     private int specialXp = 100;
 
+    public UserLevelProgress() {}
+
     public UserLevelProgress(String userId) {
         this.userId = userId;
     }
