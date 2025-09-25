@@ -220,23 +220,30 @@ public class BossFightActivity extends AppCompatActivity {
                         if (currentBoss.getCurrentHp() == 0) {
                             updateUIOnBossFightEnd(result, "Boss defeated! Tap the chest or shake!");
                         } else if (currentBoss.isHalfDefeated()) {
-                            bossService.getBossReward(currentUser.getId(), currentBoss, new ICallback<BossFightResult>() {
-                                @Override
-                                public void onSuccess(BossFightResult result) {
-                                    runOnUiThread(() -> updateUIOnBossFightEnd(result, "Fight ended! Tap the chest or shake!"));
-                                }
-
-                                @Override
-                                public void onError(String errorMessage) {
-                                    runOnUiThread(() -> Toast.makeText(BossFightActivity.this, "Error: " + errorMessage, Toast.LENGTH_SHORT).show());
-                                }
-                            });
+                            getHalfBossReward(currentUser.getId(), currentBoss);
                         }
                     } else {
+                        if (currentBoss.isHalfDefeated()) {
+                            getHalfBossReward(currentUser.getId(), currentBoss);
+                        }
                         playBossAnimation(false);
                         Toast.makeText(BossFightActivity.this, "Attack missed", Toast.LENGTH_SHORT).show();
                     }
                 });
+            }
+
+            @Override
+            public void onError(String errorMessage) {
+                runOnUiThread(() -> Toast.makeText(BossFightActivity.this, "Error: " + errorMessage, Toast.LENGTH_SHORT).show());
+            }
+        });
+    }
+
+    private void getHalfBossReward(String userId, Boss boss) {
+        bossService.getBossReward(currentUser.getId(), currentBoss, new ICallback<BossFightResult>() {
+            @Override
+            public void onSuccess(BossFightResult result) {
+                runOnUiThread(() -> updateUIOnBossFightEnd(result, "Fight ended! Tap the chest or shake!"));
             }
 
             @Override

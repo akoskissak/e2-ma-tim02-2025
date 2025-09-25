@@ -167,7 +167,7 @@ public class UserEquipmentService {
                         .orElse(null);
 
                 if (existingArmor != null) {
-                    existingArmor.setBonusValue(existingArmor.getBonusValue() + existingArmor.getBonusValue());
+                    existingArmor.setBonusValue(existingArmor.getBonusValue() + 0.1);
                     updateUserEquipmentUC.updateArmor(existingArmor);
                     callback.onSuccess(existingArmor);
                 } else {
