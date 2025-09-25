@@ -254,9 +254,10 @@ public class CreateTaskActivity extends AppCompatActivity {
                 @Override
                 public void onSuccess() {
                     Toast.makeText(CreateTaskActivity.this, "Task created successfully", Toast.LENGTH_SHORT).show();
-                    Intent intent = new Intent(CreateTaskActivity.this, MyTasksActivity.class);
-                    startActivity(intent);
                     finish();
+//                    Intent intent = new Intent(CreateTaskActivity.this, MyTasksActivity.class);
+//                    startActivity(intent);
+//                    finish();
                 }
 
                 @Override

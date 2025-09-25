@@ -198,6 +198,7 @@ public class MainActivity extends AppCompatActivity {
             public void onSuccess(Integer userLevel) {
                 Log.d("USER_LEVEL", "user level: " + userLevel);
                 if (userLevel > 0) {
+                    // TODO: Dodati da ako sledeci boss nije dostupan, ne moze da ode na boss activity
                     btnBossFight.setEnabled(true);
                 } else {
                     btnBossFight.setEnabled(false);

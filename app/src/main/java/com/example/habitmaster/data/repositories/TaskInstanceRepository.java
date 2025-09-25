@@ -5,6 +5,7 @@ import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteStatement;
+import android.util.Log;
 
 import com.example.habitmaster.data.database.DatabaseHelper;
 import com.example.habitmaster.domain.models.TaskInstance;
@@ -288,6 +289,7 @@ public class TaskInstanceRepository {
         SQLiteDatabase db = null;
         Cursor cursor = null;
 
+
         try {
             db = dbHelper.getReadableDatabase();
 
@@ -295,14 +297,13 @@ public class TaskInstanceRepository {
             String sql = "SELECT ti.id, ti.taskId, ti.date, ti.createdAt, ti.status " +
                     "FROM " + DatabaseHelper.T_TASK_INSTANCES + " ti " +
                     "JOIN tasks t ON ti.taskId = t.id " +
-                    "WHERE t.userId = ? AND t.xpValue > 0 AND ti.createdAt BETWEEN ? AND ? AND ti.date <= ?" +
+                    "WHERE t.userId = ? AND t.xpValue > 0 AND ti.date BETWEEN ? AND ?" +
                     "ORDER BY ti.date ASC";
 
             String[] selectionArgs = {
                     userId,
                     from.toString(), // yyyy-MM-dd
-                    to.toString(),
-                    LocalDate.now().toString()
+                    to.toString()
             };
 
             cursor = db.rawQuery(sql, selectionArgs);
