@@ -7,7 +7,6 @@ import com.example.habitmaster.domain.models.Alliance;
 import com.example.habitmaster.domain.models.AllianceInvitation;
 import com.example.habitmaster.domain.models.AllianceMission;
 import com.example.habitmaster.domain.models.AllianceMissionProgressType;
-import com.example.habitmaster.domain.models.AllianceMissionStatus;
 import com.example.habitmaster.domain.models.AllianceUserMission;
 import com.example.habitmaster.domain.usecases.AcceptAllianceInviteUseCase;
 import com.example.habitmaster.domain.usecases.CreateAllianceUseCase;
@@ -71,8 +70,8 @@ public class AllianceService {
         deleteAllianceUC.execute(leaderId, callback);
     }
 
-    public void getAllianceMembers(String allianceId, ICallback<List<String>> callback) {
-        getAllianceMembersUC.execute(allianceId, callback);
+    public void getAllianceMemberUsernames(String allianceId, ICallback<List<String>> callback) {
+        getAllianceMembersUC.getMemberUsernamesByAllianceId(allianceId, callback);
     }
 
     public void getAllianceInvitationById(String allianceInvitationId, String allianceId, ICallback<AllianceInvitation> callback) {
@@ -213,8 +212,13 @@ public class AllianceService {
                 public void onSuccess(Alliance alliance) {
                     allianceMissionService.checkIsMissionFinishedByAllianceId(alliance.getId(), new ICallback<Boolean>() {
                         @Override
-                        public void onSuccess(Boolean result) {
-                            getAllianceMembersUC.execute(alliance.getId(), new ICallback<List<String>>() {
+                        public void onSuccess(Boolean success) {
+                            if (!success) {
+                                callback.onError("Mission not completed");
+                                return;
+                            }
+
+                            getAllianceMembersUC.getMemberIdsByAllianceId(alliance.getId(), new ICallback<List<String>>() {
                                 @Override
                                 public void onSuccess(List<String> members) {
                                     members.add(alliance.getLeaderId());

@@ -57,7 +57,9 @@ public class AllianceMissionService {
             @Override
             public void onSuccess(AllianceMission mission) {
                 if (mission.getEndDateTime().isBefore(LocalDateTime.now())) {
-                    callback.onSuccess(mission.finishMission());
+                    boolean success = mission.finishMission();
+                    updateAllianceMissionUseCase.execute(mission);
+                    callback.onSuccess(success);
                 }
             }
 

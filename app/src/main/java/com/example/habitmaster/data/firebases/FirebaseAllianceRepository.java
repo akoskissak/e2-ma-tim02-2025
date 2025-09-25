@@ -486,7 +486,7 @@ public class FirebaseAllianceRepository {
         }
     }
 
-    public void getMembersByAllianceId(String allianceId, OnSuccessListener<List<String>> onSuccess) {
+    public void getMemberUsernamesByAllianceId(String allianceId, OnSuccessListener<List<String>> onSuccess) {
         db.collection("alliances")
                 .document(allianceId)
                 .collection("members")
@@ -530,6 +530,34 @@ public class FirebaseAllianceRepository {
                     onSuccess.onSuccess(new ArrayList<>());
                 });
     }
+
+    public void getMemberIdsByAllianceId(String allianceId, OnSuccessListener<List<String>> onSuccess) {
+        db.collection("alliances")
+                .document(allianceId)
+                .collection("members")
+                .get()
+                .addOnSuccessListener(memberSnapshot -> {
+                    if (memberSnapshot.isEmpty()) {
+                        onSuccess.onSuccess(new ArrayList<>());
+                        return;
+                    }
+
+                    List<String> memberIds = new ArrayList<>();
+                    for (DocumentSnapshot memberDoc : memberSnapshot.getDocuments()) {
+                        String userId = memberDoc.getString("userId");
+                        if (userId != null) {
+                            memberIds.add(userId);
+                        }
+                    }
+
+                    onSuccess.onSuccess(memberIds);
+                })
+                .addOnFailureListener(e -> {
+                    Log.e("FirebaseRepo", "Greška pri dohvatanju memberId-jeva", e);
+                    onSuccess.onSuccess(new ArrayList<>());
+                });
+    }
+
 
     public void updateMissionStarted(String allianceId, boolean missionStarted) {
         db.collection("alliances")

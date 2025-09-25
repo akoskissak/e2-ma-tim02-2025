@@ -56,12 +56,12 @@ public class MainActivity extends AppCompatActivity {
             return;
         }
 
-        seeder.runTaskSeedIfNeeded();
+        if (prefs.getUsername().startsWith("demo")) {
+            seeder.runTaskSeedIfNeeded();
+        }
 
         TaskService taskService = new TaskService(this);
         taskService.checkMissedTasks(prefs.getUid());
-
-        checkIsAllianceMissionFinished();
 
         // da uvek bude mode day
         AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO);
@@ -184,7 +184,7 @@ public class MainActivity extends AppCompatActivity {
 
             @Override
             public void onError(String errorMessage) {
-
+                Log.d("ALLIANCE MISSION FINISHED", "msg: " + errorMessage);
             }
         });
     }
@@ -211,6 +211,8 @@ public class MainActivity extends AppCompatActivity {
                 Toast.makeText(MainActivity.this, errorMessage, Toast.LENGTH_SHORT).show();
             }
         });
+
+        checkIsAllianceMissionFinished();
     }
 
     @Override

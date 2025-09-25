@@ -1,6 +1,7 @@
 package com.example.habitmaster.domain.usecases.users;
 
 import android.content.Context;
+import android.util.Log;
 
 import com.example.habitmaster.data.firebases.FirebaseUserRepository;
 import com.example.habitmaster.domain.models.Boss;
@@ -30,7 +31,7 @@ public class AddBadgesAndHalfBossRewardUseCase {
 
                 @Override
                 public void onError(String errorMessage) {
-
+                    Log.d("Add badges and half boss reward", "onError: " + errorMessage);
                 }
             });
 

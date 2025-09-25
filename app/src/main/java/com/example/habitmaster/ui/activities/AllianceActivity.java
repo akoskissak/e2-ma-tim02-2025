@@ -1,7 +1,5 @@
 package com.example.habitmaster.ui.activities;
 
-import static java.security.AccessController.getContext;
-
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
@@ -258,7 +256,7 @@ public class AllianceActivity extends AppCompatActivity {
     }
 
     private void loadAllianceMembers(String allianceId, AllianceService allianceService) {
-        allianceService.getAllianceMembers(allianceId, new ICallback<>() {
+        allianceService.getAllianceMemberUsernames(allianceId, new ICallback<>() {
             @Override
             public void onSuccess(List<String> result) {
                 membersList.addAll(result);
