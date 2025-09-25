@@ -35,12 +35,13 @@ public class TaskDetailActivity extends AppCompatActivity {
     Prefs prefs;
     private EditText editName, editDescription;
     private Spinner spinnerDifficulty, spinnerImportance;
-    private LinearLayout editExecutionTimeLayout, bottomButtonslayouts;
-    private Button btnEdit, btnEditExecutionTime, btnSave, btnCancelEdit, btnDelete, btnPause, btnDone;
+    private LinearLayout editExecutionTimeLayout, bottomButtonsLayouts;
+    private Button btnEdit, btnEditExecutionTime, btnSave, btnCancelEdit, btnDelete, btnPause, btnDone, btnCancelTask;
     private LocalTime executionTime;
     private TaskService taskService;
     private String taskId;
     private TaskInstanceDTO task;
+    private TextView taskEndedText;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -69,6 +70,7 @@ public class TaskDetailActivity extends AppCompatActivity {
         frequencyText = findViewById(R.id.textTaskFrequency);
         xpText = findViewById(R.id.textTaskXp);
         btnPause = findViewById(R.id.btnPause);
+        taskEndedText = findViewById(R.id.textTaskEnded);
 
         Log.d("Task != null", "Task is not null");
         nameText.setText(task.getName());
@@ -88,16 +90,19 @@ public class TaskDetailActivity extends AppCompatActivity {
         btnCancelEdit = findViewById(R.id.btnCancelEdit);
         btnDelete = findViewById(R.id.btnDelete);
         btnDone = findViewById(R.id.btnDone);
+        btnCancelTask = findViewById(R.id.btnCancelTask);
         editName = findViewById(R.id.editTaskName);
         editDescription = findViewById(R.id.editTaskDescription);
         btnEditExecutionTime = findViewById(R.id.btnEditTaskExecutionTime);
         spinnerDifficulty = findViewById(R.id.spinnerDifficulty);
         spinnerImportance = findViewById(R.id.spinnerImportance);
         editExecutionTimeLayout = findViewById(R.id.editExecutionTimeLayout);
-        bottomButtonslayouts = findViewById(R.id.layoutSaveAndCancelEditTask);
+        bottomButtonsLayouts = findViewById(R.id.layoutSaveAndCancelEditTask);
 
         spinnerDifficulty.setAdapter(new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, TaskDifficulty.values()));
         spinnerImportance.setAdapter(new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, TaskImportance.values()));
+
+        updateButtonsVisibility();
 
         btnEditExecutionTime.setOnClickListener(view -> {
             LocalTime currentTime = LocalTime.now();
@@ -118,6 +123,7 @@ public class TaskDetailActivity extends AppCompatActivity {
         btnDelete.setOnClickListener(v -> confirmDeleteTask());
         btnPause.setOnClickListener(v -> pauseTask());
         btnDone.setOnClickListener(v -> completeTask());
+        btnCancelTask.setOnClickListener(v -> cancelTask());
     }
 
     private void enableEditing() {
@@ -191,7 +197,7 @@ public class TaskDetailActivity extends AppCompatActivity {
         editName.setVisibility(show ? View.VISIBLE : View.GONE);
         editDescription.setVisibility(show ? View.VISIBLE : View.GONE);
         editExecutionTimeLayout.setVisibility(show ? View.VISIBLE : View.GONE);
-        bottomButtonslayouts.setVisibility(show ? View.VISIBLE : View.GONE);
+        bottomButtonsLayouts.setVisibility(show ? View.VISIBLE : View.GONE);
         spinnerDifficulty.setVisibility(show ? View.VISIBLE : View.GONE);
         spinnerImportance.setVisibility(show ? View.VISIBLE : View.GONE);
     }
@@ -256,14 +262,15 @@ public class TaskDetailActivity extends AppCompatActivity {
         });
     }
 
-    private void completeTask() {
+    private void cancelTask() {
         if (task == null) return;
 
-        Log.d("COMPLETE TASK", "completeTask: " + task.getId());
-        taskService.completeTask(prefs.getUid(), task, new TaskService.Callback() {
+        taskService.updateTaskStatus(prefs.getUid(), task.getId(), TaskStatus.CANCELLED, new TaskService.Callback() {
             @Override
             public void onSuccess() {
-                Toast.makeText(TaskDetailActivity.this, "Task completed", Toast.LENGTH_SHORT).show();
+                Toast.makeText(TaskDetailActivity.this, "Task cancelled", Toast.LENGTH_SHORT).show();
+                task.setStatus(TaskStatus.CANCELLED);
+                updateButtonsVisibility();
             }
 
             @Override
@@ -272,4 +279,43 @@ public class TaskDetailActivity extends AppCompatActivity {
             }
         });
     }
+
+    private void completeTask() {
+        if (task == null) return;
+
+        Log.d("COMPLETE TASK", "completeTask: " + task.getId());
+        taskService.completeTask(prefs.getUid(), task, new TaskService.Callback() {
+            @Override
+            public void onSuccess() {
+                Toast.makeText(TaskDetailActivity.this, "Task completed", Toast.LENGTH_SHORT).show();
+                task.setStatus(TaskStatus.COMPLETED);
+                updateButtonsVisibility();
+            }
+
+            @Override
+            public void onError(String errorMessage) {
+                Toast.makeText(TaskDetailActivity.this, "Failed: " + errorMessage, Toast.LENGTH_SHORT).show();
+            }
+        });
+    }
+
+    private void updateButtonsVisibility() {
+        Log.d("TASK INSTANCE STATUS", task.getStatus().name());
+        if (task.getStatus() == TaskStatus.CANCELLED || task.getStatus() == TaskStatus.COMPLETED || task.getStatus() == TaskStatus.MISSED) {
+            btnDone.setVisibility(View.GONE);
+            btnPause.setVisibility(View.GONE);
+            btnDelete.setVisibility(View.GONE);
+            btnCancelTask.setVisibility(View.GONE);
+            btnEdit.setVisibility(View.GONE);
+            taskEndedText.setText(task.getStatus().name());
+            taskEndedText.setVisibility(View.VISIBLE);
+        } else {
+            btnDone.setVisibility(View.VISIBLE);
+            btnPause.setVisibility(View.VISIBLE);
+            btnDelete.setVisibility(View.VISIBLE);
+            btnCancelTask.setVisibility(View.VISIBLE);
+            taskEndedText.setVisibility(View.GONE);
+        }
+    }
+
 }

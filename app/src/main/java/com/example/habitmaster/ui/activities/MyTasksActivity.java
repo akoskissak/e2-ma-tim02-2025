@@ -15,6 +15,7 @@ import com.example.habitmaster.ui.fragments.TaskListFragment;
 public class MyTasksActivity extends AppCompatActivity {
     private Button btnNewTask;
     private Button btnCalendarView, btnListView;
+    private int mostRecentFragment; // 0 = Calendar, 1 = List
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -22,19 +23,25 @@ public class MyTasksActivity extends AppCompatActivity {
         EdgeToEdge.enable(this);
         setContentView(R.layout.activity_my_tasks);
 
+        mostRecentFragment = 0;
         btnCalendarView = findViewById(R.id.btnCalendarView);
+
         btnListView = findViewById(R.id.btnListView);
 
         btnNewTask = findViewById(R.id.btnNewTask);
         btnNewTask.setOnClickListener(view -> {
-            Intent intent = new Intent(MyTasksActivity.this, CreateTaskActivity.class);
-            startActivity(intent);
+            startActivity(new Intent(MyTasksActivity.this, CreateTaskActivity.class));
         });
 
-        loadFragment(new TaskCalendarFragment());
+        btnCalendarView.setOnClickListener(v -> {
+            mostRecentFragment = 0;
+            loadFragment(new TaskCalendarFragment());
+        });
 
-        btnCalendarView.setOnClickListener(v -> loadFragment(new TaskCalendarFragment()));
-        btnListView.setOnClickListener(v -> loadFragment(new TaskListFragment()));
+        btnListView.setOnClickListener(v -> {
+            mostRecentFragment = 1;
+            loadFragment(TaskListFragment.newInstance());
+        });
     }
 
     private void loadFragment(Fragment fragment) {
@@ -42,5 +49,16 @@ public class MyTasksActivity extends AppCompatActivity {
                 .beginTransaction()
                 .replace(R.id.fragmentContainer, fragment)
                 .commit();
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+
+        if (mostRecentFragment == 0) {
+            loadFragment(new TaskCalendarFragment());
+        } else {
+            loadFragment(TaskListFragment.newInstance());
+        }
     }
 }

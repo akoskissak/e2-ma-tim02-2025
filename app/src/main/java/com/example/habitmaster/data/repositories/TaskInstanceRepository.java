@@ -29,7 +29,7 @@ public class TaskInstanceRepository {
         values.put("date", instance.getDate().toString()); // ISO format YYYY-MM-DD
         values.put("createdAt", instance.getCreatedAt().toString()); // ISO format YYYY-MM-DD
         values.put("status", instance.getStatus().name());
-        db.insert("task_instances", null, values);
+        db.insert(DatabaseHelper.T_TASK_INSTANCES, null, values);
         db.close();
     }
 
@@ -52,7 +52,7 @@ public class TaskInstanceRepository {
         String selection = "taskId IN (" + inClause.toString() + ")";
 
         Cursor cursor = db.query(
-                "task_instances",
+                DatabaseHelper.T_TASK_INSTANCES,
                 null,
                 selection,
                 selectionArgs,
@@ -94,7 +94,7 @@ public class TaskInstanceRepository {
         selectionArgs[taskIds.size()] = fromDate.toString(); // yyyy-MM-dd
 
         Cursor cursor = db.query(
-                "task_instances",
+                DatabaseHelper.T_TASK_INSTANCES,
                 null,
                 selection,
                 selectionArgs,
@@ -128,7 +128,7 @@ public class TaskInstanceRepository {
         String[] selectionArgs = { taskId, fromDate.toString() }; // yyyy-MM-dd
 
         Cursor cursor = db.query(
-                "task_instances",
+                DatabaseHelper.T_TASK_INSTANCES,
                 null,
                 selection,
                 selectionArgs,
@@ -192,7 +192,7 @@ public class TaskInstanceRepository {
             String whereClause = "taskId = ? AND date >= ? AND status != ?";
             String[] whereArgs = new String[]{taskId, LocalDate.now().toString(), TaskStatus.COMPLETED.name()};
 
-            int rowsDeleted = db.delete("task_instances", whereClause, whereArgs);
+            int rowsDeleted = db.delete(DatabaseHelper.T_TASK_INSTANCES, whereClause, whereArgs);
 
             return rowsDeleted > 0;
         } catch (Exception e) {
@@ -212,7 +212,7 @@ public class TaskInstanceRepository {
             String selection = "id = ?";
             String[] selectionArgs = {id};
 
-            cursor = db.query("task_instances", columns, selection, selectionArgs,
+            cursor = db.query(DatabaseHelper.T_TASK_INSTANCES, columns, selection, selectionArgs,
                     null, null, null);
 
             if (cursor != null && cursor.moveToFirst()) {
@@ -235,13 +235,11 @@ public class TaskInstanceRepository {
             ContentValues values = new ContentValues();
             values.put("status", newStatus.name());
 
-            String threeDaysAgo = LocalDate.now().minusDays(3).toString();
-
             int rowsUpdated = db.update(
-                    "task_instances",
+                    DatabaseHelper.T_TASK_INSTANCES,
                     values,
-                    "id = ? AND date >= ?",
-                    new String[]{taskInstanceId, threeDaysAgo}
+                    "id = ?",
+                    new String[]{taskInstanceId}
             );
 
             return rowsUpdated > 0;
@@ -267,7 +265,7 @@ public class TaskInstanceRepository {
                 if (i < instances.size() - 1) inClause.append(",");
             }
 
-            String sql = "UPDATE task_instances SET taskId = ? WHERE id IN (" + inClause + ")";
+            String sql = "UPDATE " + DatabaseHelper.T_TASK_INSTANCES + " SET taskId = ? WHERE id IN (" + inClause + ")";
             SQLiteStatement stmt = db.compileStatement(sql);
 
             stmt.bindString(1, taskId);
@@ -295,7 +293,7 @@ public class TaskInstanceRepository {
 
             // JOIN task_instances sa tasks da bi se došao do userId
             String sql = "SELECT ti.id, ti.taskId, ti.date, ti.createdAt, ti.status " +
-                    "FROM task_instances ti " +
+                    "FROM " + DatabaseHelper.T_TASK_INSTANCES + " ti " +
                     "JOIN tasks t ON ti.taskId = t.id " +
                     "WHERE t.userId = ? AND t.xpValue > 0 AND ti.createdAt BETWEEN ? AND ? AND ti.date <= ?" +
                     "ORDER BY ti.date ASC";
@@ -339,7 +337,7 @@ public class TaskInstanceRepository {
 
             // SQL query: join task_instances sa tasks da dobijemo userId
             String sql = "SELECT ti.id, ti.taskId, ti.date, ti.createdAt, ti.status " +
-                    "FROM task_instances ti " +
+                    "FROM " + DatabaseHelper.T_TASK_INSTANCES + " ti " +
                     "JOIN tasks t ON ti.taskId = t.id " +
                     "WHERE t.userId = ? AND ti.status = ? AND ti.date <= ? " +
                     "ORDER BY ti.date ASC";
