@@ -60,6 +60,3 @@ fabric.properties
 *.db
 *.sqlite
 *.sqlite-journal
-
-# Lottie JSON animations (optional, only if downloaded locally)
-*.json
