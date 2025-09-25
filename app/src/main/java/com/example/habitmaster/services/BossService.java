@@ -3,12 +3,14 @@ package com.example.habitmaster.services;
 import android.content.Context;
 
 import com.example.habitmaster.data.dtos.BossFightResult;
+import com.example.habitmaster.domain.models.AllianceMissionProgressType;
 import com.example.habitmaster.domain.models.Boss;
 import com.example.habitmaster.domain.models.UserEquipment;
 import com.example.habitmaster.domain.usecases.bosses.AttackBossUseCase;
 import com.example.habitmaster.domain.usecases.bosses.GetOrCreateBossUseCase;
 import com.example.habitmaster.ui.activities.BossFightActivity;
 
+import java.util.List;
 import java.util.Random;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -18,11 +20,13 @@ public class BossService {
     private final GetOrCreateBossUseCase getOrCreateBossUseCase;
     private final AttackBossUseCase attackBossUseCase;
     private final TaskService taskService;
+    private final AllianceService allianceService;
 
     public BossService(Context context) {
-        getOrCreateBossUseCase = new GetOrCreateBossUseCase(context);
-        attackBossUseCase = new AttackBossUseCase(context);
-        taskService = new TaskService(context);
+        this.getOrCreateBossUseCase = new GetOrCreateBossUseCase(context);
+        this.attackBossUseCase = new AttackBossUseCase(context);
+        this.taskService = new TaskService(context);
+        this.allianceService = new AllianceService(context);
     }
     public void getBossByUserId(String userId, ICallback<Boss> callback) {
         getOrCreateBossUseCase.getBossByUserId(userId, new ICallback<Boss>() {
@@ -45,6 +49,7 @@ public class BossService {
             attackBossUseCase.execute(userId, powerPoints, stageSuccessRate, new ICallback<BossFightResult>() {
                 @Override
                 public void onSuccess(BossFightResult result) {
+                    allianceService.tryUpdateAllianceProgress(userId, AllianceMissionProgressType.BOSS_FIGHT_HIT);
                     callback.onSuccess(result);
                 }
 

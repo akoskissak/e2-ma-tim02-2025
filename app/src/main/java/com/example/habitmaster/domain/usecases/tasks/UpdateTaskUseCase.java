@@ -1,5 +1,7 @@
 package com.example.habitmaster.domain.usecases.tasks;
 
+import android.content.Context;
+
 import com.example.habitmaster.data.dtos.TaskInstanceDTO;
 import com.example.habitmaster.data.firebases.FirebaseTaskInstanceRepository;
 import com.example.habitmaster.data.firebases.FirebaseTaskRepository;
@@ -11,6 +13,7 @@ import com.example.habitmaster.domain.models.TaskFrequency;
 import com.example.habitmaster.domain.models.TaskInstance;
 import com.example.habitmaster.domain.models.TaskStatus;
 import com.example.habitmaster.domain.models.UserLevelProgress;
+import com.example.habitmaster.domain.usecases.alliances.userMissions.CheckUnresolvedTasksUseCase;
 import com.example.habitmaster.services.ICallback;
 
 import java.time.LocalDate;
@@ -33,7 +36,7 @@ public class UpdateTaskUseCase {
     }
 
     public UpdateTaskUseCase(TaskRepository taskRepo, TaskInstanceRepository taskInstanceRepo, UserLevelProgressRepository userLevelProgressRepository,
-                             FirebaseTaskRepository remoteRepo, FirebaseTaskInstanceRepository remoteInstanceRepo) {
+                             FirebaseTaskRepository remoteRepo, FirebaseTaskInstanceRepository remoteInstanceRepo, Context context) {
         this.taskRepo = taskRepo;
         this.taskInstanceRepo = taskInstanceRepo;
         this.userLevelProgressRepository = userLevelProgressRepository;
@@ -124,12 +127,14 @@ public class UpdateTaskUseCase {
                 return;
             } else {
                 var threeDaysAgo = LocalDate.now().minusDays(3);
-                if (taskInstance.getDate().isBefore(threeDaysAgo) || taskInstance.getDate().isAfter(LocalDate.now())) {
+                if (taskInstance.getDate().isBefore(threeDaysAgo)) {
+                    callback.onError("Cannot complete task older than 3 days");
+                    return;
+                } else if (taskInstance.getDate().isAfter(LocalDate.now())) {
                     callback.onError("Cannot complete future tasks");
                     return;
                 }
             }
-
         }
 
         if (taskInstanceRepo.updateStatus(taskInstanceId, newStatus)){
@@ -138,5 +143,11 @@ public class UpdateTaskUseCase {
         }
         else
             callback.onError("Task was more than 3 days before");
+    }
+
+    public void markTaskInstanceAsMissed(TaskInstance instance) {
+        if (taskInstanceRepo.updateStatus(instance.getId(), TaskStatus.MISSED)){
+            remoteInstanceRepository.updateStatus(instance.getId(), TaskStatus.MISSED);
+        }
     }
 }

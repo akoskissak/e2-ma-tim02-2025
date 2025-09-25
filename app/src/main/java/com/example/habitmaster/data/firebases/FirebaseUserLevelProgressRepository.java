@@ -6,6 +6,8 @@ import com.example.habitmaster.domain.models.UserLevelProgress;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.android.gms.tasks.Task;
+import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 
 public class FirebaseUserLevelProgressRepository {
@@ -20,18 +22,22 @@ public class FirebaseUserLevelProgressRepository {
                 .addOnCompleteListener(listener);
     }
 
-    public void getUserLevelProgress(String userId, OnSuccessListener<UserLevelProgress> onSuccess, OnFailureListener onFailure) {
-        db.collection("userLevelProgress")
+    public Task<UserLevelProgress> getUserLevelProgress(String userId) {
+        return db.collection("userLevelProgress")
                 .document(userId)
                 .get()
-                .addOnSuccessListener(documentSnapshot -> {
-                    if (documentSnapshot.exists()) {
-                        UserLevelProgress progress = documentSnapshot.toObject(UserLevelProgress.class);
-                        onSuccess.onSuccess(progress);
-                    } else {
-                        onSuccess.onSuccess(null);
+                .continueWith(task -> {
+                    if (!task.isSuccessful()) {
+                        throw task.getException();
                     }
-                })
-                .addOnFailureListener(onFailure);
+
+                    DocumentSnapshot documentSnapshot = task.getResult();
+                    if (documentSnapshot != null && documentSnapshot.exists()) {
+                        return documentSnapshot.toObject(UserLevelProgress.class);
+                    } else {
+                        return null;
+                    }
+                });
     }
+
 }

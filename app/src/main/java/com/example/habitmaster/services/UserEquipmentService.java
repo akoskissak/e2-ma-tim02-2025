@@ -16,6 +16,7 @@ import com.example.habitmaster.domain.usecases.UpdateEquipmentAfterBattleUseCase
 import com.example.habitmaster.domain.usecases.UpdateUserCoinsUseCase;
 import com.example.habitmaster.domain.usecases.UpdateUserEquipmentUseCase;
 import com.example.habitmaster.domain.usecases.UpgradeWeaponUseCase;
+import com.example.habitmaster.utils.ShopUtils;
 
 import java.util.List;
 import java.util.Map;
@@ -112,7 +113,8 @@ public class UserEquipmentService {
                 false,
                 weapon.getDuration(),
                 weapon.getBonusValue(),
-                weapon.getBonusType()) {};
+                weapon.getBonusType()) {
+        };
 
         getAllUserEquipmentUC.execute(userId, new ICallback<List<UserEquipment>>() {
             @Override
@@ -180,5 +182,47 @@ public class UserEquipmentService {
                 callback.onError(errorMessage);
             }
         });
+    }
+
+    public void addMissionRewards(List<String> allMembers) {
+        Equipment[] equipments = ShopUtils.getRandomPotionAndArmor(new Shop());
+        Equipment randomPotion = equipments[0];
+        Equipment randomArmor = equipments[1];
+
+        for (String userId : allMembers) {
+            if (userId == null || userId.isEmpty()) continue;
+
+            if (randomPotion != null) {
+                UserEquipment potionEquipment = new UserEquipment(
+                        UUID.randomUUID().toString(),
+                        userId,
+                        randomPotion.getId(),
+                        randomPotion.getName(),
+                        randomPotion.getType(),
+                        false, // activated
+                        randomPotion.getDuration(),
+                        randomPotion.getBonusValue(),
+                        randomPotion.getBonusType()
+                ) {
+                };
+                addEquipmentUC.execute(potionEquipment);
+            }
+
+            if (randomArmor != null) {
+                UserEquipment armorEquipment = new UserEquipment(
+                        UUID.randomUUID().toString(),
+                        userId,
+                        randomArmor.getId(),
+                        randomArmor.getName(),
+                        randomArmor.getType(),
+                        false,
+                        randomArmor.getDuration(),
+                        randomArmor.getBonusValue(),
+                        randomArmor.getBonusType()
+                ) {
+                };
+                addEquipmentUC.execute(armorEquipment);
+            }
+        }
     }
 }

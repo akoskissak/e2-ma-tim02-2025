@@ -1,5 +1,7 @@
 package com.example.habitmaster.domain.usecases.tasks;
 
+import android.content.Context;
+
 import com.example.habitmaster.data.firebases.FirebaseTaskInstanceRepository;
 import com.example.habitmaster.data.firebases.FirebaseTaskRepository;
 import com.example.habitmaster.data.repositories.TaskInstanceRepository;
@@ -48,8 +50,22 @@ public class CreateTaskUseCase {
         this.userLevelProgressRepository = userLevelProgressRepository;
     }
 
+    public CreateTaskUseCase(Context context) {
+        this.localRepo = new TaskRepository(context);
+        this.remoteRepo = new FirebaseTaskRepository();
+        this.userRepository = new UserRepository(context);
+        this.localInstanceRepo = new TaskInstanceRepository(context);
+        this.remoteTaskInstanceRepository = new FirebaseTaskInstanceRepository();
+        this.userLevelProgressRepository = new UserLevelProgressRepository(context);
+    }
+
     public void execute(String name, String description, String categoryId, String frequencyStr, int repeatInterval, String startDateStr, String endDateStr,
                         String executionTimeStr, String difficultyStr, String importanceStr, Callback callback) {
+
+        if (!validateTaskData(name, categoryId, frequencyStr, startDateStr, endDateStr, executionTimeStr, callback)) {
+            return;
+        }
+
         TaskDifficulty difficulty;
         TaskImportance importance;
         TaskFrequency frequency;
@@ -150,6 +166,26 @@ public class CreateTaskUseCase {
         } catch (Exception e) {
             callback.onError("Failed to create task: " + e.getMessage());
         }
+    }
+
+    private boolean validateTaskData(String name, String categoryId, String frequencyStr, String startDateStr, String endDateStr, String executionTimeStr, Callback callback) {
+        if (name == null || name.trim().isEmpty()) {
+            callback.onError("Task name cannot be empty");
+            return false;
+        }
+        if (categoryId == null || categoryId.trim().isEmpty()) {
+            callback.onError("Category must be selected");
+            return false;
+        }
+        if (frequencyStr == null || frequencyStr.trim().isEmpty()) {
+            callback.onError("Frequency must be selected");
+            return false;
+        }
+        if (executionTimeStr == null || executionTimeStr.trim().isEmpty()) {
+            callback.onError("Execution time must be selected");
+            return false;
+        }
+        return true;
     }
 
     private List<LocalDate> generateDatesForTask(Task task) {

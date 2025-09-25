@@ -28,6 +28,7 @@ public class GetOrCreateBossUseCase {
                     return;
                 } else {
                     // Kreiraj novog ako je prethodni poražen
+                    // TODO: Neka postoji parametar userLevel, i ako je userLevel >= next boss level onda insertuje, a ako ne, korisnik jos nije spreman za novog bossa
                     Boss newBoss = insertNewBoss(userId, localBoss.getLevel() + 1);
                     callback.onSuccess(newBoss);
                     return;

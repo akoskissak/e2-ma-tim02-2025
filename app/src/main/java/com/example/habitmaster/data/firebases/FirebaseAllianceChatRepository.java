@@ -3,13 +3,19 @@ package com.example.habitmaster.data.firebases;
 import com.example.habitmaster.domain.models.AllianceMessage;
 import com.example.habitmaster.services.ICallback;
 import com.example.habitmaster.services.ICallbackVoid;
+import com.google.firebase.Timestamp;
 import com.google.firebase.firestore.DocumentChange;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.ListenerRegistration;
 import com.google.firebase.firestore.Query;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.time.ZoneId;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 public class FirebaseAllianceChatRepository {
@@ -28,11 +34,12 @@ public class FirebaseAllianceChatRepository {
                 .addOnFailureListener(e -> callback.onError(e.getMessage()));
     }
 
-    public ListenerRegistration listenForMessages(String allianceId, ICallback<AllianceMessage> callback) {
+    public ListenerRegistration listenForMessages(String allianceId, long lastTimestamp, ICallback<AllianceMessage> callback) {
         return db.collection("alliances")
                 .document(allianceId)
                 .collection("messages")
                 .orderBy("timestamp", Query.Direction.ASCENDING)
+                .whereGreaterThan("timestamp", lastTimestamp)
                 .addSnapshotListener((snapshots, e) -> {
                     if (e != null) {
                         callback.onError(e.getMessage());
@@ -62,5 +69,46 @@ public class FirebaseAllianceChatRepository {
                 .addOnFailureListener(e -> callback.onError(e.getMessage()));
     }
 
+
+    public void hasUserSentMessageToday(String userId, String allianceId, LocalDateTime missionStartDateTime, ICallback<Boolean> callback) {
+        LocalDate today = LocalDate.now();
+        LocalTime missionStartTime = missionStartDateTime.toLocalTime();
+
+        LocalDateTime windowStart;
+        LocalDateTime windowEnd = today.atTime(missionStartTime);
+
+        if (missionStartDateTime.toLocalDate().isEqual(today)) {
+            // Misija je danas – prozor je od startDateTime do danas + startTime
+            windowStart = missionStartDateTime;
+            windowEnd = today.atTime(missionStartTime);
+        } else {
+            // Misija je pre danas – prozor je od juče u startTime do danas u startTime
+            if (missionStartTime.isAfter(LocalTime.now())) {
+                windowStart = today.minusDays(1).atTime(missionStartTime);
+                windowEnd = today.atTime(missionStartTime);
+            } else {
+                // Ako je missionStartTime <= now => prozor je od danas(missionStartTime) do sutra(missionStartTime)
+                windowStart = today.atTime(missionStartTime);
+                windowEnd = today.plusDays(1).atTime(missionStartTime);
+            }
+        }
+
+        // Konverzija u java.util.Date za Firestore
+        Date startDate = Date.from(windowStart.atZone(ZoneId.systemDefault()).toInstant());
+        Date endDate = Date.from(windowEnd.atZone(ZoneId.systemDefault()).toInstant());
+
+        db.collection("alliances")
+                .document(allianceId)
+                .collection("messages")
+                .whereEqualTo("userId", userId)
+                .whereGreaterThanOrEqualTo("timestamp", new Timestamp(startDate))
+                .whereLessThan("timestamp", new Timestamp(endDate))
+                .get()
+                .addOnSuccessListener(querySnapshot -> {
+                    boolean sent = !querySnapshot.isEmpty();
+                    callback.onSuccess(sent);
+                })
+                .addOnFailureListener(e -> callback.onError(e.getMessage()));
+    }
 
 }

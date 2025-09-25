@@ -31,7 +31,7 @@ public class GetUserTasksUseCase {
         this.categoryRepo = categoryRepo;
     }
 
-    public List<TaskInstanceDTO> getAllTasks() {
+    public List<TaskInstanceDTO> getAllTasksInstances() {
         String userId = userRepository.currentUid();
 
         // 1. Get all tasks
@@ -64,7 +64,6 @@ public class GetUserTasksUseCase {
                     .collect(Collectors.toMap(Task::getId, t -> t));
 
             for (TaskInstance instance : instances) {
-                Log.d("GetUserTasksUC:", "getAllTasks: " + instance.getId());
                 Task task = taskMap.get(instance.getTaskId());
                 if (task == null) continue;
 
@@ -228,4 +227,11 @@ public class GetUserTasksUseCase {
         return taskInstanceRepo.getValuableUserTaskInstances(userId, from, to);
     }
 
+    public List<TaskInstance> detectMissedUserTaskInstances(String userId) {
+        return taskInstanceRepo.detectMissedByUserId(userId);
+    }
+
+    public List<Task> getAllUserTasks(String userId) {
+        return taskRepo.getAllUserTasks(userId);
+    }
 }

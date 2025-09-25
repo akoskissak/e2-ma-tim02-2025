@@ -1,17 +1,23 @@
 package com.example.habitmaster.domain.usecases;
 
-import android.content.Context;
 
-import com.example.habitmaster.data.repositories.FriendRepository;
+import com.example.habitmaster.data.firebases.FirebaseFriendRepository;
+import com.example.habitmaster.services.ICallback;
 
 public class IsAlreadyFriendUseCase {
-    private final FriendRepository repo;
+    private final FirebaseFriendRepository repo;
 
-    public IsAlreadyFriendUseCase(Context ctx) {
-        this.repo = new FriendRepository(ctx);
+    public IsAlreadyFriendUseCase() {
+        this.repo = new FirebaseFriendRepository();
     }
 
-    public boolean execute(String currentUserId, String viewUserId) {
-        return repo.isAlreadyFriend(currentUserId, viewUserId);
+    public void execute(String currentUserId, String viewedUserId, ICallback<Boolean> callback) {
+        repo.isAlreadyFriend(currentUserId, viewedUserId,
+                exists -> {
+                    callback.onSuccess(exists);
+                },
+                e -> {
+                    callback.onError("Error checking friendship: " + e.getMessage());
+                });
     }
 }

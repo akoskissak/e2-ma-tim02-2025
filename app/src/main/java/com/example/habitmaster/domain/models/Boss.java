@@ -42,9 +42,17 @@ public class Boss {
     private double calculateRewardCoins(int level) {
         double coins = 200;
         for (int i = 1; i < level; i++) {
-            coins += 1.2;
+            coins *= 1.2;
         }
         return coins;
+    }
+
+    public static int calculateHalfNextReward(int currentUserLevel) {
+        double coins = 200;
+        for (int i = 1; i < currentUserLevel + 1; i++) {
+            coins *= 1.2;
+        }
+        return (int) (coins / 2);
     }
 
     public String getId() {

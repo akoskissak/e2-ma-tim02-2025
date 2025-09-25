@@ -208,8 +208,18 @@ public class FriendListFragment extends Fragment {
             return;
         }
 
-        friendService.addFriend(scannedFriend, currentUserId);
-        Toast.makeText(getContext(), scannedFriend.getFriendUsername() + " added as friend", Toast.LENGTH_SHORT).show();
+        friendService.addFriend(scannedFriend, currentUserId, new ICallback<Void>() {
+            @Override
+            public void onSuccess(Void result) {
+                Toast.makeText(getContext(), scannedFriend.getFriendUsername() + " added as friend", Toast.LENGTH_SHORT).show();
+            }
+
+            @Override
+            public void onError(String errorMessage) {
+                Toast.makeText(getContext(), errorMessage, Toast.LENGTH_SHORT).show();
+            }
+        });
+
     }
 
     private void performSearch(String query) {

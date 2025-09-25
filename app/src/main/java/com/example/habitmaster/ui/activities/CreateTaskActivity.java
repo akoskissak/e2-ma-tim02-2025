@@ -85,7 +85,12 @@ public class CreateTaskActivity extends AppCompatActivity {
         repeatingIntervalNumberPicker = findViewById(R.id.repeatingIntervalNumberPicker);
 
         taskDatePickerLayout.setVisibility(LinearLayout.GONE);
-        oneTimeDatePickerLayout.setVisibility(LinearLayout.GONE);
+        oneTimeDatePickerLayout.setVisibility(LinearLayout.VISIBLE);
+
+        RadioButton oneTimeRadioButton = findViewById(R.id.oneTimeRadio); // proveri ID u layoutu
+        if (oneTimeRadioButton != null) {
+            oneTimeRadioButton.setChecked(true);
+        }
 
         Calendar calendar = Calendar.getInstance();
         startYear = endYear = calendar.get(Calendar.YEAR);
@@ -96,6 +101,9 @@ public class CreateTaskActivity extends AppCompatActivity {
         startDateButton.setText((startMonth + 1) + "/" + startDay + "/" + startYear);
         endDateButton.setText((endMonth + 1) + "/" + endDay + "/" + endYear);
         oneTimeDateButton.setText((startMonth + 1) + "/" + startDay + "/" + startYear);
+
+        executionTime = LocalTime.now();
+        btnTaskExecutionTime.setText(executionTime.format(DateTimeFormatter.ofPattern("HH:mm")));
 
         taskService = new TaskService(this);
 
@@ -173,18 +181,45 @@ public class CreateTaskActivity extends AppCompatActivity {
                     if (isStart) {
                         startYear = y; startMonth = m; startDay = d;
                         if (isRepeating) {
-                            startDateButton.setText((m+1) + "/" + d + "/" + y);
+                            startDateButton.setText((m + 1) + "/" + d + "/" + y);
                         } else {
-                            oneTimeDateButton.setText((m+1) + "/" + d + "/" + y);
+                            oneTimeDateButton.setText((m + 1) + "/" + d + "/" + y);
                         }
+
+                        // Ako je endDate već pre startDate, postavi ga na startDate
+                        Calendar startCal = Calendar.getInstance();
+                        startCal.set(startYear, startMonth, startDay);
+                        Calendar endCal = Calendar.getInstance();
+                        endCal.set(endYear, endMonth, endDay);
+
+                        if (endCal.before(startCal)) {
+                            endYear = startYear;
+                            endMonth = startMonth;
+                            endDay = startDay;
+                            endDateButton.setText((endMonth + 1) + "/" + endDay + "/" + endYear);
+                        }
+
                     } else {
                         endYear = y; endMonth = m; endDay = d;
-                        endDateButton.setText((m+1) + "/" + d + "/" + y);
+                        endDateButton.setText((m + 1) + "/" + d + "/" + y);
                     }
                 }, year, month, day
         );
+
+        // Spreči odabir datuma u prošlosti
+        Calendar minDate = Calendar.getInstance(); // danas
+        datePickerDialog.getDatePicker().setMinDate(minDate.getTimeInMillis());
+
+        // Ako biramo endDate, setuj minimalni datum na startDate
+        if (!isStart) {
+            Calendar startDateCal = Calendar.getInstance();
+            startDateCal.set(startYear, startMonth, startDay);
+            datePickerDialog.getDatePicker().setMinDate(startDateCal.getTimeInMillis());
+        }
+
         datePickerDialog.show();
     }
+
 
     private void createTask() {
         String name = taskNameEdit.getText().toString().trim();
@@ -219,9 +254,10 @@ public class CreateTaskActivity extends AppCompatActivity {
                 @Override
                 public void onSuccess() {
                     Toast.makeText(CreateTaskActivity.this, "Task created successfully", Toast.LENGTH_SHORT).show();
-                    Intent intent = new Intent(CreateTaskActivity.this, MyTasksActivity.class);
-                    startActivity(intent);
                     finish();
+//                    Intent intent = new Intent(CreateTaskActivity.this, MyTasksActivity.class);
+//                    startActivity(intent);
+//                    finish();
                 }
 
                 @Override

@@ -1,6 +1,7 @@
 package com.example.habitmaster.domain.usecases;
 
 import android.content.Context;
+import android.util.Log;
 
 import com.example.habitmaster.data.firebases.FirebaseAllianceRepository;
 import com.example.habitmaster.data.repositories.AllianceRepository;
@@ -17,18 +18,22 @@ public class AcceptAllianceInviteUseCase {
     public void execute(String inviteId, String userId, String allianceId) {
         repo.leaveAlliance(userId);
 
-        firebaseRepo.removeMemberFromAlliance(userId);
+        firebaseRepo.removeMemberFromAlliance(userId)
+                .addOnSuccessListener(aVoid -> {
 
-        repo.declineOtherInvites(userId, inviteId);
+                    repo.addMemberToAlliance(allianceId, userId);
+                    firebaseRepo.addMemberToAlliance(allianceId, userId)
+                            .addOnSuccessListener(aVoid2 -> {
 
-        firebaseRepo.declineOtherInvites(userId, inviteId);
+                                repo.declineOtherInvites(userId, inviteId);
+                                firebaseRepo.declineOtherInvites(userId, inviteId);
 
-        repo.addMemberToAlliance(allianceId, userId);
+                                repo.acceptInvitation(inviteId);
+                                firebaseRepo.acceptInvite(inviteId, allianceId);
+                            })
+                            .addOnFailureListener(e -> Log.e("AllianceRepo", "Greška pri dodavanju membera", e));
+                })
+                .addOnFailureListener(e -> Log.e("AllianceRepo", "Greška pri brisanju starog membera", e));
 
-        firebaseRepo.addMemberToAlliance(allianceId, userId);
-
-        repo.acceptInvitation(inviteId);
-
-        firebaseRepo.acceptInvite(inviteId, allianceId);
     }
 }

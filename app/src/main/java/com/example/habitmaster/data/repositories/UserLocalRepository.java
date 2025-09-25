@@ -4,21 +4,28 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
+import android.util.Log;
 
 import com.example.habitmaster.data.database.DatabaseHelper;
+import com.example.habitmaster.data.firebases.FirebaseUserLevelProgressRepository;
 import com.example.habitmaster.domain.models.User;
 import com.example.habitmaster.domain.models.UserLevelProgress;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 public class UserLocalRepository {
     private final DatabaseHelper helper;
+    private final FirebaseUserLevelProgressRepository firebaseUserLevelProgressRepository;
     private final UserLevelProgressRepository userLevelProgressRepository;
 
     public UserLocalRepository(Context ctx) {
         this.helper = new DatabaseHelper(ctx);
+        this.firebaseUserLevelProgressRepository = new FirebaseUserLevelProgressRepository();
         this.userLevelProgressRepository = new UserLevelProgressRepository(ctx);
     }
 
@@ -235,8 +242,6 @@ public class UserLocalRepository {
             userValues.put("xp", currentXp);
             userValues.put("levelStartDate", LocalDate.now().toString());
 
-            // dodavanje novcica prvi 200 pa za svaki sledeci 20% vise nego prethodnog
-
             db.update(DatabaseHelper.T_USERS, userValues, "id = ?", new String[]{userId});
 
             userLevelProgressRepository.updateUserLevelProgress(progress);
@@ -311,5 +316,41 @@ public class UserLocalRepository {
 
         return level;
     }
+
+    public Map<String, String> mapIdsToUsernames(List<String> userIds) {
+        Map<String, String> result = new HashMap<>();
+        if (userIds == null || userIds.isEmpty()) return result;
+
+        SQLiteDatabase db = helper.getReadableDatabase();
+        StringBuilder placeholders = new StringBuilder();
+        for (int i = 0; i < userIds.size(); i++) {
+            placeholders.append("?");
+            if (i < userIds.size() - 1) placeholders.append(",");
+        }
+
+        Cursor cursor = db.rawQuery(
+                "SELECT id, username FROM " + DatabaseHelper.T_USERS + " WHERE id IN (" + placeholders.toString() + ")",
+                userIds.toArray(new String[0])
+        );
+
+        while (cursor.moveToNext()) {
+            result.put(
+                    cursor.getString(cursor.getColumnIndexOrThrow("id")),
+                    cursor.getString(cursor.getColumnIndexOrThrow("username"))
+            );
+        }
+
+        cursor.close();
+        db.close();
+
+        Map<String, String> ordered = new LinkedHashMap<>();
+        for (String userId : userIds) {
+            if (result.containsKey(userId)) {
+                ordered.put(userId, result.get(userId));
+            }
+        }
+        return ordered;
+    }
+
 
 }

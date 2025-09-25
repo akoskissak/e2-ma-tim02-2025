@@ -9,6 +9,8 @@ public class Prefs {
     private static final String KEY_USERNAME = "username";
     private static final String KEY_USERNAME_LOCK = "username_lock";
     private static final String KEY_AVATAR_LOCK = "avatar_lock";
+    private static final String KEY_SEED_DONE = "seed_done";
+    private static final String KEY_TASK_SEED_DONE = "task_seed_done";
 
     private final SharedPreferences sp;
 
@@ -55,4 +57,10 @@ public class Prefs {
     public boolean isAvatarLocked() {
         return sp.getBoolean(KEY_AVATAR_LOCK, false);
     }
+
+    public void setSeedDone(boolean done) { sp.edit().putBoolean(KEY_SEED_DONE, done).apply(); }
+
+    public boolean isSeedDone() { return sp.getBoolean(KEY_SEED_DONE, false); }
+    public boolean isTaskSeedDone() { return sp.getBoolean(KEY_TASK_SEED_DONE, false); }
+    public void setTaskSeedDone(boolean done) { sp.edit().putBoolean(KEY_TASK_SEED_DONE, done).apply(); }
 }

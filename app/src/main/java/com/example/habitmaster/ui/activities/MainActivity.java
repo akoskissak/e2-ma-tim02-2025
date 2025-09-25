@@ -3,15 +3,11 @@ package com.example.habitmaster.ui.activities;
 import android.Manifest;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
-import android.content.ContentValues;
-import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.database.sqlite.SQLiteDatabase;
-import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
-import android.view.View;
 import android.widget.Button;
 import android.widget.Toast;
 
@@ -27,9 +23,18 @@ import androidx.core.view.WindowInsetsCompat;
 
 import com.example.habitmaster.R;
 import com.example.habitmaster.data.database.DatabaseHelper;
+import com.example.habitmaster.services.AllianceChatListenerService;
+import com.example.habitmaster.services.AllianceInviteListenerService;
+import com.example.habitmaster.services.AllianceMemberListenerService;
+import com.example.habitmaster.services.AllianceService;
+import com.example.habitmaster.data.seed.DataSeeder;
 import com.example.habitmaster.services.ICallback;
+import com.example.habitmaster.services.TaskService;
+import com.example.habitmaster.services.UserEquipmentService;
 import com.example.habitmaster.services.UserService;
 import com.example.habitmaster.utils.Prefs;
+
+import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
     private static final int NOTIFICATION_PERMISSION_REQUEST_CODE = 1001;
@@ -42,11 +47,21 @@ public class MainActivity extends AppCompatActivity {
 
         prefs = new Prefs(this);
 
+        DataSeeder seeder = new DataSeeder(this);
         if(prefs.getUid() == null){
+            seeder.runSeedIfNeeded();
+
             startActivity(new Intent(this, LoginActivity.class));
             finish();
             return;
         }
+
+        seeder.runTaskSeedIfNeeded();
+
+        TaskService taskService = new TaskService(this);
+        taskService.checkMissedTasks(prefs.getUid());
+
+        checkIsAllianceMissionFinished();
 
         // da uvek bude mode day
         AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO);
@@ -72,11 +87,31 @@ public class MainActivity extends AppCompatActivity {
                     NOTIFICATION_PERMISSION_REQUEST_CODE
             );
         }
-
         createNotificationChannel();
+
+        Intent serviceIntent = new Intent(this, AllianceInviteListenerService.class);
+        serviceIntent.putExtra("extra_current_user_id", prefs.getUid());
+        ContextCompat.startForegroundService(this, serviceIntent);
+
+        Intent MessageServiceIntent = new Intent(this, AllianceChatListenerService.class);
+        MessageServiceIntent.putExtra("extra_current_user_id", prefs.getUid());
+        ContextCompat.startForegroundService(this, MessageServiceIntent);
+
+        Intent MemberServiceIntent = new Intent(this, AllianceMemberListenerService.class);
+        MemberServiceIntent.putExtra("extra_current_user_id", prefs.getUid());
+        ContextCompat.startForegroundService(this, MemberServiceIntent);
 
         Button btnLogout = findViewById(R.id.btnLogout);
         btnLogout.setOnClickListener(v -> {
+            Intent stopIntent = new Intent(this, AllianceChatListenerService.class);
+            stopService(stopIntent);
+
+            Intent stopMemberIntent = new Intent(this, AllianceMemberListenerService.class);
+            stopService(stopMemberIntent);
+
+            Intent stopInviteIntent = new Intent(this, AllianceInviteListenerService.class);
+            stopService(stopInviteIntent);
+
             prefs.setUid(null);
             prefs.setUsername(null);
             startActivity(new Intent(this, LoginActivity.class));
@@ -138,6 +173,22 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
+    private void checkIsAllianceMissionFinished() {
+        AllianceService allianceService = new AllianceService(this);
+        allianceService.checkIsMissionFinishedAndAddCoinsAndBadges(prefs.getUid(), new ICallback<List<String>>() {
+            @Override
+            public void onSuccess(List<String> allMembers) {
+                var userEquipmentService = new UserEquipmentService(MainActivity.this);
+                userEquipmentService.addMissionRewards(allMembers);
+            }
+
+            @Override
+            public void onError(String errorMessage) {
+
+            }
+        });
+    }
+
     @Override
     protected void onResume() {
         super.onResume();
@@ -147,6 +198,7 @@ public class MainActivity extends AppCompatActivity {
             public void onSuccess(Integer userLevel) {
                 Log.d("USER_LEVEL", "user level: " + userLevel);
                 if (userLevel > 0) {
+                    // TODO: Dodati da ako sledeci boss nije dostupan, ne moze da ode na boss activity
                     btnBossFight.setEnabled(true);
                 } else {
                     btnBossFight.setEnabled(false);
@@ -176,12 +228,26 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void createNotificationChannel() {
-        NotificationChannel channel = new NotificationChannel(
+        NotificationChannel serviceChannel = new NotificationChannel(
+                "service_channel",
+                "Background Service",
+                NotificationManager.IMPORTANCE_MIN
+        );
+        serviceChannel.setDescription("Tihi kanal za servis");
+        serviceChannel.setSound(null, null);
+        serviceChannel.enableLights(false);
+        serviceChannel.enableVibration(false);
+
+        NotificationChannel allianceChannel = new NotificationChannel(
                 "alliance_channel",
                 "Alliance Notifications",
                 NotificationManager.IMPORTANCE_HIGH
         );
+        allianceChannel.setDescription("Pozivi i poruke u savezu");
+
         NotificationManager manager = getSystemService(NotificationManager.class);
-        manager.createNotificationChannel(channel);
+        manager.createNotificationChannel(serviceChannel);
+        manager.createNotificationChannel(allianceChannel);
     }
+
 }

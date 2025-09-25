@@ -86,7 +86,7 @@ public class TaskCalendarFragment extends Fragment {
 
     private void loadTasksFromDatabase() {
         new Thread(() -> {
-            allTasks = taskService.getAllTasks();
+            allTasks = taskService.getAllTasksInstances();
             requireActivity().runOnUiThread(() -> {
                 LocalDate today = LocalDate.now();
                 filterTasksByDate(today);

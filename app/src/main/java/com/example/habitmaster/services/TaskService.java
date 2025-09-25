@@ -6,15 +6,22 @@ import android.os.Handler;
 import com.example.habitmaster.data.dtos.TaskInstanceDTO;
 import com.example.habitmaster.data.firebases.FirebaseTaskInstanceRepository;
 import com.example.habitmaster.data.firebases.FirebaseTaskRepository;
+import com.example.habitmaster.data.firebases.FirebaseUserRepository;
 import com.example.habitmaster.data.repositories.CategoryRepository;
 import com.example.habitmaster.data.repositories.TaskInstanceRepository;
 import com.example.habitmaster.data.repositories.TaskRepository;
 import com.example.habitmaster.data.repositories.UserLevelProgressRepository;
 import com.example.habitmaster.data.repositories.UserLocalRepository;
 import com.example.habitmaster.data.repositories.UserRepository;
+import com.example.habitmaster.domain.models.AllianceMissionProgressType;
+import com.example.habitmaster.domain.models.Task;
+import com.example.habitmaster.domain.models.TaskDifficulty;
+import com.example.habitmaster.domain.models.TaskImportance;
+import com.example.habitmaster.domain.models.TaskInstance;
 import com.example.habitmaster.domain.models.TaskStatus;
 import com.example.habitmaster.domain.usecases.AddUserXpUseCase;
 import com.example.habitmaster.domain.usecases.GetUserLevelStartDateUseCase;
+import com.example.habitmaster.domain.usecases.alliances.userMissions.CheckUnresolvedTasksUseCase;
 import com.example.habitmaster.domain.usecases.tasks.CreateTaskUseCase;
 import com.example.habitmaster.domain.usecases.tasks.DeleteTaskUseCase;
 import com.example.habitmaster.domain.usecases.tasks.GetUserTasksUseCase;
@@ -22,6 +29,7 @@ import com.example.habitmaster.domain.usecases.tasks.UpdateTaskUseCase;
 import com.example.habitmaster.utils.Prefs;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -34,10 +42,12 @@ public class TaskService {
     private DeleteTaskUseCase deleteTaskUseCase;
     private AddUserXpUseCase addUserXpUseCase;
     private final GetUserLevelStartDateUseCase getUserLevelStartDateUseCase;
+    private final AllianceService allianceService;
     private final Context context;
 
     public interface Callback {
         void onSuccess();
+
         void onError(String errorMessage);
     }
 
@@ -53,29 +63,30 @@ public class TaskService {
         CategoryRepository categoryRepo = new CategoryRepository(context);
         this.createTaskUseCase = new CreateTaskUseCase(localRepo, remoteRepo, userRepo, userLevelProgressRepo, localTaskInstanceRepo, remoteInstanceRepo);
         this.getUserTasksUseCase = new GetUserTasksUseCase(localRepo, localTaskInstanceRepo, userRepo, categoryRepo);
-        this.updateTaskUseCase = new UpdateTaskUseCase(localRepo, localTaskInstanceRepo, userLevelProgressRepository, remoteRepo, remoteInstanceRepo);
+        this.updateTaskUseCase = new UpdateTaskUseCase(localRepo, localTaskInstanceRepo, userLevelProgressRepository, remoteRepo, remoteInstanceRepo, context);
         this.deleteTaskUseCase = new DeleteTaskUseCase(localTaskInstanceRepo, remoteInstanceRepo);
-        this.addUserXpUseCase = new AddUserXpUseCase(new UserLocalRepository(context));
-        getUserLevelStartDateUseCase = new GetUserLevelStartDateUseCase(context);
+        this.addUserXpUseCase = new AddUserXpUseCase(new UserLocalRepository(context), new FirebaseUserRepository(context));
+        this.getUserLevelStartDateUseCase = new GetUserLevelStartDateUseCase(context);
+        this.allianceService = new AllianceService(context);
     }
 
     public void createTask(String name, String description, String categoryId, String frequency, int repeatInterval, String startDate, String endDate, String executionTime, String difficulty, String importance, Callback callback) {
         createTaskUseCase.execute(name, description, categoryId, frequency, repeatInterval, startDate, endDate, executionTime, difficulty, importance,
-            new CreateTaskUseCase.Callback() {
-                @Override
-                public void onSuccess() {
-                    callback.onSuccess();
-                }
+                new CreateTaskUseCase.Callback() {
+                    @Override
+                    public void onSuccess() {
+                        callback.onSuccess();
+                    }
 
-                @Override
-                public void onError(String errorMessage) {
-                    callback.onError(errorMessage);
-                }
-            });
+                    @Override
+                    public void onError(String errorMessage) {
+                        callback.onError(errorMessage);
+                    }
+                });
     }
 
-    public List<TaskInstanceDTO> getAllTasks() {
-        return getUserTasksUseCase.getAllTasks();
+    public List<TaskInstanceDTO> getAllTasksInstances() {
+        return getUserTasksUseCase.getAllTasksInstances();
     }
 
     public void getRepeatingTasks(LocalDate fromDate, ICallback<List<TaskInstanceDTO>> callback) {
@@ -100,7 +111,9 @@ public class TaskService {
         });
     }
 
-    public TaskInstanceDTO getTaskById(String id) { return getUserTasksUseCase.findTaskInstanceById(id); }
+    public TaskInstanceDTO getTaskById(String id) {
+        return getUserTasksUseCase.findTaskInstanceById(id);
+    }
 
     public void updateTaskInfo(TaskInstanceDTO dto, ICallback<TaskInstanceDTO> callback) {
         executorService.execute(() -> {
@@ -155,6 +168,17 @@ public class TaskService {
         updateTaskStatus(userId, dto.getId(), TaskStatus.COMPLETED, new Callback() {
             @Override
             public void onSuccess() {
+                if (dto.getDifficulty() == TaskDifficulty.EASY && dto.getImportance() == TaskImportance.NORMAL) {
+                    allianceService.tryUpdateAllianceProgress(userId, AllianceMissionProgressType.SOLVED_TASK2);
+                } else if (dto.getDifficulty() == TaskDifficulty.VERY_EASY
+                        || dto.getDifficulty() == TaskDifficulty.EASY
+                        || dto.getImportance() == TaskImportance.NORMAL
+                        || dto.getImportance() == TaskImportance.IMPORTANT) {
+                    allianceService.tryUpdateAllianceProgress(userId, AllianceMissionProgressType.SOLVED_TASK1);
+                } else {
+                    allianceService.tryUpdateAllianceProgress(userId, AllianceMissionProgressType.SOLVED_OTHER_TASK);
+                }
+
                 addUserXpUseCase.execute(userId, dto.getXpValue());
                 callback.onSuccess();
             }
@@ -192,5 +216,27 @@ public class TaskService {
                 .count();
 
         return (double) completed / total;
+    }
+
+    public void checkMissedTasks(String userId) {
+        var allUserTasks = getUserTasksUseCase.getAllUserTasks(userId);
+        if (allUserTasks.isEmpty()) return;
+
+        List<Task> fourDaysOlderTasks = new ArrayList<>();
+        for (Task task : allUserTasks) {
+            if (task.getStartDate().isBefore(LocalDate.now().minusDays(3))) {
+                fourDaysOlderTasks.add(task);
+            }
+        }
+
+        var missed = this.getUserTasksUseCase.detectMissedUserTaskInstances(userId);
+        if (missed.isEmpty()) return;
+
+        for (TaskInstance instance : missed) {
+            this.updateTaskUseCase.markTaskInstanceAsMissed(instance);
+        }
+
+        var checkUnresolvedTasksUseCase = new CheckUnresolvedTasksUseCase(context);
+        checkUnresolvedTasksUseCase.execute(userId);
     }
 }

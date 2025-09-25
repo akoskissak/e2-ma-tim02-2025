@@ -1,25 +1,25 @@
 package com.example.habitmaster.domain.usecases;
 
-import android.content.Context;
 
-import com.example.habitmaster.data.repositories.AllianceRepository;
+import com.example.habitmaster.data.firebases.FirebaseAllianceRepository;
 import com.example.habitmaster.services.ICallback;
 
 import java.util.List;
 
 public class GetAllianceMembersUseCase {
-    private final AllianceRepository repo;
+    private final FirebaseAllianceRepository repo;
 
-    public GetAllianceMembersUseCase(Context ctx) {
-        this.repo = new AllianceRepository(ctx);
+    public GetAllianceMembersUseCase() {
+        this.repo = new FirebaseAllianceRepository();
     }
 
     public void execute(String allianceId, ICallback<List<String>> callback) {
-        try {
-            List<String> membersUsernames = repo.getMembersByAllianceId(allianceId);
-            callback.onSuccess(membersUsernames);
-        } catch (Exception e) {
-            callback.onError("Greska pri dohvatanju clanova saveza: " + e.getMessage());
-        }
+        repo.getMembersByAllianceId(allianceId, membersUsernames -> {
+            if (membersUsernames != null && !membersUsernames.isEmpty()) {
+                callback.onSuccess(membersUsernames);
+            } else {
+                callback.onError("Savez nema članova");
+            }
+        });
     }
 }
