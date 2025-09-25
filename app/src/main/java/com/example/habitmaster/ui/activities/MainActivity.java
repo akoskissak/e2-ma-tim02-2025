@@ -27,6 +27,7 @@ import com.example.habitmaster.services.AllianceChatListenerService;
 import com.example.habitmaster.services.AllianceInviteListenerService;
 import com.example.habitmaster.services.AllianceMemberListenerService;
 import com.example.habitmaster.services.AllianceService;
+import com.example.habitmaster.data.seed.DataSeeder;
 import com.example.habitmaster.services.ICallback;
 import com.example.habitmaster.services.TaskService;
 import com.example.habitmaster.services.UserEquipmentService;
@@ -46,11 +47,16 @@ public class MainActivity extends AppCompatActivity {
 
         prefs = new Prefs(this);
 
+        DataSeeder seeder = new DataSeeder(this);
         if(prefs.getUid() == null){
+            seeder.runSeedIfNeeded();
+
             startActivity(new Intent(this, LoginActivity.class));
             finish();
             return;
         }
+
+        seeder.runTaskSeedIfNeeded();
 
         TaskService taskService = new TaskService(this);
         taskService.checkMissedTasks(prefs.getUid());

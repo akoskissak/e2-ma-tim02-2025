@@ -1,5 +1,7 @@
 package com.example.habitmaster.domain.usecases.tasks;
 
+import android.content.Context;
+
 import com.example.habitmaster.data.firebases.FirebaseTaskInstanceRepository;
 import com.example.habitmaster.data.firebases.FirebaseTaskRepository;
 import com.example.habitmaster.data.repositories.TaskInstanceRepository;
@@ -46,6 +48,15 @@ public class CreateTaskUseCase {
         this.localInstanceRepo = localInstanceRepo;
         this.remoteTaskInstanceRepository = remoteTaskInstanceRepository;
         this.userLevelProgressRepository = userLevelProgressRepository;
+    }
+
+    public CreateTaskUseCase(Context context) {
+        this.localRepo = new TaskRepository(context);
+        this.remoteRepo = new FirebaseTaskRepository();
+        this.userRepository = new UserRepository(context);
+        this.localInstanceRepo = new TaskInstanceRepository(context);
+        this.remoteTaskInstanceRepository = new FirebaseTaskInstanceRepository();
+        this.userLevelProgressRepository = new UserLevelProgressRepository(context);
     }
 
     public void execute(String name, String description, String categoryId, String frequencyStr, int repeatInterval, String startDateStr, String endDateStr,
