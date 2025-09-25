@@ -67,16 +67,11 @@ public class FirebaseTaskInstanceRepository {
     }
 
     public void updateStatus(@NonNull String taskInstanceId, @NonNull TaskStatus newStatus) {
-        String threeDaysAgo = LocalDate.now().minusDays(3).toString();
-
         DocumentReference docRef = firestore.collection("taskInstances").document(taskInstanceId);
 
         docRef.get().addOnSuccessListener(snapshot -> {
             if (snapshot.exists()) {
-                String date = snapshot.getString("date");
-                if (date != null && date.compareTo(threeDaysAgo) >= 0) {
-                    docRef.update("status", newStatus.name());
-                }
+                docRef.update("status", newStatus.name());
             }
         });
     }

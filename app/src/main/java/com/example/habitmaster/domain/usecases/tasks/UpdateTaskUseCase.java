@@ -127,7 +127,10 @@ public class UpdateTaskUseCase {
                 return;
             } else {
                 var threeDaysAgo = LocalDate.now().minusDays(3);
-                if (taskInstance.getDate().isBefore(threeDaysAgo) || taskInstance.getDate().isAfter(LocalDate.now())) {
+                if (taskInstance.getDate().isBefore(threeDaysAgo)) {
+                    callback.onError("Cannot complete task older than 3 days");
+                    return;
+                } else if (taskInstance.getDate().isAfter(LocalDate.now())) {
                     callback.onError("Cannot complete future tasks");
                     return;
                 }

@@ -64,7 +64,6 @@ public class GetUserTasksUseCase {
                     .collect(Collectors.toMap(Task::getId, t -> t));
 
             for (TaskInstance instance : instances) {
-                Log.d("GetUserTasksUC:", "getAllTasks: " + instance.getId());
                 Task task = taskMap.get(instance.getTaskId());
                 if (task == null) continue;
 
