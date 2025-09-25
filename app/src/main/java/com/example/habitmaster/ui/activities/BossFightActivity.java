@@ -205,7 +205,6 @@ public class BossFightActivity extends AppCompatActivity {
     private void performAttack() {
         if(!currentBoss.canAttack()) {
             Toast.makeText(this, "No attacks left!", Toast.LENGTH_SHORT).show();
-            playBossAnimation(false);
             return;
         }
 
@@ -218,41 +217,20 @@ public class BossFightActivity extends AppCompatActivity {
 
                     if (result.isSuccess()) {
                         playBossAnimation(true);
-                        var rewardedEquipment = result.getRewardedEquipment();
-                        var rewardCoins = result.getBoss().getRewardCoins();
                         if (currentBoss.getCurrentHp() == 0) {
-                            Integer equipmentIcon;
-                            if (rewardedEquipment != null) {
-                                equipmentIcon = EquipmentDrawableMapper.getAvatarResId(rewardedEquipment.getEquipmentId());
-                                chestAnimationView.setOnClickListener(v -> showChestAnimationAndReward((int) rewardCoins, equipmentIcon));
-                                darkBackground.setOnClickListener(v -> showChestAnimationAndReward((int) rewardCoins, equipmentIcon));
-                                shakeDetector.setOnShakeListener(() -> {
-                                    if (currentBoss.getCurrentHp() == 0) {
-                                        int coins = (int) currentBoss.getRewardCoins();
-                                        showChestAnimationAndReward(coins, equipmentIcon);
-                                    }
-                                });
-                            } else {
-                                equipmentIcon = null;
-                                darkBackground.setOnClickListener(v -> showChestAnimationAndReward((int) rewardCoins, equipmentIcon));
-                                darkBackground.setOnClickListener(v -> showChestAnimationAndReward((int) rewardCoins, equipmentIcon));
-                                shakeDetector.setOnShakeListener(() -> {
-                                    if (currentBoss.getCurrentHp() == 0) {
-                                        int coins = (int) currentBoss.getRewardCoins();
-                                        showChestAnimationAndReward(coins, equipmentIcon);
-                                    }
-                                });
-                            }
+                            updateUIOnBossFightEnd(result, "Boss defeated! Tap the chest or shake!");
+                        } else if (currentBoss.isHalfDefeated()) {
+                            bossService.getBossReward(currentUser.getId(), currentBoss, new ICallback<BossFightResult>() {
+                                @Override
+                                public void onSuccess(BossFightResult result) {
+                                    runOnUiThread(() -> updateUIOnBossFightEnd(result, "Fight ended! Tap the chest or shake!"));
+                                }
 
-                            darkBackground.setVisibility(View.VISIBLE);
-                            chestAnimationView.setVisibility(View.VISIBLE);
-
-                            Toast.makeText(
-                                    BossFightActivity.this,
-                                    "Boss defeated! Tap the chest!",
-                                    Toast.LENGTH_SHORT
-                            ).show();
-                            attackButton.setEnabled(false);
+                                @Override
+                                public void onError(String errorMessage) {
+                                    runOnUiThread(() -> Toast.makeText(BossFightActivity.this, "Error: " + errorMessage, Toast.LENGTH_SHORT).show());
+                                }
+                            });
                         }
                     } else {
                         playBossAnimation(false);
@@ -266,6 +244,33 @@ public class BossFightActivity extends AppCompatActivity {
                 runOnUiThread(() -> Toast.makeText(BossFightActivity.this, "Error: " + errorMessage, Toast.LENGTH_SHORT).show());
             }
         });
+    }
+
+    private void updateUIOnBossFightEnd(BossFightResult result, String toastText) {
+        var rewardedEquipment = result.getRewardedEquipment();
+        var rewardCoins = (int) result.getBoss().getRewardCoins();
+        if (rewardedEquipment != null) {
+            Integer equipmentIcon = EquipmentDrawableMapper.getAvatarResId(rewardedEquipment.getEquipmentId());
+            setOnClickListeners(rewardCoins, equipmentIcon);
+        } else {
+            setOnClickListeners(rewardCoins, null);
+        }
+
+        darkBackground.setVisibility(View.VISIBLE);
+        chestAnimationView.setVisibility(View.VISIBLE);
+
+        Toast.makeText(
+                BossFightActivity.this,
+                toastText,
+                Toast.LENGTH_SHORT
+        ).show();
+        attackButton.setEnabled(false);
+    }
+
+    private void setOnClickListeners(int rewardCoins, @Nullable Integer equipmentIcon) {
+        chestAnimationView.setOnClickListener(v -> showChestAnimationAndReward(rewardCoins, equipmentIcon));
+        darkBackground.setOnClickListener(v -> showChestAnimationAndReward(rewardCoins, equipmentIcon));
+        shakeDetector.setOnShakeListener(() -> { showChestAnimationAndReward(rewardCoins, equipmentIcon); });
     }
 
     private void playBossAnimation(boolean hit) {

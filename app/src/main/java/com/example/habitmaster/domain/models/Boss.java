@@ -135,7 +135,11 @@ public class Boss {
     }
 
     public boolean canAttack() {
-        return currentHp > 0 && (remainingAttacks > 0 || (currentHp / maxHp < 0.5));
+        return currentHp > 0 && remainingAttacks > 0;
+    }
+
+    public boolean isHalfDefeated() {
+        return (currentHp <= maxHp / 2) && remainingAttacks == 0;
     }
 }
 
