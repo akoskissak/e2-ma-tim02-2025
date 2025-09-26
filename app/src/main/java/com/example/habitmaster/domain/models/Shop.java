@@ -8,7 +8,7 @@ import java.util.List;
 public class Shop {
     private final List<Equipment> itemsForSale;
     public static Equipment Sword = new Equipment("sword", "Mač +5% PP", EquipmentType.WEAPON, BonusType.PERM_PP_INCREASE, 0.05, -1, -1, R.drawable.sword);
-    public static Equipment BowAndArrow = new Equipment("bowAndArrow", "Luk i strela +5% dobijenog coins", EquipmentType.WEAPON, BonusType.PERM_COINS_INCREASE, 0.05, -1, -1, R.drawable.bow_and_arrow);
+    public static Equipment BowAndArrow = new Equipment("bow_and_arrow", "Luk i strela +5% dobijenog coins", EquipmentType.WEAPON, BonusType.PERM_COINS_INCREASE, 0.05, -1, -1, R.drawable.bow_and_arrow);
     public static String GLOVES_ID = "gloves";
     public static String SHIELD_ID = "shield";
     public static String BOOTS_ID = "boots";
@@ -45,6 +45,8 @@ public class Shop {
         itemsForSale.add(new Equipment(
                 BOOTS_ID, "Cizme +40% sansa dodatnog napada", EquipmentType.ARMOR,
                 BonusType.EXTRA_ATTACK_CHANCE, 0.40, 2, 80, R.drawable.boots));
+        itemsForSale.add(Sword);
+        itemsForSale.add(BowAndArrow);
     }
 
     public List<Equipment> getItemsForSale() {

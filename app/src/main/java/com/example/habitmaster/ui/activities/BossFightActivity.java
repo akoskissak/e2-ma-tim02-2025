@@ -31,6 +31,7 @@ import com.example.habitmaster.services.TaskService;
 import com.example.habitmaster.services.UserEquipmentService;
 import com.example.habitmaster.services.UserService;
 import com.example.habitmaster.ui.adapters.ActiveEquipmentAdapter;
+import com.example.habitmaster.ui.fragments.InventoryFragment;
 import com.example.habitmaster.utils.EquipmentDrawableMapper;
 import com.example.habitmaster.utils.ShakeDetector;
 
@@ -54,6 +55,7 @@ public class BossFightActivity extends AppCompatActivity {
     private EquipmentEffectService effectService;
 
     private double stageSuccessRate;
+    private int boostedPowerPoints;
 
     private ImageView chestAnimationView, rewardEquipmentIcon;
     private boolean chestAnimationFinished = false;
@@ -100,10 +102,16 @@ public class BossFightActivity extends AppCompatActivity {
         effectService = new EquipmentEffectService();
         currentBoost = new BattleStatsBoost();
 
-        setAttackChance();
-
         attackButton.setOnClickListener(v -> performAttack());
 
+
+        // todo za akosa
+        /*if(savedInstanceState == null) {
+            getSupportFragmentManager()
+                    .beginTransaction()
+                    .replace(R.id.fragmentContainer, new InventoryFragment())
+                    .commit();
+        }*/
 
         chestAnimationView = findViewById(R.id.chestAnimationView);
         chestAnimationView.setBackgroundResource(R.drawable.chest_animation);
@@ -130,6 +138,7 @@ public class BossFightActivity extends AppCompatActivity {
         sensorManager.unregisterListener(shakeDetector);
     }
 
+    // pozivam samo u onResume ne i u onCreate da ne radi ovo dva puta.
     private void setAttackChance() {
         UserService userService = new UserService(this);
         userService.getCurrentUser(new ICallback<User>() {
@@ -137,11 +146,6 @@ public class BossFightActivity extends AppCompatActivity {
             public void onSuccess(User result) {
                 currentUser = result;
                 loadBoss(result.getLevel());
-
-                TaskService taskService = new TaskService(BossFightActivity.this);
-                stageSuccessRate = taskService.getUserStageSuccessRate(currentUser.getId());
-                stageSuccessRate = stageSuccessRate + currentBoost.attackChanceIncrease;
-                attackChanceText.setText(String.format(Locale.US, "%.2f%%", stageSuccessRate * 100));
             }
 
             @Override
@@ -190,10 +194,15 @@ public class BossFightActivity extends AppCompatActivity {
 
                     currentBoost = effectService.calculateEffects(activatedList);
 
-                    int boostedPP = (int) currentBoost.calculateFinalPP(currentUser.getPowerPoints());
-                    userPpBar.setMax(boostedPP);
-                    userPpBar.setProgress(boostedPP);
-                    userPpText.setText(String.format("%s PP", boostedPP));
+                    TaskService taskService = new TaskService(BossFightActivity.this);
+                    stageSuccessRate = taskService.getUserStageSuccessRate(currentUser.getId());
+                    stageSuccessRate = stageSuccessRate + currentBoost.attackChanceIncrease;
+                    attackChanceText.setText(String.format(Locale.US, "%.2f%%", stageSuccessRate * 100));
+
+                    boostedPowerPoints = (int) currentBoost.calculateFinalPP(currentUser.getPowerPoints());
+                    userPpBar.setMax(boostedPowerPoints);
+                    userPpBar.setProgress(boostedPowerPoints);
+                    userPpText.setText(String.format("%s PP", boostedPowerPoints));
 
                     if (activatedList.isEmpty()) {
                         tvEquipmentTitle.setText("No active equipment");
@@ -223,7 +232,7 @@ public class BossFightActivity extends AppCompatActivity {
             return;
         }
 
-        bossService.attackBoss(currentUser.getId(), currentUser.getPowerPoints(), currentBoost.attackChanceIncrease, new ICallback<BossFightResult>() {
+        bossService.attackBoss(currentUser.getId(), boostedPowerPoints, currentBoost.attackChanceIncrease, new ICallback<BossFightResult>() {
             @Override
             public void onSuccess(BossFightResult result) {
                 runOnUiThread(() -> {
