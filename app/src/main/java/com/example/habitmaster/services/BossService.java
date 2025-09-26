@@ -8,6 +8,7 @@ import com.example.habitmaster.domain.models.Boss;
 import com.example.habitmaster.domain.models.UserEquipment;
 import com.example.habitmaster.domain.usecases.bosses.AttackBossUseCase;
 import com.example.habitmaster.domain.usecases.bosses.GetOrCreateBossUseCase;
+import com.example.habitmaster.domain.usecases.bosses.UpdateBossStatsUseCase;
 import com.example.habitmaster.ui.activities.BossFightActivity;
 
 import java.util.List;
@@ -21,15 +22,17 @@ public class BossService {
     private final AttackBossUseCase attackBossUseCase;
     private final TaskService taskService;
     private final AllianceService allianceService;
+    private final UpdateBossStatsUseCase updateBossStatsUseCase;
 
     public BossService(Context context) {
         this.getOrCreateBossUseCase = new GetOrCreateBossUseCase(context);
         this.attackBossUseCase = new AttackBossUseCase(context);
         this.taskService = new TaskService(context);
         this.allianceService = new AllianceService(context);
+        this.updateBossStatsUseCase = new UpdateBossStatsUseCase(context);
     }
-    public void getBossByUserId(String userId, ICallback<Boss> callback) {
-        getOrCreateBossUseCase.getBossByUserId(userId, new ICallback<Boss>() {
+    public void getBossByUserId(String userId, int userLevel, ICallback<Boss> callback) {
+        getOrCreateBossUseCase.getBossByUserId(userId, userLevel, new ICallback<Boss>() {
             @Override
             public void onSuccess(Boss boss) {
                 callback.onSuccess(boss);
@@ -42,9 +45,10 @@ public class BossService {
         });
     }
 
-    public void attackBoss(String userId, int powerPoints, ICallback<BossFightResult> callback) {
+    public void attackBoss(String userId, int powerPoints, double attackChanceIncrease, ICallback<BossFightResult> callback) {
         executorService.execute(() -> {
             double stageSuccessRate = taskService.getUserStageSuccessRate(userId);
+            stageSuccessRate = stageSuccessRate + attackChanceIncrease;
 
             attackBossUseCase.execute(userId, powerPoints, stageSuccessRate, new ICallback<BossFightResult>() {
                 @Override
@@ -76,5 +80,9 @@ public class BossService {
                 }
             });
         });
+    }
+
+    public void updateBossStats(String bossId, int remainingAttacks, int rewardCoins) {
+        updateBossStatsUseCase.execute(bossId, remainingAttacks, rewardCoins);
     }
 }

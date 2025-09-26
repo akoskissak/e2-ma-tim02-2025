@@ -20,10 +20,12 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.habitmaster.R;
 import com.example.habitmaster.data.dtos.BossFightResult;
+import com.example.habitmaster.domain.models.BattleStatsBoost;
 import com.example.habitmaster.domain.models.Boss;
 import com.example.habitmaster.domain.models.User;
 import com.example.habitmaster.domain.models.UserEquipment;
 import com.example.habitmaster.services.BossService;
+import com.example.habitmaster.services.EquipmentEffectService;
 import com.example.habitmaster.services.ICallback;
 import com.example.habitmaster.services.TaskService;
 import com.example.habitmaster.services.UserEquipmentService;
@@ -48,6 +50,9 @@ public class BossFightActivity extends AppCompatActivity {
     private Button attackButton;
     private TextView remainingAttacksText, attackChanceText, bossHpText, userPpText, rewardCoinsText;
     private BossService bossService;
+    private BattleStatsBoost currentBoost;
+    private EquipmentEffectService effectService;
+
     private double stageSuccessRate;
 
     private ImageView chestAnimationView, rewardEquipmentIcon;
@@ -92,10 +97,13 @@ public class BossFightActivity extends AppCompatActivity {
         rewardLayout = findViewById(R.id.rewardLayout);
 
         bossService = new BossService(this);
+        effectService = new EquipmentEffectService();
+        currentBoost = new BattleStatsBoost();
 
         setAttackChance();
 
         attackButton.setOnClickListener(v -> performAttack());
+
 
         chestAnimationView = findViewById(R.id.chestAnimationView);
         chestAnimationView.setBackgroundResource(R.drawable.chest_animation);
@@ -128,10 +136,12 @@ public class BossFightActivity extends AppCompatActivity {
             @Override
             public void onSuccess(User result) {
                 currentUser = result;
+                loadBoss(result.getLevel());
+
                 TaskService taskService = new TaskService(BossFightActivity.this);
                 stageSuccessRate = taskService.getUserStageSuccessRate(currentUser.getId());
+                stageSuccessRate = stageSuccessRate + currentBoost.attackChanceIncrease;
                 attackChanceText.setText(String.format(Locale.US, "%.2f%%", stageSuccessRate * 100));
-                loadBoss();
             }
 
             @Override
@@ -141,8 +151,8 @@ public class BossFightActivity extends AppCompatActivity {
         });
     }
 
-    private void loadBoss() {
-        bossService.getBossByUserId(currentUser.getId(), new ICallback<Boss>() {
+    private void loadBoss(int userLevel) {
+        bossService.getBossByUserId(currentUser.getId(), userLevel, new ICallback<Boss>() {
             @Override
             public void onSuccess(Boss result) {
                 currentBoss = result;
@@ -164,11 +174,7 @@ public class BossFightActivity extends AppCompatActivity {
             bossHpBar.setMax((int) maxHp);
             bossHpBar.setProgress((int) currentHp);
 
-            userPpBar.setMax(currentUser.getPowerPoints());
-            userPpBar.setProgress(currentUser.getPowerPoints());
-
             bossHpText.setText(String.format("%s/%s HP", (int) currentHp, (int) maxHp));
-            userPpText.setText(String.format("%s PP", currentUser.getPowerPoints()));
 
             UserEquipmentService equipmentService = new UserEquipmentService(this);
             equipmentService.getAllUserEquipment(currentUser.getId(), new ICallback<List<UserEquipment>>() {
@@ -181,6 +187,13 @@ public class BossFightActivity extends AppCompatActivity {
                     activeEquipmentList.clear();
                     activeEquipmentList.addAll(activatedList);
                     activeEquipmentAdapter.notifyDataSetChanged();
+
+                    currentBoost = effectService.calculateEffects(activatedList);
+
+                    int boostedPP = (int) currentBoost.calculateFinalPP(currentUser.getPowerPoints());
+                    userPpBar.setMax(boostedPP);
+                    userPpBar.setProgress(boostedPP);
+                    userPpText.setText(String.format("%s PP", boostedPP));
 
                     if (activatedList.isEmpty()) {
                         tvEquipmentTitle.setText("No active equipment");
@@ -198,7 +211,9 @@ public class BossFightActivity extends AppCompatActivity {
                 }
             });
 
-            remainingAttacksText.setText(String.format("%d/5", currentBoss.getRemainingAttacks()));
+            remainingAttacksText.setText(
+                    String.format("%d/%d", currentBoss.getMaxAttacks(), currentBoss.getRemainingAttacks())
+            );
         }
     }
 
@@ -208,7 +223,7 @@ public class BossFightActivity extends AppCompatActivity {
             return;
         }
 
-        bossService.attackBoss(currentUser.getId(), currentUser.getPowerPoints(), new ICallback<BossFightResult>() {
+        bossService.attackBoss(currentUser.getId(), currentUser.getPowerPoints(), currentBoost.attackChanceIncrease, new ICallback<BossFightResult>() {
             @Override
             public void onSuccess(BossFightResult result) {
                 runOnUiThread(() -> {
@@ -255,12 +270,15 @@ public class BossFightActivity extends AppCompatActivity {
 
     private void updateUIOnBossFightEnd(BossFightResult result, String toastText) {
         var rewardedEquipment = result.getRewardedEquipment();
-        var rewardCoins = (int) result.getBoss().getRewardCoins();
+        var baseCoins = (int) result.getBoss().getRewardCoins();
+
+        int boostedCoins = (int) (baseCoins * (1 + currentBoost.coinsIncrease));
+
         if (rewardedEquipment != null) {
             Integer equipmentIcon = EquipmentDrawableMapper.getAvatarResId(rewardedEquipment.getEquipmentId());
-            setOnClickListeners(rewardCoins, equipmentIcon);
+            setOnClickListeners(boostedCoins, equipmentIcon);
         } else {
-            setOnClickListeners(rewardCoins, null);
+            setOnClickListeners(boostedCoins, null);
         }
 
         darkBackground.setVisibility(View.VISIBLE);

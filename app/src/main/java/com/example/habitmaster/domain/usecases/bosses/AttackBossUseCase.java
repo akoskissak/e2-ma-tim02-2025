@@ -82,6 +82,8 @@ public class AttackBossUseCase {
     }
 
     public void getBossReward(String userId, Boss boss, ICallback<UserEquipment> callback) {
+        // smanjenje duration aktivnih equipment-a
+        userEquipmentService.updateAfterBattle(userId);
         getUserByIdUseCase.execute(userId, new ICallback<User>() {
             @Override
             public void onSuccess(User user) {
@@ -125,9 +127,9 @@ public class AttackBossUseCase {
                             }
                         });
                     }
+                } else {
+                    callback.onSuccess(null);
                 }
-
-                callback.onSuccess(null);
             }
 
             @Override
