@@ -94,7 +94,6 @@ public class UserEquipmentService {
         callback.onSuccess(weapon);
     }
 
-    // todo: ovo treba da se pozove na kraju funkcije finishBattle()
     public void updateAfterBattle(String userId) {
         updateEquipmentAfterBattleUC.execute(userId);
     }

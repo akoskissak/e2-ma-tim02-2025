@@ -24,6 +24,7 @@ public class BossRepository {
         values.put("maxHp", boss.getMaxHp());
         values.put("currentHp", boss.getCurrentHp());
         values.put("remainingAttacks", boss.getRemainingAttacks());
+        values.put("maxAttacks", boss.getMaxAttacks());
         values.put("rewardCoins", boss.getRewardCoins());
         db.insert(DatabaseHelper.T_BOSSES, null, values);
         db.close();
@@ -64,6 +65,7 @@ public class BossRepository {
         boss.setMaxHp(cursor.getDouble(cursor.getColumnIndexOrThrow("maxHp")));
         boss.setCurrentHp(cursor.getDouble(cursor.getColumnIndexOrThrow("currentHp")));
         boss.setRemainingAttacks(cursor.getInt(cursor.getColumnIndexOrThrow("remainingAttacks")));
+        boss.setMaxAttacks(cursor.getInt(cursor.getColumnIndexOrThrow("maxAttacks")));
         boss.setRewardCoins(cursor.getDouble(cursor.getColumnIndexOrThrow("rewardCoins")));
         return boss;
     }
@@ -77,6 +79,7 @@ public class BossRepository {
         values.put("currentHp", boss.getCurrentHp());
         values.put("remainingAttacks", boss.getRemainingAttacks());
         values.put("rewardCoins", boss.getRewardCoins());
+        values.put("maxAttacks", boss.getMaxAttacks());
 
         String whereClause = "id = ?";
         String[] whereArgs = { boss.getId() };
@@ -84,5 +87,20 @@ public class BossRepository {
         db.update(DatabaseHelper.T_BOSSES, values, whereClause, whereArgs);
         db.close();
     }
+
+    public void updateBossStats(String bossId, int remainingAttacks, int rewardCoins) {
+        SQLiteDatabase db = dbHelper.getWritableDatabase();
+        ContentValues values = new ContentValues();
+        values.put("remainingAttacks", remainingAttacks);
+        values.put("rewardCoins", rewardCoins);
+        values.put("maxAttacks", remainingAttacks);
+
+        String whereClause = "id = ?";
+        String[] whereArgs = { bossId };
+
+        db.update(DatabaseHelper.T_BOSSES, values, whereClause, whereArgs);
+        db.close();
+    }
+
 
 }

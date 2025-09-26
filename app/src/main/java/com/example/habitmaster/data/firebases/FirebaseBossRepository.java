@@ -39,4 +39,15 @@ public class FirebaseBossRepository {
                 .set(boss)
                 .addOnFailureListener(Throwable::printStackTrace);
     }
+
+    public void updateBossStats(String bossId, int remainingAttacks, int rewardCoins) {
+        firestore.collection("bosses")
+                .document(bossId)
+                .update(
+                "remainingAttacks", remainingAttacks,
+                "rewardCoins", rewardCoins,
+                        "maxAttacks", remainingAttacks
+                )
+                .addOnFailureListener(Throwable::printStackTrace);
+    }
 }

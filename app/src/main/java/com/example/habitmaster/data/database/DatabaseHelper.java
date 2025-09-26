@@ -165,6 +165,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 "maxHp REAL NOT NULL, " +
                 "currentHp REAL NOT NULL, " +
                 "remainingAttacks INTEGER NOT NULL," +
+                "maxAttacks INTEGER NOT NULL," +
                 "rewardCoins REAL NOT NULL, " +
                 "FOREIGN KEY(userId) REFERENCES " + T_USERS + "(id) ON DELETE CASCADE" +
                 ")"

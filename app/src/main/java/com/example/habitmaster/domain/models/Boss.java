@@ -7,6 +7,7 @@ public class Boss {
     private double maxHp;
     private double currentHp;
     private int remainingAttacks;
+    private int maxAttacks;
     private double rewardCoins;
     private double equipmentRewardChance;
 
@@ -21,6 +22,7 @@ public class Boss {
         this.maxHp = calculateHp(level);
         this.currentHp = this.maxHp;
         this.remainingAttacks = 5;
+        this.maxAttacks = remainingAttacks;
         this.rewardCoins = calculateRewardCoins(level);
         this.equipmentRewardChance = 0.2;
     }
@@ -100,6 +102,14 @@ public class Boss {
 
     public int getRemainingAttacks() {
         return remainingAttacks;
+    }
+
+    public int getMaxAttacks() {
+        return maxAttacks;
+    }
+
+    public void setMaxAttacks(int maxAttacks) {
+        this.maxAttacks = maxAttacks;
     }
 
     public void setRemainingAttacks(int remainingAttacks) {
