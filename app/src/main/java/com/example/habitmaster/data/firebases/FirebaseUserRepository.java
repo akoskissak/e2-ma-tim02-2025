@@ -119,6 +119,7 @@ public class FirebaseUserRepository {
         doc.put("avatarName",u.getAvatarName());
         doc.put("activated",u.isActivated());
         doc.put("createdAt",u.getCreatedAt());
+        doc.put("lastLogout", u.getLastLogout());
         doc.put("level",u.getLevel());
         doc.put("levelStartDate", u.getLevelStartDate());
         doc.put("title",u.getTitle());
