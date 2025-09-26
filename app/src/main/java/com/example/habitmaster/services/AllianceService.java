@@ -17,6 +17,7 @@ import com.example.habitmaster.domain.usecases.GetAllianceInvitationByIdUseCase;
 import com.example.habitmaster.domain.usecases.GetAllianceMembersUseCase;
 import com.example.habitmaster.domain.usecases.GetAllianceUseCase;
 import com.example.habitmaster.domain.usecases.alliances.HasUserSentMessageTodayUseCase;
+import com.example.habitmaster.domain.usecases.alliances.UpdateAllianceUseCase;
 import com.example.habitmaster.domain.usecases.users.AddBadgesAndHalfBossRewardUseCase;
 
 import java.util.List;
@@ -38,6 +39,7 @@ public class AllianceService {
     private final AllianceUserMissionService allianceUserMissionService;
     private final HasUserSentMessageTodayUseCase hasUserSentMessageTodayUC;
     private final AddBadgesAndHalfBossRewardUseCase addBadgesAndHalfBossRewardUseCase;
+    private final UpdateAllianceUseCase updateAllianceUC;
 
     public AllianceService(Context ctx) {
         this.createAllianceUC = new CreateAllianceUseCase(ctx);
@@ -52,6 +54,7 @@ public class AllianceService {
         this.allianceUserMissionService = new AllianceUserMissionService(ctx);
         this.hasUserSentMessageTodayUC = new HasUserSentMessageTodayUseCase(ctx);
         this.addBadgesAndHalfBossRewardUseCase = new AddBadgesAndHalfBossRewardUseCase(ctx);
+        this.updateAllianceUC = new UpdateAllianceUseCase(ctx);
     }
 
     public void createAlliance(String allianceName, String leaderId, String leaderUsername, Set<String> memberIds, ICallback<String> callback) {
@@ -210,21 +213,34 @@ public class AllianceService {
             getAllianceByUserIdUC.execute(userId, new ICallback<Alliance>() {
                 @Override
                 public void onSuccess(Alliance alliance) {
-                    allianceMissionService.checkIsMissionFinishedByAllianceId(alliance.getId(), new ICallback<Boolean>() {
+                    allianceMissionService.checkIsMissionFinishedByAllianceId(alliance.getId(), new ICallback<AllianceMission>() {
                         @Override
-                        public void onSuccess(Boolean success) {
-                            if (!success) {
+                        public void onSuccess(AllianceMission mission) {
+                            if (!mission.isCompleted()) {
                                 callback.onError("Mission not completed");
                                 return;
                             }
+
+                            alliance.setMissionStarted(true);
+                            updateAllianceUC.updateAllianceMissionStarted(alliance.getId(), true);
 
                             getAllianceMembersUC.getMemberIdsByAllianceId(alliance.getId(), new ICallback<List<String>>() {
                                 @Override
                                 public void onSuccess(List<String> members) {
                                     members.add(alliance.getLeaderId());
 
-                                    addBadgesAndHalfBossRewardUseCase.execute(members);
-                                    callback.onSuccess(members);
+                                    allianceUserMissionService.getAllByMissionId(mission.getId(), new ICallback<List<AllianceUserMission>>() {
+                                        @Override
+                                        public void onSuccess(List<AllianceUserMission> allianceUserMissions) {
+                                            addBadgesAndHalfBossRewardUseCase.execute(members, allianceUserMissions, mission.getBossMaxHp());
+                                            callback.onSuccess(members);
+                                        }
+
+                                        @Override
+                                        public void onError(String errorMessage) {
+                                            callback.onError(errorMessage);
+                                        }
+                                    });
                                 }
 
                                 @Override

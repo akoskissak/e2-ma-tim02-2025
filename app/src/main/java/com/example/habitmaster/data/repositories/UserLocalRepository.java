@@ -38,6 +38,7 @@ public class UserLocalRepository {
         cv.put("avatarName", u.getAvatarName());
         cv.put("activated", u.isActivated() ? 1 : 0);
         cv.put("createdAt", u.getCreatedAt());
+        cv.put("lastLogout", u.getLastLogout());
         cv.put("level", u.getLevel());
         cv.put("levelStartDate", u.getLevelStartDate().toString());
         cv.put("title", u.getTitle());
@@ -82,8 +83,10 @@ public class UserLocalRepository {
         u.setEmail(c.getString(c.getColumnIndexOrThrow("email")));
         u.setUsername(c.getString(c.getColumnIndexOrThrow("username")));
         u.setAvatarName(c.getString(c.getColumnIndexOrThrow("avatarName")));
+        u.setAvatarName(c.getString(c.getColumnIndexOrThrow("avatarName")));
         u.setActivated(c.getInt(c.getColumnIndexOrThrow("activated")) == 1);
         u.setCreatedAt(c.getLong(c.getColumnIndexOrThrow("createdAt")));
+        u.setLastLogout(c.getLong(c.getColumnIndexOrThrow("lastLogout")));
         u.setLevel(c.getInt(c.getColumnIndexOrThrow("level")));
         String levelStartDateStr = c.getString(c.getColumnIndexOrThrow("levelStartDate"));
         if (levelStartDateStr != null) {
@@ -352,5 +355,11 @@ public class UserLocalRepository {
         return ordered;
     }
 
+    public void setLastLogout(String userId) {
+        SQLiteDatabase db = helper.getWritableDatabase();
+        ContentValues values = new ContentValues();
+        values.put("lastLogout", System.currentTimeMillis());
+        db.update(DatabaseHelper.T_USERS, values, "id = ?", new String[]{userId});
+    }
 
 }

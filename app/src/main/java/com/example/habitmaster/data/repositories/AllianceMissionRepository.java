@@ -94,7 +94,7 @@ public class AllianceMissionRepository {
 
         Cursor cursor = db.query(
                 DatabaseHelper.T_ALLIANCE_MISSIONS,
-                null,  // sve kolone
+                null,
                 "id = ?",
                 new String[]{id},
                 null,

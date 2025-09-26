@@ -22,6 +22,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     public static final String T_BOSSES = "bosses";
     public static final String T_ALLIANCE_MISSIONS = "alliance_missions";
     public static final String T_ALLIANCE_USER_MISSIONS = "alliance_user_missions";
+    public static final String T_BADGES = "badges";
 
     public DatabaseHelper(Context context) {
         super(context, DB_NAME, null, DB_VERSION);
@@ -36,6 +37,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 "avatarName TEXT NOT NULL, " +
                 "activated INTEGER NOT NULL DEFAULT 0, " +
                 "createdAt INTEGER NOT NULL," +
+                "lastLogout LONG NOT NULL DEFAULT 0," +
                 "level INTEGER DEFAULT 1," +
                 "levelStartDate TEXT, " +
                 "title TEXT," +
@@ -133,6 +135,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 "fromUserId TEXT NOT NULL," +
                 "toUserId TEXT NOT NULL," +
                 "status TEXT NOT NULL," +
+                "createdAt INTEGER NOT NULL," +
                 "FOREIGN KEY(allianceId) REFERENCES " + T_ALLIANCES + "(id) ON DELETE CASCADE" +
                 ");");
 
@@ -140,6 +143,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 "id INTEGER PRIMARY KEY AUTOINCREMENT," +
                 "allianceId TEXT NOT NULL," +
                 "userId TEXT NOT NULL," +
+                "joinedAt INTEGER NOT NULL," +
                 "UNIQUE(allianceId, userId) ON CONFLICT REPLACE," +
                 "FOREIGN KEY(allianceId) REFERENCES " + T_ALLIANCES + "(id) ON DELETE CASCADE," +
                 "FOREIGN KEY(userId) REFERENCES " + T_USERS + "(id) ON DELETE CASCADE" +
@@ -197,6 +201,23 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                         ")"
         );
 
+        db.execSQL(
+                "CREATE TABLE " + T_BADGES + " (" +
+                        "id TEXT PRIMARY KEY, " +
+                        "userId TEXT NOT NULL, " +
+                        "missionId TEXT NOT NULL, " +
+                        "imageName TEXT NOT NULL, " +
+                        "shopPurchases INTEGER DEFAULT 0, " +
+                        "bossFightHits INTEGER DEFAULT 0, " +
+                        "solvedTasks INTEGER DEFAULT 0, " +
+                        "solvedOtherTasks INTEGER DEFAULT 0, " +
+                        "noUnresolvedTasks INTEGER DEFAULT 0, " +  // 0 = false, 1 = true
+                        "messagesSentDays INTEGER DEFAULT 0, " +
+                        "totalDamage INTEGER DEFAULT 0, " +
+                        "FOREIGN KEY(userId) REFERENCES " + T_USERS + "(id) ON DELETE CASCADE, " +
+                        "FOREIGN KEY(missionId) REFERENCES " + T_ALLIANCE_MISSIONS + "(id) ON DELETE CASCADE" +
+                        ")"
+        );
 
     }
 
@@ -216,6 +237,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         db.execSQL("DROP TABLE IF EXISTS " + T_BOSSES);
         db.execSQL("DROP TABLE IF EXISTS " + T_ALLIANCE_MISSIONS);
         db.execSQL("DROP TABLE IF EXISTS " + T_ALLIANCE_USER_MISSIONS);
+        db.execSQL("DROP TABLE IF EXISTS " + T_BADGES);
         onCreate(db);
     }
 }

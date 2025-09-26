@@ -40,6 +40,7 @@ public class MainActivity extends AppCompatActivity {
     private static final int NOTIFICATION_PERMISSION_REQUEST_CODE = 1001;
     private Prefs prefs;
     private Button btnBossFight;
+    private UserService userService;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -62,6 +63,8 @@ public class MainActivity extends AppCompatActivity {
 
         TaskService taskService = new TaskService(this);
         taskService.checkMissedTasks(prefs.getUid());
+
+        userService = new UserService(this);
 
         // da uvek bude mode day
         AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO);
@@ -91,14 +94,17 @@ public class MainActivity extends AppCompatActivity {
 
         Intent serviceIntent = new Intent(this, AllianceInviteListenerService.class);
         serviceIntent.putExtra("extra_current_user_id", prefs.getUid());
+        serviceIntent.putExtra("extra_last_logout", prefs.getLastLogout());
         ContextCompat.startForegroundService(this, serviceIntent);
 
         Intent MessageServiceIntent = new Intent(this, AllianceChatListenerService.class);
         MessageServiceIntent.putExtra("extra_current_user_id", prefs.getUid());
+        MessageServiceIntent.putExtra("extra_last_logout", prefs.getLastLogout());
         ContextCompat.startForegroundService(this, MessageServiceIntent);
 
         Intent MemberServiceIntent = new Intent(this, AllianceMemberListenerService.class);
         MemberServiceIntent.putExtra("extra_current_user_id", prefs.getUid());
+        MemberServiceIntent.putExtra("extra_last_logout", prefs.getLastLogout());
         ContextCompat.startForegroundService(this, MemberServiceIntent);
 
         Button btnLogout = findViewById(R.id.btnLogout);
@@ -112,8 +118,10 @@ public class MainActivity extends AppCompatActivity {
             Intent stopInviteIntent = new Intent(this, AllianceInviteListenerService.class);
             stopService(stopInviteIntent);
 
+            userService.setLastLogout(prefs.getUid());
             prefs.setUid(null);
             prefs.setUsername(null);
+            prefs.setLastLogout(System.currentTimeMillis());
             startActivity(new Intent(this, LoginActivity.class));
             finish();
         });
@@ -192,7 +200,6 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
-        UserService userService = new UserService(this);
         userService.getUserLevel(prefs.getUid(), new ICallback<Integer>() {
             @Override
             public void onSuccess(Integer userLevel) {

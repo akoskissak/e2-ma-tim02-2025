@@ -1,12 +1,13 @@
 {
   "users": [
     {
-      "id": "UWdPhI5RBiWzStzMQI6GexxaS4f1",
+      "id": "VaWwsRUEJgcX6Q7ziIFWdlgqrjQ2",
       "email": "demo1@example.com",
       "username": "demo1",
       "avatarName": "avatar3",
       "activated": true,
       "createdAt": 1695400000000,
+      "lastLogout": 1695400000000,
       "level": 0,
       "levelStartDate": "2025-09-25",
       "title": "Rookie",
@@ -17,12 +18,13 @@
       "badges": ""
     },
     {
-      "id": "YMsaCuM00menGODy2RfnssHAMft1",
+      "id": "eHscnjNZABUg6wmuOCeEiyHjnc02",
       "email": "demo2@example.com",
       "username": "demo2",
       "avatarName": "avatar4",
       "activated": true,
       "createdAt": 1695400000000,
+      "lastLogout": 1695400000000,
       "level": 0,
       "levelStartDate": "2025-09-25",
       "title": "Rookie",
@@ -36,37 +38,37 @@
   "categories": [
     {
       "id": "c1a2b3d4-e5f6-7890-abcd-111111111111",
-      "userId": "UWdPhI5RBiWzStzMQI6GexxaS4f1",
+      "userId": "VaWwsRUEJgcX6Q7ziIFWdlgqrjQ2",
       "name": "Study",
       "color": -65536
     },
     {
       "id": "c2a2b3d4-e5f6-7890-abcd-222222222222",
-      "userId": "UWdPhI5RBiWzStzMQI6GexxaS4f1",
+      "userId": "VaWwsRUEJgcX6Q7ziIFWdlgqrjQ2",
       "name": "Entertainment",
       "color": -16711936
     },
     {
       "id": "c3a2b3d4-e5f6-7890-abcd-333333333333",
-      "userId": "UWdPhI5RBiWzStzMQI6GexxaS4f1",
+      "userId": "VaWwsRUEJgcX6Q7ziIFWdlgqrjQ2",
       "name": "Training",
       "color": -16776961
     },
     {
       "id": "c4a2b3d4-e5f6-7890-abcd-444444444444",
-      "userId": "YMsaCuM00menGODy2RfnssHAMft1",
+      "userId": "eHscnjNZABUg6wmuOCeEiyHjnc02",
       "name": "Appointments",
       "color": -256
     },
     {
       "id": "c5a2b3d4-e5f6-7890-abcd-555555555555",
-      "userId": "YMsaCuM00menGODy2RfnssHAMft1",
+      "userId": "eHscnjNZABUg6wmuOCeEiyHjnc02",
       "name": "Shopping",
       "color": -16711936
     },
     {
       "id": "c6a2b3d4-e5f6-7890-abcd-666666666666",
-      "userId": "YMsaCuM00menGODy2RfnssHAMft1",
+      "userId": "eHscnjNZABUg6wmuOCeEiyHjnc02",
       "name": "Fitness",
       "color": -16776961
     }

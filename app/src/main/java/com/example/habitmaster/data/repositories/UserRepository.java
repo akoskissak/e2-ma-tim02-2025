@@ -81,4 +81,9 @@ public class UserRepository {
             }
         }, error -> callback.onError(error));
     }
+
+    public void setLastLogout(String userId) {
+        localRepo.setLastLogout(userId);
+        firebaseRepo.setLastLogout(userId);
+    }
 }

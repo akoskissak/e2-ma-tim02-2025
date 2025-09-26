@@ -19,6 +19,7 @@ public class AllianceMemberListenerService extends Service {
     private static final String TAG = "AllianceMemberService";
     private static final String CHANNEL_ID = "alliance_channel";
     private String currentUserId;
+    private long lastLogout;
     private FirebaseAllianceRepository firebaseRepo;
 
     @Override
@@ -30,6 +31,7 @@ public class AllianceMemberListenerService extends Service {
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         currentUserId = intent.getStringExtra("extra_current_user_id");
+        lastLogout = intent.getLongExtra("extra_last_logout", 0);
         if (currentUserId == null) {
             Log.e(TAG, "currentUserId je null!");
             stopSelf();
@@ -48,7 +50,7 @@ public class AllianceMemberListenerService extends Service {
         startForeground(3, notification);
 
         firebaseRepo = new FirebaseAllianceRepository();
-        firebaseRepo.startAllianceMembersListener(currentUserId, this);
+        firebaseRepo.startAllianceMembersListener(currentUserId, lastLogout, this);
 
         return START_STICKY;
     }

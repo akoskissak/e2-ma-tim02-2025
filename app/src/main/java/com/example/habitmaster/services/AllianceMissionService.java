@@ -52,14 +52,14 @@ public class AllianceMissionService {
         updateAllianceMissionUseCase.execute(allianceMission);
     }
 
-    public void checkIsMissionFinishedByAllianceId(String allianceId, ICallback<Boolean> callback) {
+    public void checkIsMissionFinishedByAllianceId(String allianceId, ICallback<AllianceMission> callback) {
         getOngoingAllianceMissionByAllianceId(allianceId, new ICallback<AllianceMission>() {
             @Override
             public void onSuccess(AllianceMission mission) {
                 if (mission.getEndDateTime().isBefore(LocalDateTime.now())) {
-                    boolean success = mission.finishMission();
+                    mission.finishMission();
                     updateAllianceMissionUseCase.execute(mission);
-                    callback.onSuccess(success);
+                    callback.onSuccess(mission);
                 }
             }
 
