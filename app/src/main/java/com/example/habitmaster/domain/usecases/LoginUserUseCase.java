@@ -80,8 +80,7 @@ public class LoginUserUseCase {
                 }
 
             } else {
-                callback.onError("Greska: " +
-                        (task.getException() != null ? task.getException().getMessage() : ""));
+                callback.onError("Greska: " + "Email ili password nije dobar");
             }
         });
     }
