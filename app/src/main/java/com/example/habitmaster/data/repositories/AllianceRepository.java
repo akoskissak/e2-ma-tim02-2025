@@ -98,6 +98,8 @@ public class AllianceRepository {
         ContentValues values = new ContentValues();
         values.put("allianceId", allianceId);
         values.put("userId", userId);
+        values.put("joinedAt", System.currentTimeMillis());
+
         db.insert(DatabaseHelper.T_ALLIANCE_MEMBERS, null, values);
         db.close();
     }
@@ -110,6 +112,7 @@ public class AllianceRepository {
         values.put("fromUserId", invitation.getFromUserId());
         values.put("toUserId", invitation.getToUserId());
         values.put("status", invitation.getStatus().name());
+        values.put("createdAt", System.currentTimeMillis());
         db.insert(DatabaseHelper.T_ALLIANCE_INVITES, null, values);
         db.close();
     }

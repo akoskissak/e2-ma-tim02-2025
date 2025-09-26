@@ -15,9 +15,11 @@ import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.android.gms.tasks.TaskCompletionSource;
 import com.google.android.gms.tasks.Tasks;
+import com.google.firebase.Timestamp;
 import com.google.firebase.firestore.DocumentChange;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.ListenerRegistration;
 import com.google.firebase.firestore.WriteBatch;
@@ -56,6 +58,7 @@ public class FirebaseAllianceRepository {
     public Task<Void> addMemberToAlliance(String allianceId, String memberId) {
         Map<String, Object> memberData = new HashMap<>();
         memberData.put("userId", memberId);
+        memberData.put("joinedAt", FieldValue.serverTimestamp());
 
         return db.collection("alliances")
                 .document(allianceId)
@@ -74,6 +77,7 @@ public class FirebaseAllianceRepository {
         inviteData.put("fromUserId", invitation.getFromUserId());
         inviteData.put("toUserId", invitation.getToUserId());
         inviteData.put("status", invitation.getStatus().name());
+        inviteData.put("createdAt", FieldValue.serverTimestamp());
 
         db.collection("alliances")
                 .document(invitation.getAllianceId())
@@ -280,10 +284,14 @@ public class FirebaseAllianceRepository {
                 .addOnFailureListener(e -> callback.onError(e.getMessage()));
     }
 
-    public void startInviteListener(String currentUserId, AllianceInviteListenerService service) {
+    public void startInviteListener(String currentUserId, long lastLogout, AllianceInviteListenerService service) {
+        Timestamp lastLogoutTimestamp = new Timestamp(lastLogout / 1000, 0);
+        Log.d("AllianceRepo", "Startujem InviteListener, lastLogout = " + lastLogoutTimestamp);
+
         inviteListener = db.collectionGroup("invites")
                 .whereEqualTo("toUserId", currentUserId)
                 .whereEqualTo("status", AllianceInviteStatus.PENDING.name())
+                .whereGreaterThan("createdAt", lastLogoutTimestamp)
                 .addSnapshotListener((querySnapshot, e) -> {
                     if (e != null) {
                         Log.e("AllianceRepo", "Invite listener error", e);
@@ -332,55 +340,49 @@ public class FirebaseAllianceRepository {
         }
     }
 
-    public void startAllianceMembersListener(String currentUserId, AllianceMemberListenerService service) {
+    public void startAllianceMembersListener(String currentUserId, long lastLogout, AllianceMemberListenerService service) {
+        Timestamp lastLogoutTimestamp = new Timestamp(lastLogout / 1000, 0);
+        Log.d("AllianceRepo", "Startujem InviteListener, lastLogout = " + lastLogoutTimestamp);
+
         memberListener = db.collection("alliances")
                 .whereEqualTo("leaderId", currentUserId)
                 .limit(1)
                 .addSnapshotListener((alliancesSnapshot, e) -> {
                     if (e != null) {
-                        Log.e("AllianceRepo", "Greška u alliances listeneru", e);
                         return;
                     }
                     if (alliancesSnapshot == null || alliancesSnapshot.isEmpty()) {
-                        Log.d("AllianceRepo", "Nema alliances gde je leaderId = " + currentUserId);
                         return;
                     }
-                    Log.d("AllianceRepo", "Prosao sam dalje:  " + currentUserId);
 
                     DocumentSnapshot allianceDoc = alliancesSnapshot.getDocuments().get(0);
                     String allianceId = allianceDoc.getId();
-                    Log.d("AllianceRepo", "Pronađen alliance za leadera: " + allianceId);
 
                     membersSubListener = allianceDoc.getReference()
                             .collection("members")
+                            .whereGreaterThan("joinedAt", lastLogoutTimestamp)
                             .addSnapshotListener((membersSnapshot, ex) -> {
                                 if (ex != null) {
-                                    Log.e("AllianceRepo", "Greška u members listeneru", ex);
                                     return;
                                 }
                                 if (membersSnapshot == null) {
-                                    Log.w("AllianceRepo", "Members snapshot null");
                                     return;
                                 }
 
                                 if (!currentUserId.equals(allianceDoc.getString("leaderId"))) {
-                                    Log.d("AllianceRepo", "Trenutni user nije leader, ne startujem members listener.");
                                     return;
                                 }
 
                                 for (DocumentChange change : membersSnapshot.getDocumentChanges()) {
                                     if (change.getType() == DocumentChange.Type.ADDED) {
                                         String newMemberUserId = change.getDocument().getString("userId");
-                                        Log.d("AllianceRepo", "Novi član dodan, userId=" + newMemberUserId);
 
                                         if (newMemberUserId == null || newMemberUserId.isEmpty()) {
-                                            Log.w("AllianceRepo", "Nema userId u member dokumentu");
                                             continue;
                                         }
 
                                         String leaderId = allianceDoc.getString("leaderId");
                                         if (!currentUserId.equals(leaderId)) {
-                                            Log.d("AllianceRepo", "Trenutni user nije leader, preskačem notifikaciju.");
                                             continue;
                                         }
 
@@ -395,7 +397,6 @@ public class FirebaseAllianceRepository {
                                                         if (username != null)
                                                             newMemberName = username;
                                                     }
-                                                    Log.d("AllianceRepo", "Pronađen username=" + newMemberName);
 
                                                     service.showLeaderNewMemberNotification(
                                                             allianceId,
@@ -425,7 +426,8 @@ public class FirebaseAllianceRepository {
         }
     }
 
-    public void startChatListener(String currentUserId, AllianceChatListenerService service) {
+    public void startChatListener(String currentUserId, long lastLogout, AllianceChatListenerService service) {
+        Log.d("AllianceRepo", "Startujem InviteListener, lastLogout = " + lastLogout);
         messageListener = db.collection("alliances")
                 .addSnapshotListener((alliancesSnapshot, e) -> {
                     if (e != null) {
@@ -438,6 +440,7 @@ public class FirebaseAllianceRepository {
 
                         messageSubListener = allianceDoc.getReference()
                                 .collection("messages")
+                                .whereGreaterThan("timestamp", lastLogout)
                                 .addSnapshotListener((messagesSnapshot, ex) -> {
                                     if (ex != null || messagesSnapshot == null) return;
 

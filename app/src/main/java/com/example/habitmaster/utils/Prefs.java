@@ -7,6 +7,7 @@ public class Prefs {
     private static final String FILE = "habitmaster_prefs";
     private static final String KEY_UID = "uid";
     private static final String KEY_USERNAME = "username";
+    private static final String KEY_LAST_LOGOUT = "lastLogout";
     private static final String KEY_USERNAME_LOCK = "username_lock";
     private static final String KEY_AVATAR_LOCK = "avatar_lock";
     private static final String KEY_SEED_DONE = "seed_done";
@@ -40,6 +41,14 @@ public class Prefs {
 
     public String getUsername() {
         return sp.getString(KEY_USERNAME, null);
+    }
+
+    public void setLastLogout(long timestamp) {
+        sp.edit().putLong(KEY_LAST_LOGOUT, timestamp).apply();
+    }
+
+    public long getLastLogout() {
+        return sp.getLong(KEY_LAST_LOGOUT, 0);
     }
 
     public void lockUsername() {

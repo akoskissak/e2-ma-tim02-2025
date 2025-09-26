@@ -16,6 +16,7 @@ import com.example.habitmaster.domain.usecases.LoginUserUseCase;
 import com.example.habitmaster.domain.usecases.RegisterUserUseCase;
 import com.example.habitmaster.domain.usecases.users.GetUserLevelUseCase;
 import com.example.habitmaster.domain.usecases.users.MapIdsToUsernamesUseCase;
+import com.example.habitmaster.domain.usecases.users.SetLastLogoutUseCase;
 
 import java.util.List;
 import java.util.Map;
@@ -32,6 +33,7 @@ public class UserService {
     private final GetUserByIdUseCase getUserByIdUC;
     private final GetUserLevelUseCase getUserLevelUseCase;
     private final MapIdsToUsernamesUseCase mapIdsToUsernamesUseCase;
+    private final SetLastLogoutUseCase setLastLogoutUseCase;
 
     public UserService(Context ctx){
         this.registerUC = new RegisterUserUseCase(ctx);
@@ -45,6 +47,7 @@ public class UserService {
         this.getUserByIdUC = new GetUserByIdUseCase(ctx);
         this.getUserLevelUseCase = new GetUserLevelUseCase(ctx);
         this.mapIdsToUsernamesUseCase = new MapIdsToUsernamesUseCase(ctx);
+        this.setLastLogoutUseCase = new SetLastLogoutUseCase(ctx);
     }
 
     public void register(String email, String pass, String confirm, String username, String avatarName, ICallback<User> callback){
@@ -99,5 +102,9 @@ public class UserService {
         } else {
             callback.onSuccess(map);
         }
+    }
+
+    public void setLastLogout(String userId) {
+        setLastLogoutUseCase.execute(userId);
     }
 }

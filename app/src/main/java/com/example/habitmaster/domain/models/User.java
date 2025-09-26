@@ -17,17 +17,19 @@ public class User {
     private int coins;
     private int badgesCount;
     private String badges;
+    private long lastLogout;
 
     public User() {
     }
 
-    public User(String id, String email, String username, String avatarName, boolean activated, long createdAt) {
+    public User(String id, String email, String username, String avatarName, boolean activated, long createdAt, long lastLogout) {
         this.id = id;
         this.email = email;
         this.username = username;
         this.avatarName = avatarName;
         this.activated = activated;
         this.createdAt = createdAt;
+        this.lastLogout = lastLogout;
         this.level = 0;
         this.levelStartDate = LocalDate.now();
         this.title = "Rookie";
@@ -100,6 +102,14 @@ public class User {
     }
 
     public void setLevel(int level) { this.level = level; }
+
+    public long getLastLogout() {
+        return lastLogout;
+    }
+
+    public void setLastLogout(long lastLogout) {
+        this.lastLogout = lastLogout;
+    }
 
     public LocalDate getLevelStartDate() {
         return levelStartDate;

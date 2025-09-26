@@ -19,6 +19,7 @@ import com.example.habitmaster.ui.activities.AllianceActivity;
 
 public class AllianceChatListenerService extends Service {
     private String currentUserId;
+    private long lastLogout;
     private static final String TAG = "AllianceChatService";
     private static final String CHANNEL_ID = "alliance_channel";
     private FirebaseAllianceRepository firebaseRepo;
@@ -31,6 +32,7 @@ public class AllianceChatListenerService extends Service {
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         currentUserId = intent.getStringExtra("extra_current_user_id");
+        lastLogout = intent.getLongExtra("extra_last_logout", 0);
         if (currentUserId == null) {
             Log.e(TAG, "currentUserId je null!");
             stopSelf();
@@ -49,7 +51,7 @@ public class AllianceChatListenerService extends Service {
         startForeground(2, notification);
 
         firebaseRepo = new FirebaseAllianceRepository();
-        firebaseRepo.startChatListener(currentUserId, this);
+        firebaseRepo.startChatListener(currentUserId, lastLogout, this);
 
         return START_STICKY;
     }

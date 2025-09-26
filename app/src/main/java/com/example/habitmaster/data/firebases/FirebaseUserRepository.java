@@ -7,10 +7,12 @@ import com.example.habitmaster.data.repositories.UserLocalRepository;
 import com.example.habitmaster.domain.models.User;
 import com.example.habitmaster.domain.models.UserLevelProgress;
 import com.example.habitmaster.services.ICallback;
+import com.example.habitmaster.services.UserService;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Tasks;
+import com.google.firebase.Timestamp;
 import com.google.firebase.auth.AuthCredential;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.EmailAuthProvider;
@@ -71,8 +73,9 @@ public class FirebaseUserRepository {
                         String avatarName = documentSnapshot.getString("avatarName");
                         Boolean activatedBool = documentSnapshot.getBoolean("activated");
                         long createdAt = documentSnapshot.getLong("createdAt") != null ? documentSnapshot.getLong("createdAt") : 0;
+                        long lastLogout = documentSnapshot.getLong("lastLogout") != null ? documentSnapshot.getLong("lastLogout") : 0;
 
-                        User user = new User(id, email, username, avatarName, activatedBool != null && activatedBool, createdAt);
+                        User user = new User(id, email, username, avatarName, activatedBool != null && activatedBool, createdAt, lastLogout);
 
                         Long level = documentSnapshot.getLong("level");
                         user.setLevel(level != null ? level.intValue() : 0);
@@ -369,5 +372,16 @@ public class FirebaseUserRepository {
         } catch (FirebaseFirestoreException e) {
             Log.e("LevelUp", "Greška tokom transakcije: " + e.getMessage(), e);
         }
+    }
+
+    public void setLastLogout(String userId) {
+        long currentTime = System.currentTimeMillis();
+
+        Map<String, Object> updateMap = new HashMap<>();
+        updateMap.put("lastLogout", currentTime);
+
+        db.collection("users")
+                .document(userId)
+                .update(updateMap);
     }
 }

@@ -37,6 +37,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 "avatarName TEXT NOT NULL, " +
                 "activated INTEGER NOT NULL DEFAULT 0, " +
                 "createdAt INTEGER NOT NULL," +
+                "lastLogout LONG NOT NULL DEFAULT 0," +
                 "level INTEGER DEFAULT 1," +
                 "levelStartDate TEXT, " +
                 "title TEXT," +
@@ -134,6 +135,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 "fromUserId TEXT NOT NULL," +
                 "toUserId TEXT NOT NULL," +
                 "status TEXT NOT NULL," +
+                "createdAt INTEGER NOT NULL," +
                 "FOREIGN KEY(allianceId) REFERENCES " + T_ALLIANCES + "(id) ON DELETE CASCADE" +
                 ");");
 
@@ -141,6 +143,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 "id INTEGER PRIMARY KEY AUTOINCREMENT," +
                 "allianceId TEXT NOT NULL," +
                 "userId TEXT NOT NULL," +
+                "joinedAt INTEGER NOT NULL," +
                 "UNIQUE(allianceId, userId) ON CONFLICT REPLACE," +
                 "FOREIGN KEY(allianceId) REFERENCES " + T_ALLIANCES + "(id) ON DELETE CASCADE," +
                 "FOREIGN KEY(userId) REFERENCES " + T_USERS + "(id) ON DELETE CASCADE" +

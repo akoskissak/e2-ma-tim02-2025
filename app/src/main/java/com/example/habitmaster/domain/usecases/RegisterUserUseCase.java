@@ -70,12 +70,13 @@ public class RegisterUserUseCase {
 
         String uid = repo.currentUid();
         long now = System.currentTimeMillis();
-        User u = new User(uid, email, username, avatarName, false, now);
+        User u = new User(uid, email, username, avatarName, false, now, now);
         repo.saveUser(u);
 
         Prefs prefs = new Prefs(context);
         prefs.setUid(uid);
         prefs.setUsername(username);
+        prefs.setLastLogout(now);
         prefs.lockUsername();
         prefs.lockAvatar();
 

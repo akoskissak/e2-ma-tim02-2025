@@ -93,6 +93,7 @@ public class LoginUserUseCase {
         Prefs prefs = new Prefs(context);
         prefs.setUid(firebaseUser.getUid());
         prefs.setUsername(user.getUsername());
+        prefs.setLastLogout(user.getLastLogout());
 
         callback.onSuccess(user);
     }
