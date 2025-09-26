@@ -112,4 +112,8 @@ public class AllianceMission {
             return false;
         }
     }
+
+    public boolean isCompleted() {
+        return status == AllianceMissionStatus.COMPLETED;
+    }
 }

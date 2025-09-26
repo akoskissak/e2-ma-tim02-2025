@@ -4,6 +4,8 @@ import android.app.Notification;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.os.Bundle;
+import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -12,19 +14,27 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.TooltipCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.habitmaster.R;
+import com.example.habitmaster.data.dtos.BadgeDTO;
+import com.example.habitmaster.domain.models.AllianceMission;
+import com.example.habitmaster.domain.models.Badge;
 import com.example.habitmaster.domain.models.Friend;
 import com.example.habitmaster.domain.models.User;
 import com.example.habitmaster.domain.models.UserEquipment;
+import com.example.habitmaster.services.AllianceMissionService;
+import com.example.habitmaster.services.BadgeService;
 import com.example.habitmaster.services.FriendService;
 import com.example.habitmaster.services.ICallback;
 import com.example.habitmaster.services.ICallbackVoid;
 import com.example.habitmaster.services.UserEquipmentService;
 import com.example.habitmaster.services.UserService;
+import com.example.habitmaster.ui.adapters.BadgeAdapter;
 import com.example.habitmaster.ui.adapters.InventoryAdapter;
 import com.example.habitmaster.utils.AvatarUtils;
 import com.example.habitmaster.utils.Prefs;
@@ -46,6 +56,9 @@ public class ProfileActivity extends AppCompatActivity {
     private Prefs prefs;
     private String viewedUsername;
 
+    // TODO: Prikazati bedzeve za korisnika
+    private List<Badge> badges;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -54,14 +67,16 @@ public class ProfileActivity extends AppCompatActivity {
         userService = new UserService(this);
         userEquipmentService = new UserEquipmentService(this);
 
-        prefs =  new Prefs(this);
+        prefs = new Prefs(this);
         String loggedInUserId = prefs.getUid();
-        if(loggedInUserId == null) {
+        if (loggedInUserId == null) {
             startActivity(new Intent(this, LoginActivity.class));
             finish();
             return;
         }
         String loggedInUsername = prefs.getUsername();
+
+        getBadges(loggedInUserId);
 
         avatarImage = findViewById(R.id.avatarImage);
         qrImageView = findViewById(R.id.qrImageView);
@@ -84,7 +99,7 @@ public class ProfileActivity extends AppCompatActivity {
 
         LinearLayout changePasswordContainer = findViewById(R.id.changePasswordContainer);
         LinearLayout ppContainer = findViewById(R.id.powerPointsContainer);
-        LinearLayout xpContainer= findViewById(R.id.xpContainer);
+        LinearLayout xpContainer = findViewById(R.id.xpContainer);
         LinearLayout coinsContainer = findViewById(R.id.coinsContainer);
 
 
@@ -92,11 +107,11 @@ public class ProfileActivity extends AppCompatActivity {
         recyclerViewInventory.setLayoutManager(layoutManager);
 
         viewedUsername = getIntent().getStringExtra("username");
-        if(viewedUsername == null) {
+        if (viewedUsername == null) {
             viewedUsername = loggedInUsername;
         }
 
-        if(!viewedUsername.equals(loggedInUsername)) {
+        if (!viewedUsername.equals(loggedInUsername)) {
             changePasswordContainer.setVisibility(View.GONE);
             ppContainer.setVisibility(View.GONE);
             xpContainer.setVisibility(View.GONE);
@@ -113,6 +128,58 @@ public class ProfileActivity extends AppCompatActivity {
         loadUserProfile(viewedUsername, loggedInUserId, loggedInUsername, friendService);
 
         changePasswordButton.setOnClickListener(v -> changePassword());
+    }
+
+    private void getBadges(String loggedInUserId) {
+        BadgeService badgeService = new BadgeService(this);
+        badgeService.getAllByUserId(loggedInUserId, new ICallback<List<BadgeDTO>>() {
+            @Override
+            public void onSuccess(List<BadgeDTO> badges) {
+                displayBadges(badges);
+            }
+
+            @Override
+            public void onError(String errorMessage) {
+                Log.d("BADGE", "onError: " + errorMessage);
+            }
+        });
+    }
+
+    private void displayBadges(List<BadgeDTO> badges) {
+        RecyclerView recyclerView = findViewById(R.id.recyclerViewBadges);
+        recyclerView.setLayoutManager(
+                new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false)
+        );
+        recyclerView.setAdapter(new BadgeAdapter(this, badges));
+    }
+
+
+    private int getBadgeResId(String imageName) {
+        switch (imageName) {
+            case "badge1":
+                return R.drawable.badge1;
+            case "badge2":
+                return R.drawable.badge2;
+            case "badge3":
+                return R.drawable.badge3;
+            case "badge4":
+                return R.drawable.badge4;
+            case "badge5":
+                return R.drawable.badge5;
+            default:
+                return 0;
+        }
+    }
+
+    private String getBadgeTooltip(Badge badge) {
+        return "Mission: " + badge.getMissionId() + "\n" +
+                "Shop Purchases: " + badge.getShopPurchases() + "\n" +
+                "Boss Hits: " + badge.getBossFightHits() + "\n" +
+                "Solved Tasks: " + badge.getSolvedTasks() + "\n" +
+                "Other Tasks: " + badge.getSolvedOtherTasks() + "\n" +
+                "No Unresolved: " + badge.isNoUnresolvedTasks() + "\n" +
+                "Messages Sent: " + badge.getMessagesSentDays() + "\n" +
+                "Total Damage: " + badge.getTotalDamage();
     }
 
     private void loadUserProfile(String username, String loggedInUserId, String loggedInUsername, FriendService friendService) {
@@ -170,7 +237,7 @@ public class ProfileActivity extends AppCompatActivity {
 
                 }
 
-                if(user.getUsername().equals(loggedInUsername)) {
+                if (user.getUsername().equals(loggedInUsername)) {
                     followButton.setVisibility(View.GONE);
                     return;
                 }
@@ -198,7 +265,7 @@ public class ProfileActivity extends AppCompatActivity {
                                         Toast.makeText(ProfileActivity.this, "Friend request sent to " + user.getUsername(), Toast.LENGTH_SHORT).show();
                                         followButton.setText("Requested");
                                         followButton.setEnabled(false);
-                                    } else if (isFriend){
+                                    } else if (isFriend) {
                                         friendService.removeFriend(user.getId(), loggedInUserId, new ICallback<>() {
                                             @Override
                                             public void onSuccess(Void result) {
@@ -244,17 +311,17 @@ public class ProfileActivity extends AppCompatActivity {
         String newPassword = etNewPassword.getText().toString().trim();
         String confirmPassword = etConfirmPassword.getText().toString().trim();
 
-        if(oldPassword.isEmpty() || newPassword.isEmpty() || confirmPassword.isEmpty()){
+        if (oldPassword.isEmpty() || newPassword.isEmpty() || confirmPassword.isEmpty()) {
             Toast.makeText(this, "Popuni sva polja", Toast.LENGTH_SHORT).show();
             return;
         }
 
-        if(!newPassword.equals(confirmPassword)){
+        if (!newPassword.equals(confirmPassword)) {
             Toast.makeText(this, "Nove lozinke se ne poklapaju", Toast.LENGTH_SHORT).show();
             return;
         }
 
-        if(prefs.getUid() == null || prefs.getUsername() == null ){
+        if (prefs.getUid() == null || prefs.getUsername() == null) {
             Toast.makeText(this, "Greska sa nalogom", Toast.LENGTH_SHORT).show();
             return;
         }
@@ -271,8 +338,9 @@ public class ProfileActivity extends AppCompatActivity {
                         etNewPassword.setText("");
                         etConfirmPassword.setText("");
                     }
+
                     @Override
-                    public void onError (String errorMessage){
+                    public void onError(String errorMessage) {
                         Toast.makeText(ProfileActivity.this, errorMessage, Toast.LENGTH_SHORT).show();
                     }
                 }
