@@ -8,6 +8,7 @@ import com.example.habitmaster.domain.models.Boss;
 import com.example.habitmaster.domain.models.UserEquipment;
 import com.example.habitmaster.domain.usecases.bosses.AttackBossUseCase;
 import com.example.habitmaster.domain.usecases.bosses.GetOrCreateBossUseCase;
+import com.example.habitmaster.domain.usecases.bosses.PeekBossUseCase;
 
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -16,6 +17,7 @@ public class BossService {
     private final ExecutorService executorService = Executors.newFixedThreadPool(4);
     private final GetOrCreateBossUseCase getOrCreateBossUseCase;
     private final AttackBossUseCase attackBossUseCase;
+    private final PeekBossUseCase peekBossUseCase;
     private final TaskService taskService;
     private final AllianceService allianceService;
 
@@ -24,6 +26,7 @@ public class BossService {
         this.attackBossUseCase = new AttackBossUseCase(context);
         this.taskService = new TaskService(context);
         this.allianceService = new AllianceService(context);
+        this.peekBossUseCase = new PeekBossUseCase(context);
     }
     public void getBossByUserId(String userId, int userLevel, ICallback<Boss> callback) {
         getOrCreateBossUseCase.execute(userId, userLevel, new ICallback<Boss>() {
@@ -37,6 +40,10 @@ public class BossService {
                 callback.onError(errorMessage);
             }
         });
+    }
+
+    public Boss peekBoss(String userId) {
+        return peekBossUseCase.execute(userId);
     }
 
     public void attackBoss(String userId, int powerPoints, double attackChanceIncrease, ICallback<BossFightResult> callback) {

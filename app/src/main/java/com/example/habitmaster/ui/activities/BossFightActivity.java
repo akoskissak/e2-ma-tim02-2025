@@ -24,6 +24,7 @@ import com.example.habitmaster.R;
 import com.example.habitmaster.data.dtos.BossFightResult;
 import com.example.habitmaster.domain.models.BattleStatsBoost;
 import com.example.habitmaster.domain.models.Boss;
+import com.example.habitmaster.domain.models.BossStatus;
 import com.example.habitmaster.domain.models.User;
 import com.example.habitmaster.domain.models.UserEquipment;
 import com.example.habitmaster.services.BossService;
@@ -50,7 +51,7 @@ public class BossFightActivity extends AppCompatActivity {
     private ProgressBar bossHpBar;
     private ProgressBar userPpBar;
     private ImageView activeEquipment;
-    private Button attackButton;
+    private Button attackButton, btnNext;
     private TextView remainingAttacksText, attackChanceText, bossHpText, userPpText, rewardCoinsText;
     private BossService bossService;
     private BattleStatsBoost currentBoost;
@@ -72,8 +73,7 @@ public class BossFightActivity extends AppCompatActivity {
     private SensorManager sensorManager;
     private Sensor accelerometer;
     private ShakeDetector shakeDetector;
-
-
+    private boolean inventoryShown = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -87,6 +87,8 @@ public class BossFightActivity extends AppCompatActivity {
         attackChanceText = findViewById(R.id.attackChance);
         bossHpText = findViewById(R.id.bossHpText);
         userPpText = findViewById(R.id.userPpText);
+
+        btnNext = findViewById(R.id.btnNext);
 
         activeEquipmentRecyclerView = findViewById(R.id.activeEquipmentRecyclerView);
         activeEquipmentRecyclerView.setLayoutManager(
@@ -105,15 +107,6 @@ public class BossFightActivity extends AppCompatActivity {
         currentBoost = new BattleStatsBoost();
 
         attackButton.setOnClickListener(v -> performAttack());
-
-
-        // todo za akosa
-        /*if(savedInstanceState == null) {
-            getSupportFragmentManager()
-                    .beginTransaction()
-                    .replace(R.id.fragmentContainer, new InventoryFragment())
-                    .commit();
-        }*/
 
         chestAnimationView = findViewById(R.id.chestAnimationView);
         chestAnimationView.setBackgroundResource(R.drawable.chest_animation);
@@ -147,7 +140,8 @@ public class BossFightActivity extends AppCompatActivity {
             @Override
             public void onSuccess(User result) {
                 currentUser = result;
-                loadBoss(result.getLevel());
+                Boss existingBoss = bossService.peekBoss(currentUser.getId());
+                handleBossState(result, existingBoss);
             }
 
             @Override
@@ -157,12 +151,53 @@ public class BossFightActivity extends AppCompatActivity {
         });
     }
 
+    private void handleBossState(User user, Boss existingBoss) {
+        int userLevel = user.getLevel();
+
+        boolean willCreateOrReset = false;
+        if (existingBoss == null) {
+            willCreateOrReset = userLevel > 0;
+        } else if (existingBoss.isDefeated()) {
+            willCreateOrReset = userLevel > existingBoss.getLevel();
+        } else if (existingBoss.getStatus() == BossStatus.FAILED) {
+            willCreateOrReset = userLevel > existingBoss.getLevel();
+        }
+
+        View inventoryContainer = findViewById(R.id.inventoryContainerLayout);
+        if (willCreateOrReset) {
+            inventoryContainer.setVisibility(View.VISIBLE);
+
+            if (!inventoryShown) {
+                getSupportFragmentManager()
+                        .beginTransaction()
+                        .replace(R.id.fragmentContainer, new InventoryFragment())
+                        .commit();
+                inventoryShown = true;
+            }
+
+            btnNext.setVisibility(View.VISIBLE);
+            btnNext.setEnabled(true);
+            btnNext.setOnClickListener(v -> {
+                btnNext.setEnabled(false);
+                loadBoss(userLevel);
+            });
+
+        } else {
+            inventoryContainer.setVisibility(View.GONE);
+            btnNext.setVisibility(View.GONE);
+            loadBoss(userLevel);
+        }
+    }
+
     private void loadBoss(int userLevel) {
         Log.d("GET BOSS", "loadBoss: ");
         bossService.getBossByUserId(currentUser.getId(), userLevel, new ICallback<Boss>() {
             @Override
             public void onSuccess(Boss result) {
                 Log.d("GET BOSS", "onSuccess: ");
+                btnNext.setVisibility(View.GONE);
+                findViewById(R.id.inventoryContainerLayout).setVisibility(View.GONE);
+
                 currentBoss = result;
                 updateUI();
             }
@@ -291,15 +326,13 @@ public class BossFightActivity extends AppCompatActivity {
 
     private void updateUIOnBossFightEnd(BossFightResult result, String toastText) {
         var rewardedEquipment = result.getRewardedEquipment();
-        var baseCoins = (int) result.getBoss().getRewardCoins();
-
-        int boostedCoins = (int) (baseCoins * (1 + currentBoost.coinsIncrease));
+        var coins = (int) result.getBoss().getRewardCoins();
 
         if (rewardedEquipment != null) {
             Integer equipmentIcon = EquipmentDrawableMapper.getAvatarResId(rewardedEquipment.getEquipmentId());
-            setOnClickListeners(boostedCoins, equipmentIcon);
+            setOnClickListeners(coins, equipmentIcon);
         } else {
-            setOnClickListeners(boostedCoins, null);
+            setOnClickListeners(coins, null);
         }
 
         darkBackground.setVisibility(View.VISIBLE);

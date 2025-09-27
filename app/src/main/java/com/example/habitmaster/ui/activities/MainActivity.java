@@ -39,7 +39,7 @@ import java.util.List;
 public class MainActivity extends AppCompatActivity {
     private static final int NOTIFICATION_PERMISSION_REQUEST_CODE = 1001;
     private Prefs prefs;
-    private Button btnBossFight;
+    private Button btnBossFight, btnShop;
     private UserService userService;
 
     @Override
@@ -150,7 +150,7 @@ public class MainActivity extends AppCompatActivity {
             startActivity(new Intent(this, LevelProgressActivity.class));
         });
 
-        Button btnShop = findViewById(R.id.btnShop);
+        btnShop = findViewById(R.id.btnShop);
         btnShop.setOnClickListener(v -> {
             startActivity(new Intent(this, ShopActivity.class));
         });
@@ -205,10 +205,11 @@ public class MainActivity extends AppCompatActivity {
             public void onSuccess(Integer userLevel) {
                 Log.d("USER_LEVEL", "user level: " + userLevel);
                 if (userLevel > 0) {
-                    // TODO: Dodati da ako sledeci boss nije dostupan, ne moze da ode na boss activity
                     btnBossFight.setEnabled(true);
+                    btnShop.setEnabled(true);
                 } else {
                     btnBossFight.setEnabled(false);
+                    btnShop.setEnabled(false);
                 }
             }
 

@@ -39,19 +39,8 @@ public class GetOrCreateBossUseCase {
         if (boss == null) {
             // No boss -> Create first boss
             if (userLevel > 0) {
-                insertNewBoss(userId, userLevel, new ICallback<Boss>() {
-                    @Override
-                    public void onSuccess(Boss newBoss) {
-                        Log.d("GET BOSS", "new boss: ");
-                        callback.onSuccess(newBoss);
-                    }
-
-                    @Override
-                    public void onError(String errorMessage) {
-                        Log.d("GET BOSS", "error creating first boss: " + errorMessage);
-                        callback.onError(errorMessage);
-                    }
-                });
+                Boss newBoss = new Boss(UUID.randomUUID().toString(), userId, userLevel);
+                applyEquipmentBoosts(newBoss, userId, callback, true);
             } else {
                 callback.onError("You are not ready for boss fight");
             }
@@ -59,19 +48,8 @@ public class GetOrCreateBossUseCase {
             if (boss.isDefeated()) {
                 // Defeated -> create new if user is ready
                 if (userLevel > boss.getLevel()) {
-                    insertNewBoss(userId, userLevel, new ICallback<Boss>() {
-                        @Override
-                        public void onSuccess(Boss newBoss) {
-                            Log.d("GET BOSS", "new boss (last defeated)");
-                            callback.onSuccess(newBoss);
-                        }
-
-                        @Override
-                        public void onError(String errorMessage) {
-                            Log.d("GET BOSS", "last defeated -> new failed: " + errorMessage);
-                            callback.onError(errorMessage);
-                        }
-                    });
+                    Boss newBoss = new Boss(UUID.randomUUID().toString(), userId, userLevel);
+                    applyEquipmentBoosts(newBoss, userId, callback, true);
                 } else {
                     callback.onError("You are not ready for boss fight");
                 }
@@ -80,10 +58,7 @@ public class GetOrCreateBossUseCase {
                 if (userLevel > boss.getLevel()) {
                     Log.d("GET BOSS", "reset boss");
                     boss.reset();
-                    localRepo.update(boss);
-                    remoteRepo.update(boss);
-
-                    callback.onSuccess(boss);
+                    applyEquipmentBoosts(boss, userId, callback, false);
                 } else {
                     callback.onError("You are not ready for boss fight");
                 }
@@ -94,13 +69,8 @@ public class GetOrCreateBossUseCase {
             }
         }
     }
-    
 
-    public void insertNewBoss(String userId, int level, ICallback<Boss> callback) {
-        Log.d("BossService", "insertNewBoss START, userId=" + userId + ", level=" + level);
-
-        Boss newBoss = new Boss(UUID.randomUUID().toString(), userId, level);
-
+    private void applyEquipmentBoosts(Boss boss, String userId, ICallback<Boss> callback, boolean isNew) {
         userEquipmentService.getAllUserEquipment(userId, new ICallback<List<UserEquipment>>() {
             @Override
             public void onSuccess(List<UserEquipment> result) {
@@ -117,27 +87,30 @@ public class GetOrCreateBossUseCase {
                 Log.d("BossService", "Extra attack rolls result=" + extraAttack);
 
                 // Coins boost
-                int boostedCoins = (int) (newBoss.getRewardCoins() * (1 + currentBoost.coinsIncrease));
-                newBoss.setRewardCoins(boostedCoins);
+                int boostedCoins = (int) (boss.getRewardCoins() * (1 + currentBoost.coinsIncrease));
+                boss.setRewardCoins(boostedCoins);
 
                 // Attacks boost
-                int maxAttacks = newBoss.getMaxAttacks() + extraAttack;
-                newBoss.setMaxAttacks(maxAttacks);
-                newBoss.setRemainingAttacks(maxAttacks);
+                int maxAttacks = boss.getMaxAttacks() + extraAttack;
+                boss.setMaxAttacks(maxAttacks);
+                boss.setRemainingAttacks(maxAttacks);
 
-                Log.d("BossService", "Final newBoss before save: " + newBoss);
+                Log.d("BossService", "Final boss before save: " + boss);
 
+                if (isNew) {
+                    localRepo.insert(boss);
+                    remoteRepo.insert(boss);
+                } else {
+                    localRepo.update(boss);
+                    remoteRepo.update(boss);
+                }
 
-                localRepo.insert(newBoss);
-                remoteRepo.insert(newBoss);
-
-                callback.onSuccess(newBoss);
+                callback.onSuccess(boss);
             }
 
             @Override
             public void onError(String errorMessage) {
                 Log.e("BossService", "Error fetching user equipment: " + errorMessage);
-
                 callback.onError(errorMessage);
             }
         });

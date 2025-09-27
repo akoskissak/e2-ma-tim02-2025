@@ -6,7 +6,6 @@ import com.example.habitmaster.domain.models.UserEquipment;
 import java.util.List;
 
 public class EquipmentEffectService {
-    // todo: ovo ce racunati efekte sa kojima korisnik pokrece boss fight
     public BattleStatsBoost calculateEffects(List<UserEquipment> activeEquipment) {
         BattleStatsBoost boost = new BattleStatsBoost();
 

@@ -16,11 +16,6 @@ public class Weapon extends UserEquipment {
         setBonusValue(getBonusValue() + 0.0001);    // 0.01% = 0.0001
     }
 
-    // todo: ako dobijemo dva ista bonus tipa weapon-a
-    public void stackBonus() {
-        setBonusValue(getBonusValue() + 0.0002);
-    }
-
     public int getUpgradeLevel() {
         return this.upgradeLevel;
     }

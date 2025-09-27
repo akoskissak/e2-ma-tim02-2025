@@ -166,7 +166,6 @@ public class Boss {
 
     public void reset() {
         currentHp = maxHp;
-        remainingAttacks = maxAttacks;
         status = BossStatus.ONGOING;
         rewardCoins = calculateRewardCoins(level);
         equipmentRewardChance = 0.2;
