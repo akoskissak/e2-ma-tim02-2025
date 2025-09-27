@@ -6,6 +6,7 @@ import android.hardware.SensorManager;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
@@ -15,6 +16,7 @@ import android.widget.Toast;
 
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -156,21 +158,29 @@ public class BossFightActivity extends AppCompatActivity {
     }
 
     private void loadBoss(int userLevel) {
+        Log.d("GET BOSS", "loadBoss: ");
         bossService.getBossByUserId(currentUser.getId(), userLevel, new ICallback<Boss>() {
             @Override
             public void onSuccess(Boss result) {
+                Log.d("GET BOSS", "onSuccess: ");
                 currentBoss = result;
                 updateUI();
             }
 
             @Override
             public void onError(String errorMessage) {
+                ConstraintLayout mainLayout = findViewById(R.id.mainContent);
+                mainLayout.setVisibility(View.GONE);
+                TextView userNotReadyText = findViewById(R.id.userNotReadyText);
+                userNotReadyText.setVisibility(View.VISIBLE);
+
                 Toast.makeText(BossFightActivity.this, errorMessage, Toast.LENGTH_SHORT).show();
             }
         });
     }
 
     private void updateUI() {
+        Log.d("GET BOSS", "updateUI: ");
         if(currentBoss != null) {
             var maxHp = currentBoss.getMaxHp();
             var currentHp = currentBoss.getCurrentHp();
@@ -179,6 +189,8 @@ public class BossFightActivity extends AppCompatActivity {
             bossHpBar.setProgress((int) currentHp);
 
             bossHpText.setText(String.format("%s/%s HP", (int) currentHp, (int) maxHp));
+
+            attackButton.setEnabled(true);
 
             UserEquipmentService equipmentService = new UserEquipmentService(this);
             equipmentService.getAllUserEquipment(currentUser.getId(), new ICallback<List<UserEquipment>>() {
@@ -221,13 +233,13 @@ public class BossFightActivity extends AppCompatActivity {
             });
 
             remainingAttacksText.setText(
-                    String.format("%d/%d", currentBoss.getMaxAttacks(), currentBoss.getRemainingAttacks())
+                    String.format("%d/%d", currentBoss.getRemainingAttacks(), currentBoss.getMaxAttacks())
             );
         }
     }
 
     private void performAttack() {
-        if(!currentBoss.canAttack()) {
+        if(currentBoss != null && !currentBoss.canAttack()) {
             Toast.makeText(this, "No attacks left!", Toast.LENGTH_SHORT).show();
             return;
         }
@@ -368,6 +380,8 @@ public class BossFightActivity extends AppCompatActivity {
             rewardLayout.setVisibility(View.GONE);
             rewardEquipmentIcon.setVisibility(View.GONE);
             chestAnimationFinished = false;
+
+            setAttackChance(); // Poziva se kako bi se pokazao novi boss, ukoliko je korisnik spreman za njega
         }
     }
 

@@ -7,6 +7,7 @@ import com.example.habitmaster.data.firebases.FirebaseBossRepository;
 import com.example.habitmaster.data.repositories.BossRepository;
 import com.example.habitmaster.domain.models.BattleStatsBoost;
 import com.example.habitmaster.domain.models.Boss;
+import com.example.habitmaster.domain.models.BossStatus;
 import com.example.habitmaster.domain.models.UserEquipment;
 import com.example.habitmaster.services.EquipmentEffectService;
 import com.example.habitmaster.services.ICallback;
@@ -32,125 +33,67 @@ public class GetOrCreateBossUseCase {
         userEquipmentService = new UserEquipmentService(context);
     }
 
-    public void getBossByUserId(String userId, int userLevel, ICallback<Boss> callback) {
-        AtomicBoolean callbackCalled = new AtomicBoolean(false);
-        AtomicBoolean bossCreationInProgress = new AtomicBoolean(false);
+    public void execute(String userId, int userLevel, ICallback<Boss> callback) {
+        var boss = localRepo.findMaxBossByUserId(userId);
 
-        Log.d("BossService", "getBossByUserId START, userId=" + userId + ", userLevel=" + userLevel);
+        if (boss == null) {
+            // No boss -> Create first boss
+            if (userLevel > 0) {
+                insertNewBoss(userId, userLevel, new ICallback<Boss>() {
+                    @Override
+                    public void onSuccess(Boss newBoss) {
+                        Log.d("GET BOSS", "new boss: ");
+                        callback.onSuccess(newBoss);
+                    }
 
-        try {
-            Boss localBoss = localRepo.findByUserId(userId);
-            Log.d("BossService", "Local boss = " + (localBoss != null ? localBoss.toString() : "null"));
-
-            if (localBoss != null && !localBoss.isDefeated()) {
-                Log.d("BossService", "Found undefeated local boss, returning it");
-
-                callbackCalled.set(true);
-                callback.onSuccess(localBoss);
-                return;
+                    @Override
+                    public void onError(String errorMessage) {
+                        Log.d("GET BOSS", "error creating first boss: " + errorMessage);
+                        callback.onError(errorMessage);
+                    }
+                });
+            } else {
+                callback.onError("You are not ready for boss fight");
             }
-
-            // Helper funkcija da insertuje novog bossa i pozove callback samo jednom
-            Consumer<Integer> createNewBoss = (level) -> {
-                Log.d("BossService", "createNewBoss called with level=" + level);
-
-                if (bossCreationInProgress.compareAndSet(false, true)) {
-                    Log.d("BossService", "Creating new boss (first time, allowed)");
-
-                    insertNewBoss(userId, level, new ICallback<Boss>() {
+        } else {
+            if (boss.isDefeated()) {
+                // Defeated -> create new if user is ready
+                if (userLevel > boss.getLevel()) {
+                    insertNewBoss(userId, userLevel, new ICallback<Boss>() {
                         @Override
-                        public void onSuccess(Boss result) {
-                            Log.d("BossService", "insertNewBoss SUCCESS, boss=" + result.toString());
-
-                            if (callbackCalled.compareAndSet(false, true)) {
-                                callback.onSuccess(result);
-                            } else {
-                                Log.w("BossService", "insertNewBoss success ignored (callback already called)");
-
-                            }
+                        public void onSuccess(Boss newBoss) {
+                            Log.d("GET BOSS", "new boss (last defeated)");
+                            callback.onSuccess(newBoss);
                         }
 
                         @Override
                         public void onError(String errorMessage) {
-                            Log.e("BossService", "insertNewBoss ERROR: " + errorMessage);
-
-                            if (callbackCalled.compareAndSet(false, true)) {
-                                callback.onError(errorMessage);
-                            }
+                            Log.d("GET BOSS", "last defeated -> new failed: " + errorMessage);
+                            callback.onError(errorMessage);
                         }
                     });
                 } else {
-                    Log.w("BossService", "createNewBoss ignored (already in progress)");
+                    callback.onError("You are not ready for boss fight");
                 }
-            };
+            } else if (boss.getStatus() == BossStatus.FAILED) {
+                // Failed -> reset boss and return it
+                if (userLevel > boss.getLevel()) {
+                    Log.d("GET BOSS", "reset boss");
+                    boss.reset();
+                    localRepo.update(boss);
+                    remoteRepo.update(boss);
 
-            if (localBoss != null && localBoss.isDefeated()) {
-                Log.d("BossService", "Local boss is defeated, checking level requirement");
-
-                if (userLevel >= localBoss.getLevel() + 1) {
-                    Log.d("BossService", "User ready for next boss, creating new");
-
-                    createNewBoss.accept(localBoss.getLevel() + 1);
-                    return;
+                    callback.onSuccess(boss);
                 } else {
-                    Log.d("BossService", "User NOT ready for next boss");
-
-                    callback.onError("User not ready for next boss");
-                    return;
+                    callback.onError("You are not ready for boss fight");
                 }
-            }
-
-            // Nema lokalnog, proveri Firebase
-            Log.d("BossService", "Fetching boss from Firebase...");
-            remoteRepo.findByUserId(userId, new ICallback<Boss>() {
-                @Override
-                public void onSuccess(Boss bossFromFirebase) {
-                    Log.d("BossService", "Firebase boss = " + (bossFromFirebase != null ? bossFromFirebase.toString() : "null"));
-
-                    if (bossFromFirebase != null && !bossFromFirebase.isDefeated()) {
-                        Log.d("BossService", "Found undefeated Firebase boss, saving locally and returning");
-
-                        localRepo.insert(bossFromFirebase);
-                        if (callbackCalled.compareAndSet(false, true)) {
-                            callback.onSuccess(bossFromFirebase);
-                        }
-                    } else if (bossFromFirebase != null && bossFromFirebase.isDefeated()) {
-                        Log.d("BossService", "Firebase boss defeated, checking user level");
-
-                        if (userLevel >= bossFromFirebase.getLevel() + 1) {
-                            Log.d("BossService", "User ready for new boss after defeated Firebase boss");
-
-                            createNewBoss.accept(bossFromFirebase.getLevel() + 1);
-                        } else {
-                            Log.d("BossService", "User NOT ready for next boss (Firebase defeated)");
-
-                            if (callbackCalled.compareAndSet(false, true)) {
-                                callback.onError("User not ready for next boss");
-                            }
-                        }
-                    } else {
-                        Log.d("BossService", "No boss in Firebase, creating level 1 boss");
-
-                        createNewBoss.accept(1); // prvi boss
-                    }
-                }
-
-                @Override
-                public void onError(String errorMessage) {
-                    Log.e("BossService", "Firebase lookup ERROR: " + errorMessage + " → creating level 1 boss");
-
-                    createNewBoss.accept(1); // prvi boss ako Firebase failuje
-                }
-            });
-
-        } catch (Exception e) {
-            Log.e("BossService", "Exception in getBossByUserId", e);
-            if (callbackCalled.compareAndSet(false, true)) {
-                callback.onError(e.getMessage());
+            } else if (boss.getStatus() == BossStatus.ONGOING) {
+                // Ongoing -> return existing
+                Log.d("GET BOSS", "ongoing boss");
+                callback.onSuccess(boss);
             }
         }
     }
-
     
 
     public void insertNewBoss(String userId, int level, ICallback<Boss> callback) {

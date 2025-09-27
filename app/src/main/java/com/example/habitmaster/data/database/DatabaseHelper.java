@@ -6,7 +6,7 @@ import android.database.sqlite.SQLiteOpenHelper;
 
 public class DatabaseHelper extends SQLiteOpenHelper {
     public static final String DB_NAME = "habitmaster.db";
-    public static final int DB_VERSION = 9;
+    public static final int DB_VERSION = 11;
 
     public static final String T_USERS = "users";
     public static final String T_USER_LEVEL_PROGRESS = "user_level_progress";
@@ -167,6 +167,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 "remainingAttacks INTEGER NOT NULL," +
                 "maxAttacks INTEGER NOT NULL," +
                 "rewardCoins REAL NOT NULL, " +
+                "status TEXT NOT NULL, " +
                 "FOREIGN KEY(userId) REFERENCES " + T_USERS + "(id) ON DELETE CASCADE" +
                 ")"
         );

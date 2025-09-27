@@ -1,5 +1,7 @@
 package com.example.habitmaster.domain.models;
 
+import android.util.Log;
+
 public class Boss {
     private String id;
     private String userId;
@@ -10,6 +12,7 @@ public class Boss {
     private int maxAttacks;
     private double rewardCoins;
     private double equipmentRewardChance;
+    private BossStatus status;
 
     public Boss() {
 
@@ -25,12 +28,7 @@ public class Boss {
         this.maxAttacks = remainingAttacks;
         this.rewardCoins = calculateRewardCoins(level);
         this.equipmentRewardChance = 0.2;
-    }
-
-    public Boss(String id, int level, double maxHp) {
-        this.id = id;
-        this.level = level;
-        this.maxHp = maxHp;
+        this.status = BossStatus.ONGOING;
     }
 
     private double calculateHp(int level) {
@@ -38,6 +36,7 @@ public class Boss {
         for (int i = 1; i < level; i++) {
             hp = hp * 2 + hp / 2;
         }
+        Log.d("NEW BOSS HP", "calculateHp: " + hp);
         return hp;
     }
 
@@ -124,15 +123,25 @@ public class Boss {
         this.equipmentRewardChance = equipmentRewardChance;
     }
 
+    public BossStatus getStatus() {
+        return status;
+    }
+
+    public void setStatus(BossStatus status) {
+        this.status = status;
+    }
+
     public boolean isDefeated() {
-        return currentHp <= 0;
+        return status == BossStatus.DEFEATED;
     }
 
     public void attack(int powerPoints) {
-        if (currentHp >= powerPoints) {
+        if (currentHp > powerPoints) {
             currentHp -= powerPoints;
         } else {
             currentHp = 0;
+            status = BossStatus.DEFEATED;
+            return;
         }
 
         if (remainingAttacks > 0) {
@@ -140,6 +149,9 @@ public class Boss {
             if (currentHp > 0 && remainingAttacks == 0 && currentHp / maxHp < 0.5) {
                 rewardCoins /= 2;
                 equipmentRewardChance /= 2;
+            }
+            if (remainingAttacks == 0) {
+                status = BossStatus.FAILED;
             }
         }
     }
@@ -150,6 +162,21 @@ public class Boss {
 
     public boolean isHalfDefeated() {
         return (currentHp <= maxHp / 2) && remainingAttacks == 0;
+    }
+
+    public void reset() {
+        currentHp = maxHp;
+        remainingAttacks = maxAttacks;
+        status = BossStatus.ONGOING;
+        rewardCoins = calculateRewardCoins(level);
+        equipmentRewardChance = 0.2;
+    }
+
+    public void decreaseRemainingAttacks() {
+        remainingAttacks--;
+        if (remainingAttacks == 0) {
+            status = BossStatus.FAILED;
+        }
     }
 }
 

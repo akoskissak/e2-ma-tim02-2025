@@ -7,6 +7,7 @@ import android.database.sqlite.SQLiteDatabase;
 
 import com.example.habitmaster.data.database.DatabaseHelper;
 import com.example.habitmaster.domain.models.Boss;
+import com.example.habitmaster.domain.models.BossStatus;
 
 public class BossRepository {
     private final DatabaseHelper dbHelper;
@@ -26,11 +27,12 @@ public class BossRepository {
         values.put("remainingAttacks", boss.getRemainingAttacks());
         values.put("maxAttacks", boss.getMaxAttacks());
         values.put("rewardCoins", boss.getRewardCoins());
+        values.put("status", boss.getStatus().name());
         db.insert(DatabaseHelper.T_BOSSES, null, values);
         db.close();
     }
 
-    public Boss findByUserId(String userId) {
+    public Boss findMaxBossByUserId(String userId) {
         SQLiteDatabase db = dbHelper.getReadableDatabase();
         Boss boss = null;
 
@@ -67,6 +69,10 @@ public class BossRepository {
         boss.setRemainingAttacks(cursor.getInt(cursor.getColumnIndexOrThrow("remainingAttacks")));
         boss.setMaxAttacks(cursor.getInt(cursor.getColumnIndexOrThrow("maxAttacks")));
         boss.setRewardCoins(cursor.getDouble(cursor.getColumnIndexOrThrow("rewardCoins")));
+
+        String statusStr = cursor.getString(cursor.getColumnIndexOrThrow("status"));
+        boss.setStatus(statusStr != null ? BossStatus.valueOf(statusStr) : BossStatus.FAILED);
+
         return boss;
     }
 
@@ -80,6 +86,7 @@ public class BossRepository {
         values.put("remainingAttacks", boss.getRemainingAttacks());
         values.put("rewardCoins", boss.getRewardCoins());
         values.put("maxAttacks", boss.getMaxAttacks());
+        values.put("status", boss.getStatus().name());
 
         String whereClause = "id = ?";
         String[] whereArgs = { boss.getId() };

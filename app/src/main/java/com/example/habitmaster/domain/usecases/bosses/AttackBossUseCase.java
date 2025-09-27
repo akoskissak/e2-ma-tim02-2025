@@ -35,14 +35,14 @@ public class AttackBossUseCase {
 
     public void execute(String userId, int powerPoints, double stageSuccessRate, ICallback<BossFightResult> callback) {
         try {
-            Boss boss = localRepo.findByUserId(userId);
+            Boss boss = localRepo.findMaxBossByUserId(userId);
 
             if (boss != null && boss.canAttack()) {
                 Random random = new Random();
                 double roll = random.nextDouble(); // [0.0, 1.0)
 
                 if (roll > stageSuccessRate) {
-                    boss.setRemainingAttacks(boss.getRemainingAttacks() - 1);
+                    boss.decreaseRemainingAttacks();
                     localRepo.update(boss);
                     remoteRepo.update(boss);
                     callback.onSuccess(new BossFightResult(boss, null, false));

@@ -26,7 +26,7 @@ public class BossService {
         this.allianceService = new AllianceService(context);
     }
     public void getBossByUserId(String userId, int userLevel, ICallback<Boss> callback) {
-        getOrCreateBossUseCase.getBossByUserId(userId, userLevel, new ICallback<Boss>() {
+        getOrCreateBossUseCase.execute(userId, userLevel, new ICallback<Boss>() {
             @Override
             public void onSuccess(Boss boss) {
                 callback.onSuccess(boss);
