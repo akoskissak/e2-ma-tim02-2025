@@ -13,7 +13,7 @@ import com.example.habitmaster.ui.fragments.TaskCalendarFragment;
 import com.example.habitmaster.ui.fragments.TaskListFragment;
 
 public class MyTasksActivity extends AppCompatActivity {
-    private Button btnNewTask;
+    private Button btnNewTask, btnCategories;
     private Button btnCalendarView, btnListView;
     private int mostRecentFragment; // 0 = Calendar, 1 = List
 
@@ -27,6 +27,9 @@ public class MyTasksActivity extends AppCompatActivity {
         btnCalendarView = findViewById(R.id.btnCalendarView);
 
         btnListView = findViewById(R.id.btnListView);
+
+        btnCategories = findViewById(R.id.btnCategories);
+        btnCategories.setOnClickListener(v -> startActivity(new Intent(MyTasksActivity.this, CategoriesActivity.class)));
 
         btnNewTask = findViewById(R.id.btnNewTask);
         btnNewTask.setOnClickListener(view -> {

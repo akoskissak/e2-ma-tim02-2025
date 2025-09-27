@@ -8,7 +8,7 @@ import android.content.pm.PackageManager;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
 import android.util.Log;
-import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
@@ -23,6 +23,7 @@ import androidx.core.view.WindowInsetsCompat;
 
 import com.example.habitmaster.R;
 import com.example.habitmaster.data.database.DatabaseHelper;
+import com.example.habitmaster.domain.models.User;
 import com.example.habitmaster.services.AllianceChatListenerService;
 import com.example.habitmaster.services.AllianceInviteListenerService;
 import com.example.habitmaster.services.AllianceMemberListenerService;
@@ -39,8 +40,9 @@ import java.util.List;
 public class MainActivity extends AppCompatActivity {
     private static final int NOTIFICATION_PERMISSION_REQUEST_CODE = 1001;
     private Prefs prefs;
-    private Button btnBossFight, btnShop;
+    private ImageView imgBossFight, imgShop;
     private UserService userService;
+    private ImageView imgProfile;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -49,7 +51,7 @@ public class MainActivity extends AppCompatActivity {
         prefs = new Prefs(this);
 
         DataSeeder seeder = new DataSeeder(this);
-        if(prefs.getUid() == null){
+        if (prefs.getUid() == null) {
             seeder.runSeedIfNeeded();
 
             startActivity(new Intent(this, LoginActivity.class));
@@ -107,8 +109,8 @@ public class MainActivity extends AppCompatActivity {
         MemberServiceIntent.putExtra("extra_last_logout", prefs.getLastLogout());
         ContextCompat.startForegroundService(this, MemberServiceIntent);
 
-        Button btnLogout = findViewById(R.id.btnLogout);
-        btnLogout.setOnClickListener(v -> {
+        ImageView imgLogout = findViewById(R.id.imgLogout);
+        imgLogout.setOnClickListener(v -> {
             Intent stopIntent = new Intent(this, AllianceChatListenerService.class);
             stopService(stopIntent);
 
@@ -125,60 +127,93 @@ public class MainActivity extends AppCompatActivity {
             startActivity(new Intent(this, LoginActivity.class));
             finish();
         });
-        Button btnProfile = findViewById(R.id.btnProfile);
-        btnProfile.setOnClickListener(v -> {
+
+        imgProfile = findViewById(R.id.imgProfile);
+        imgProfile.setOnClickListener(v -> {
             startActivity(new Intent(this, ProfileActivity.class));
         });
+        getProfileImage();
 
-        Button btnMyTasks = findViewById(R.id.btnMyTasks);
+        ImageView btnMyTasks = findViewById(R.id.btnMyTasks);
         btnMyTasks.setOnClickListener(view -> {
             startActivity(new Intent(this, MyTasksActivity.class));
         });
 
-        Button btnCategories = findViewById(R.id.btnCategories);
-        btnCategories.setOnClickListener(v -> {
-            startActivity(new Intent(this, CategoriesActivity.class));
-        });
-
-        Button btnStatistics = findViewById(R.id.btnStatistics);
-        btnStatistics.setOnClickListener(v -> {
+        ImageView imgStatistics = findViewById(R.id.imgStatistics);
+        imgStatistics.setOnClickListener(v -> {
             startActivity(new Intent(this, UserStatisticsActivity.class));
         });
 
-        Button btnLevelProgress = findViewById(R.id.btnLevelProgress);
-        btnLevelProgress.setOnClickListener(v -> {
+        ImageView imgLevelProgress = findViewById(R.id.imgLevelProgress);
+        imgLevelProgress.setOnClickListener(v -> {
             startActivity(new Intent(this, LevelProgressActivity.class));
         });
 
-        btnShop = findViewById(R.id.btnShop);
-        btnShop.setOnClickListener(v -> {
+        imgShop = findViewById(R.id.imgShop);
+        imgShop.setOnClickListener(v -> {
             startActivity(new Intent(this, ShopActivity.class));
         });
 
-        Button btnInventory = findViewById(R.id.btnInventory);
-        btnInventory.setOnClickListener(v -> {
+        ImageView imgInventory = findViewById(R.id.imgInventory);
+        imgInventory.setOnClickListener(v -> {
             startActivity(new Intent(this, InventoryActivity.class));
         });
 
-        Button btnFriend = findViewById(R.id.btnFriend);
-        btnFriend.setOnClickListener(v -> {
+        ImageView imgFriend = findViewById(R.id.imgFriend);
+        imgFriend.setOnClickListener(v -> {
             startActivity(new Intent(this, FriendActivity.class));
         });
 
-        Button btnAlliance = findViewById(R.id.btnAlliance);
-        btnAlliance.setOnClickListener(v -> {
+        ImageView imgAlliance = findViewById(R.id.imgAlliance);
+        imgAlliance.setOnClickListener(v -> {
             startActivity(new Intent(this, AllianceActivity.class));
         });
 
-        Button btnFollowRequests = findViewById(R.id.btnFollowRequests);
-        btnFollowRequests.setOnClickListener(v -> {
+        ImageView imgFollowRequests = findViewById(R.id.imgFollowRequests);
+        imgFollowRequests.setOnClickListener(v -> {
             startActivity(new Intent(this, FollowRequestsActivity.class));
         });
 
-        btnBossFight = findViewById(R.id.btnBossFight);
-        btnBossFight.setOnClickListener(v -> {
+        imgBossFight = findViewById(R.id.imgBossFight);
+        imgBossFight.setOnClickListener(v -> {
             startActivity(new Intent(this, BossFightActivity.class));
         });
+    }
+
+    private void getProfileImage() {
+        userService.getCurrentUser(new ICallback<User>() {
+            @Override
+            public void onSuccess(User currentUser) {
+                int resId = getResources().getIdentifier(
+                        currentUser.getAvatarName(), "drawable", getPackageName()
+                );
+                imgProfile.setImageResource(resId);
+            }
+
+            @Override
+            public void onError(String errorMessage) {
+                Log.d("GET PROFILE IMAGE", errorMessage);
+                imgProfile.setImageResource(R.drawable.default_avatar);
+            }
+        });
+    }
+
+    private int getProfileImageResource(String avatarName) {
+        Log.d("AAA", "getProfileImageResource: ");
+        switch (avatarName) {
+            case "avatar1":
+                return R.drawable.avatar1;
+            case "avatar2":
+                return R.drawable.avatar2;
+            case "avatar3":
+                return R.drawable.avatar3;
+            case "avatar4":
+                return R.drawable.avatar4;
+            case "avatar5":
+                return R.drawable.avatar5;
+            default:
+                return R.drawable.default_avatar;
+        }
     }
 
     private void checkIsAllianceMissionFinished() {
@@ -205,17 +240,18 @@ public class MainActivity extends AppCompatActivity {
             public void onSuccess(Integer userLevel) {
                 Log.d("USER_LEVEL", "user level: " + userLevel);
                 if (userLevel > 0) {
-                    btnBossFight.setEnabled(true);
-                    btnShop.setEnabled(true);
+                    // TODO: Dodati da ako sledeci boss nije dostupan, ne moze da ode na boss activity
+                    imgBossFight.setEnabled(true);
+                    imgShop.setEnabled(true);
                 } else {
-                    btnBossFight.setEnabled(false);
-                    btnShop.setEnabled(false);
+                    imgBossFight.setEnabled(false);
+                    imgShop.setEnabled(false);
                 }
             }
 
             @Override
             public void onError(String errorMessage) {
-                btnBossFight.setEnabled(false);
+                imgBossFight.setEnabled(false);
                 Toast.makeText(MainActivity.this, errorMessage, Toast.LENGTH_SHORT).show();
             }
         });

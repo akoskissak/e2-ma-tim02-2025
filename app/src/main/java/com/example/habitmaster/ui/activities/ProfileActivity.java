@@ -153,24 +153,6 @@ public class ProfileActivity extends AppCompatActivity {
         recyclerView.setAdapter(new BadgeAdapter(this, badges));
     }
 
-
-    private int getBadgeResId(String imageName) {
-        switch (imageName) {
-            case "badge1":
-                return R.drawable.badge1;
-            case "badge2":
-                return R.drawable.badge2;
-            case "badge3":
-                return R.drawable.badge3;
-            case "badge4":
-                return R.drawable.badge4;
-            case "badge5":
-                return R.drawable.badge5;
-            default:
-                return 0;
-        }
-    }
-
     private String getBadgeTooltip(Badge badge) {
         return "Mission: " + badge.getMissionId() + "\n" +
                 "Shop Purchases: " + badge.getShopPurchases() + "\n" +
