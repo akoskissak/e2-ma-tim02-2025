@@ -134,9 +134,11 @@ public class MainActivity extends AppCompatActivity {
         });
         getProfileImage();
 
-        ImageView btnMyTasks = findViewById(R.id.btnMyTasks);
-        btnMyTasks.setOnClickListener(view -> {
-            startActivity(new Intent(this, MyTasksActivity.class));
+        ImageView imgMyTasks = findViewById(R.id.imgMyTasks);
+        imgMyTasks.setOnClickListener(view -> {
+            var myTasksIntent = new Intent(this, MyTasksActivity.class);
+            myTasksIntent.putExtra("extra_user_id", prefs.getUid());
+            startActivity(myTasksIntent);
         });
 
         ImageView imgStatistics = findViewById(R.id.imgStatistics);
@@ -150,9 +152,6 @@ public class MainActivity extends AppCompatActivity {
         });
 
         imgShop = findViewById(R.id.imgShop);
-        imgShop.setOnClickListener(v -> {
-            startActivity(new Intent(this, ShopActivity.class));
-        });
 
         ImageView imgInventory = findViewById(R.id.imgInventory);
         imgInventory.setOnClickListener(v -> {
@@ -175,9 +174,6 @@ public class MainActivity extends AppCompatActivity {
         });
 
         imgBossFight = findViewById(R.id.imgBossFight);
-        imgBossFight.setOnClickListener(v -> {
-            startActivity(new Intent(this, BossFightActivity.class));
-        });
     }
 
     private void getProfileImage() {
@@ -241,17 +237,33 @@ public class MainActivity extends AppCompatActivity {
                 Log.d("USER_LEVEL", "user level: " + userLevel);
                 if (userLevel > 0) {
                     // TODO: Dodati da ako sledeci boss nije dostupan, ne moze da ode na boss activity
+
                     imgBossFight.setEnabled(true);
                     imgShop.setEnabled(true);
+                    imgBossFight.setOnClickListener(v -> {
+                        startActivity(new Intent(MainActivity.this, BossFightActivity.class));
+                    });
+                    imgShop.setOnClickListener(v -> {
+                        startActivity(new Intent(MainActivity.this, ShopActivity.class));
+                    });
                 } else {
-                    imgBossFight.setEnabled(false);
-                    imgShop.setEnabled(false);
+                    imgBossFight.setOnClickListener(v -> {
+                        Toast.makeText(MainActivity.this, "Level 1 required", Toast.LENGTH_SHORT).show();
+                    });
+                    imgShop.setOnClickListener(v -> {
+                        Toast.makeText(MainActivity.this, "Level 1 required", Toast.LENGTH_SHORT).show();
+                    });
                 }
             }
 
             @Override
             public void onError(String errorMessage) {
-                imgBossFight.setEnabled(false);
+                imgBossFight.setOnClickListener(v -> {
+                    Toast.makeText(MainActivity.this, "Level 1 required", Toast.LENGTH_SHORT).show();
+                });
+                imgShop.setOnClickListener(v -> {
+                    Toast.makeText(MainActivity.this, "Level 1 required", Toast.LENGTH_SHORT).show();
+                });
                 Toast.makeText(MainActivity.this, errorMessage, Toast.LENGTH_SHORT).show();
             }
         });

@@ -22,6 +22,7 @@ public class CategoryService {
 
     public interface Callback {
         void onSuccess(Category category);
+
         void onError(String errorMessage);
     }
 
@@ -82,6 +83,19 @@ public class CategoryService {
             callback.onSuccess();
         } else {
             callback.onError("Failed to delete category");
+        }
+    }
+
+    public boolean existUserCategory(String userId) {
+        if (userId == null || userId.isEmpty()) {
+            return false;
+        }
+
+        var list = getUserCategoriesUseCase.execute(userId);
+        if (list != null && !list.isEmpty()) {
+            return true;
+        } else {
+            return false;
         }
     }
 }
