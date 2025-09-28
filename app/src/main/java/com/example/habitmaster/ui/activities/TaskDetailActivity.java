@@ -30,7 +30,7 @@ import java.time.format.DateTimeFormatter;
 
 public class TaskDetailActivity extends AppCompatActivity {
 
-    public static final String EXTRA_TASK = "extra_task";
+    public static final String EXTRA_TASK_INSTANCE_ID = "extra_task_instance_id";
     TextView nameText, descriptionText, categoryText, difficultyText, importanceText, startDateText, endDateText, frequencyText, xpText;
     Prefs prefs;
     private EditText editName, editDescription;
@@ -39,8 +39,8 @@ public class TaskDetailActivity extends AppCompatActivity {
     private Button btnEdit, btnEditExecutionTime, btnSave, btnCancelEdit, btnDelete, btnPause, btnDone, btnCancelTask;
     private LocalTime executionTime;
     private TaskService taskService;
-    private String taskId;
-    private TaskInstanceDTO task;
+    private String taskInstanceId;
+    private TaskInstanceDTO dto;
     private TextView taskEndedText;
 
     @Override
@@ -49,16 +49,16 @@ public class TaskDetailActivity extends AppCompatActivity {
         EdgeToEdge.enable(this);
         setContentView(R.layout.activity_task_detail);
 
-        taskService = new TaskService(this);
-        task = (TaskInstanceDTO) getIntent().getSerializableExtra(EXTRA_TASK);
-        taskId = task.getTaskId();
+        prefs = new Prefs(this);
 
-        if (task == null) {
+        taskService = new TaskService(this);
+        taskInstanceId = getIntent().getStringExtra(EXTRA_TASK_INSTANCE_ID);
+
+        dto = taskService.getTaskInstanceByIdAndDate(taskInstanceId);
+        if (dto == null) {
             finish();
             return;
         }
-
-        prefs = new Prefs(this);
 
         nameText = findViewById(R.id.textTaskName);
         descriptionText = findViewById(R.id.textTaskDescription);
@@ -73,17 +73,17 @@ public class TaskDetailActivity extends AppCompatActivity {
         taskEndedText = findViewById(R.id.textTaskEnded);
 
         Log.d("Task != null", "Task is not null");
-        nameText.setText(task.getName());
-        descriptionText.setText("Description: " + task.getDescription());
-        categoryText.setText("Category: " + task.getCategory().getName());
-        difficultyText.setText("Difficulty: " + task.getDifficulty().getDisplayName());
-        importanceText.setText("Importance: " + task.getImportance().getDisplayName());
-        startDateText.setText("Start: " + (task.getDate() != null ? task.getDate().toString() : "-"));
+        nameText.setText(dto.getName());
+        descriptionText.setText("Description: " + dto.getDescription());
+        categoryText.setText("Category: " + dto.getCategory().getName());
+        difficultyText.setText("Difficulty: " + dto.getDifficulty().getDisplayName());
+        importanceText.setText("Importance: " + dto.getImportance().getDisplayName());
+        startDateText.setText("Start: " + (dto.getDate() != null ? dto.getDate().toString() : "-"));
 //        endDateText.setText("End: " + (task.getEndDate() != null ? task.getEndDate().toString() : "-"));
-        frequencyText.setText("Frequency: " + task.getFrequency().name());
-        xpText.setText("XP: " + task.getXpValue());
+        frequencyText.setText("Frequency: " + dto.getFrequency().name());
+        xpText.setText("XP: " + dto.getXpValue());
 
-        btnPause.setText(task.getStatus() == TaskStatus.PAUSED ? "Resume" : "Pause");
+        btnPause.setText(dto.getStatus() == TaskStatus.PAUSED ? "Resume" : "Pause");
 
         btnEdit = findViewById(R.id.btnEdit);
         btnSave = findViewById(R.id.btnSave);
@@ -127,63 +127,73 @@ public class TaskDetailActivity extends AppCompatActivity {
     }
 
     private void enableEditing() {
-        if (task == null) return;
+        if (dto == null) return;
 
         // Only allow editing if task is not done, canceled, or past date
-        if (task.getStatus() == TaskStatus.COMPLETED || task.getStatus() == TaskStatus.CANCELLED) {
+        if (dto.getStatus() == TaskStatus.COMPLETED || dto.getStatus() == TaskStatus.CANCELLED) {
             Toast.makeText(this, "Cannot edit finished or canceled tasks", Toast.LENGTH_SHORT).show();
             return;
         }
 
-        editName.setText(task.getName());
-        editDescription.setText(task.getDescription());
+        editName.setText(dto.getName());
+        editDescription.setText(dto.getDescription());
 
-        spinnerDifficulty.setSelection(task.getDifficulty().ordinal());
-        spinnerImportance.setSelection(task.getImportance().ordinal());
+        spinnerDifficulty.setSelection(dto.getDifficulty().ordinal());
+        spinnerImportance.setSelection(dto.getImportance().ordinal());
 
         btnEdit.setVisibility(View.GONE);
         btnDelete.setVisibility(View.GONE);
+        btnDone.setVisibility(View.GONE);
+        btnPause.setVisibility(View.GONE);
+        btnCancelTask.setVisibility(View.GONE);
+
         showStaticFields(false);
         showEditFields(true);
     }
 
     private void saveEdits() {
-        btnEdit.setVisibility(View.VISIBLE);
-        btnDelete.setVisibility(View.VISIBLE);
-        if (task == null) return;
+        if (dto == null) return;
 
-        task.setName(editName.getText().toString());
-        task.setDescription(editDescription.getText().toString());
+        dto.setName(editName.getText().toString());
+        dto.setDescription(editDescription.getText().toString());
         if (executionTime != null) {
-            task.setExecutionTime(LocalTime.parse(executionTime.toString()));
+            dto.setExecutionTime(LocalTime.parse(executionTime.toString()));
         }
-        task.setDifficulty(TaskDifficulty.values()[spinnerDifficulty.getSelectedItemPosition()]);
-        task.setImportance(TaskImportance.values()[spinnerImportance.getSelectedItemPosition()]);
+        dto.setDifficulty(TaskDifficulty.values()[spinnerDifficulty.getSelectedItemPosition()]);
+        dto.setImportance(TaskImportance.values()[spinnerImportance.getSelectedItemPosition()]);
 
-        taskService.updateTaskInfo(task, new ICallback<TaskInstanceDTO>() {
+        taskService.updateTaskInfo(dto, new ICallback<TaskInstanceDTO>() {
             @Override
             public void onSuccess(TaskInstanceDTO result) {
                 // Ensure UI updates happen on main thread
                 runOnUiThread(() -> {
                     showEditFields(false);
 
-                    nameText.setText(task.getName());
-                    descriptionText.setText("Description: " + task.getDescription());
-                    difficultyText.setText("Difficulty: " + task.getDifficulty().getDisplayName());
-                    importanceText.setText("Importance: " + task.getImportance().getDisplayName());
-                    xpText.setText("XP: " + task.getXpValue());
+                    nameText.setText(dto.getName());
+                    descriptionText.setText("Description: " + dto.getDescription());
+                    difficultyText.setText("Difficulty: " + dto.getDifficulty().getDisplayName());
+                    importanceText.setText("Importance: " + dto.getImportance().getDisplayName());
+                    xpText.setText("XP: " + dto.getXpValue());
 
                     showStaticFields(true);
 
                     Toast.makeText(TaskDetailActivity.this, "Task updated", Toast.LENGTH_SHORT).show();
+                    btnEdit.setVisibility(View.VISIBLE);
+                    btnDelete.setVisibility(View.VISIBLE);
+                    btnDone.setVisibility(View.VISIBLE);
+                    btnPause.setVisibility(View.VISIBLE);
+                    btnCancelTask.setVisibility(View.VISIBLE);
                 });
             }
 
             @Override
             public void onError(String errorMessage) {
-                runOnUiThread(() -> Toast.makeText(TaskDetailActivity.this, "Failed to update task: " + errorMessage, Toast.LENGTH_SHORT).show());
+                runOnUiThread(() -> {
+                    Toast.makeText(TaskDetailActivity.this, errorMessage, Toast.LENGTH_SHORT).show();
+                });
             }
         });
+
     }
 
     private void cancelEditing() {
@@ -191,6 +201,10 @@ public class TaskDetailActivity extends AppCompatActivity {
         btnDelete.setVisibility(View.VISIBLE);
         showEditFields(false);
         showStaticFields(true);
+
+        btnDone.setVisibility(View.VISIBLE);
+        btnPause.setVisibility(View.VISIBLE);
+        btnCancelTask.setVisibility(View.VISIBLE);
     }
 
     private void showEditFields(boolean show) {
@@ -200,6 +214,9 @@ public class TaskDetailActivity extends AppCompatActivity {
         bottomButtonsLayouts.setVisibility(show ? View.VISIBLE : View.GONE);
         spinnerDifficulty.setVisibility(show ? View.VISIBLE : View.GONE);
         spinnerImportance.setVisibility(show ? View.VISIBLE : View.GONE);
+
+        executionTime = LocalTime.now();
+        btnEditExecutionTime.setText(dto.getExecutionTime().format(DateTimeFormatter.ofPattern("HH:mm")));
     }
 
     private void showStaticFields(boolean show) {
@@ -211,13 +228,13 @@ public class TaskDetailActivity extends AppCompatActivity {
     }
 
     private void confirmDeleteTask() {
-        new AlertDialog.Builder(this).setTitle("Delete Task").setMessage("Are you sure you want to delete this task?").setPositiveButton("Yes", (dialog, which) -> deleteTask()).setNegativeButton("No", null).show();
+        new AlertDialog.Builder(this).setTitle("Delete Task").setMessage("Are you sure you want to delete this task?").setPositiveButton("Yes", (dialog, which) -> delete()).setNegativeButton("No", null).show();
     }
 
-    private void deleteTask() {
-        if (task == null) return;
+    private void delete() {
+        if (dto == null) return;
 
-        taskService.deleteTask(taskId, new TaskService.Callback() {
+        taskService.deleteTaskInstances(taskInstanceId, dto.getTaskId(), dto.getDate(), new TaskService.Callback() {
             @Override
             public void onSuccess() {
                 Toast.makeText(TaskDetailActivity.this, "Task deleted", Toast.LENGTH_SHORT).show();
@@ -232,10 +249,10 @@ public class TaskDetailActivity extends AppCompatActivity {
     }
 
     private void pauseTask() {
-        if (task == null) return;
+        if (dto == null) return;
 
         Log.d("Pause task", "Attempting to pause");
-        var status = task.getStatus();
+        var status = dto.getStatus();
         if (status == TaskStatus.ACTIVE) {
             status = TaskStatus.PAUSED;
         } else if (status == TaskStatus.PAUSED) {
@@ -243,11 +260,11 @@ public class TaskDetailActivity extends AppCompatActivity {
         }
 
         TaskStatus newStatus = status;
-        taskService.updateTaskStatus(prefs.getUid(), task.getId(), newStatus, new TaskService.Callback() {
+        taskService.updateTaskStatus(prefs.getUid(), dto, newStatus, new TaskService.Callback() {
             @Override
             public void onSuccess() {
                 Log.d("Pause success", "Attempting to pause");
-                task.setStatus(newStatus);
+                dto.setStatus(newStatus);
                 btnPause.setText(newStatus == TaskStatus.PAUSED ? "Resume" : "Pause");
                 String toastMessage = newStatus == TaskStatus.PAUSED ? "paused" : "resumed";
                 Toast.makeText(TaskDetailActivity.this, "Task " + toastMessage, Toast.LENGTH_SHORT).show();
@@ -263,13 +280,13 @@ public class TaskDetailActivity extends AppCompatActivity {
     }
 
     private void cancelTask() {
-        if (task == null) return;
+        if (dto == null) return;
 
-        taskService.updateTaskStatus(prefs.getUid(), task.getId(), TaskStatus.CANCELLED, new TaskService.Callback() {
+        taskService.updateTaskStatus(prefs.getUid(), dto, TaskStatus.CANCELLED, new TaskService.Callback() {
             @Override
             public void onSuccess() {
                 Toast.makeText(TaskDetailActivity.this, "Task cancelled", Toast.LENGTH_SHORT).show();
-                task.setStatus(TaskStatus.CANCELLED);
+                dto.setStatus(TaskStatus.CANCELLED);
                 updateButtonsVisibility();
             }
 
@@ -281,14 +298,14 @@ public class TaskDetailActivity extends AppCompatActivity {
     }
 
     private void completeTask() {
-        if (task == null) return;
+        if (dto == null) return;
 
-        Log.d("COMPLETE TASK", "completeTask: " + task.getId());
-        taskService.completeTask(prefs.getUid(), task, new TaskService.Callback() {
+        Log.d("COMPLETE TASK", "completeTask: " + dto.getId());
+        taskService.completeTask(prefs.getUid(), dto, new TaskService.Callback() {
             @Override
             public void onSuccess() {
                 Toast.makeText(TaskDetailActivity.this, "Task completed", Toast.LENGTH_SHORT).show();
-                task.setStatus(TaskStatus.COMPLETED);
+                dto.setStatus(TaskStatus.COMPLETED);
                 updateButtonsVisibility();
             }
 
@@ -300,14 +317,14 @@ public class TaskDetailActivity extends AppCompatActivity {
     }
 
     private void updateButtonsVisibility() {
-        Log.d("TASK INSTANCE STATUS", task.getStatus().name());
-        if (task.getStatus() == TaskStatus.CANCELLED || task.getStatus() == TaskStatus.COMPLETED || task.getStatus() == TaskStatus.MISSED) {
+        Log.d("TASK INSTANCE STATUS", dto.getStatus().name());
+        if (dto.getStatus() == TaskStatus.CANCELLED || dto.getStatus() == TaskStatus.COMPLETED || dto.getStatus() == TaskStatus.MISSED) {
             btnDone.setVisibility(View.GONE);
             btnPause.setVisibility(View.GONE);
             btnDelete.setVisibility(View.GONE);
             btnCancelTask.setVisibility(View.GONE);
             btnEdit.setVisibility(View.GONE);
-            taskEndedText.setText(task.getStatus().name());
+            taskEndedText.setText(dto.getStatus().name());
             taskEndedText.setVisibility(View.VISIBLE);
         } else {
             btnDone.setVisibility(View.VISIBLE);

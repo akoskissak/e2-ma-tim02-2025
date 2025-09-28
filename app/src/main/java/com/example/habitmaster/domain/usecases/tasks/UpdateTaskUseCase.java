@@ -1,6 +1,7 @@
 package com.example.habitmaster.domain.usecases.tasks;
 
 import android.content.Context;
+import android.util.Log;
 
 import com.example.habitmaster.data.dtos.TaskInstanceDTO;
 import com.example.habitmaster.data.firebases.FirebaseTaskInstanceRepository;
@@ -13,7 +14,6 @@ import com.example.habitmaster.domain.models.TaskFrequency;
 import com.example.habitmaster.domain.models.TaskInstance;
 import com.example.habitmaster.domain.models.TaskStatus;
 import com.example.habitmaster.domain.models.UserLevelProgress;
-import com.example.habitmaster.domain.usecases.alliances.userMissions.CheckUnresolvedTasksUseCase;
 import com.example.habitmaster.services.ICallback;
 
 import java.time.LocalDate;
@@ -47,6 +47,9 @@ public class UpdateTaskUseCase {
     public void updateTaskInfo(TaskInstanceDTO dto, String userId, ICallback<TaskInstanceDTO> callback) {
         new Thread(() -> {
             try {
+                if (!validateTaskData(dto.getName(), dto.getExecutionTime().toString(), callback)) {
+                    return;
+                }
                 // izracunavanje xp-a
                 UserLevelProgress progress = userLevelProgressRepository.getUserLevelProgress(userId);
                 int xpValue = dto.getDifficulty().getXpValue(progress) + dto.getImportance().getXpValue(progress);
@@ -77,6 +80,7 @@ public class UpdateTaskUseCase {
                     task.setExecutionTime(dto.getExecutionTime());
                     task.setDifficulty(dto.getDifficulty());
                     task.setImportance(dto.getImportance());
+                    task.setXpValue(dto.getXpValue());
                     taskRepo.update(task);
                     remoteTaskRepo.update(task);
                 } else if (!dto.getDate().isBefore(LocalDate.now())) {
@@ -84,6 +88,7 @@ public class UpdateTaskUseCase {
                             task.getCategoryId(), task.getFrequency(), task.getRepeatInterval(),
                             dto.getDate(), task.getEndDate(), dto.getExecutionTime(),
                             dto.getDifficulty(), dto.getImportance());
+                    newTask.setXpValue(dto.getXpValue());
                     taskRepo.insert(newTask);
                     remoteTaskRepo.insert(newTask);
 
@@ -106,11 +111,11 @@ public class UpdateTaskUseCase {
         }).start();
     }
 
-    public void updateTaskInstanceStatus(String taskInstanceId, TaskStatus newStatus, Callback callback) {
-        var taskInstance = taskInstanceRepo.findById(taskInstanceId);
+    public void updateTaskInstanceStatus(TaskInstanceDTO dto, TaskStatus newStatus, Callback callback) {
+        var taskInstance = taskInstanceRepo.findById(dto.getId());
 
         if (taskInstance == null) {
-            callback.onError("Task not found with id: " + taskInstanceId);
+            callback.onError("Task not found with id: " + dto.getId());
             return;
         }
 
@@ -121,24 +126,30 @@ public class UpdateTaskUseCase {
             return;
         }
 
+        Log.d("UPDATE TASK", "updateTaskInstanceStatus: " + newStatus.toString() + ", date: " + taskInstance.getDate().toString());
         if (newStatus == TaskStatus.COMPLETED) {
             if (taskInstance.getStatus() == TaskStatus.PAUSED) {
+                Log.d("UPDATE TASK", "updateTaskInstanceStatus: paused");
                 callback.onError("Task is paused");
                 return;
             } else {
+                Log.d("UPDATE TASK", "updateTaskInstanceStatus: not paused");
                 var threeDaysAgo = LocalDate.now().minusDays(3);
                 if (taskInstance.getDate().isBefore(threeDaysAgo)) {
+                    Log.d("UPDATE TASK", "isBefore(threeDaysAgo)");
                     callback.onError("Cannot complete task older than 3 days");
                     return;
                 } else if (taskInstance.getDate().isAfter(LocalDate.now())) {
+                    Log.d("UPDATE TASK", "isAfter(LocalDate.now())");
                     callback.onError("Cannot complete future tasks");
                     return;
                 }
             }
         }
 
-        if (taskInstanceRepo.updateStatus(taskInstanceId, newStatus)){
-            remoteInstanceRepository.updateStatus(taskInstanceId, newStatus);
+        Log.d("UPDATE TASK", "update");
+        if (taskInstanceRepo.updateStatus(dto.getId(), newStatus)){
+            remoteInstanceRepository.updateStatus(dto.getId(), newStatus);
             callback.onSuccess();
         }
         else
@@ -149,5 +160,18 @@ public class UpdateTaskUseCase {
         if (taskInstanceRepo.updateStatus(instance.getId(), TaskStatus.MISSED)){
             remoteInstanceRepository.updateStatus(instance.getId(), TaskStatus.MISSED);
         }
+    }
+
+    private boolean validateTaskData(String name, String executionTimeStr, ICallback<TaskInstanceDTO> callback) {
+        if (name == null || name.trim().isEmpty()) {
+            callback.onError("Task name cannot be empty");
+            return false;
+        }
+
+        if (executionTimeStr == null || executionTimeStr.trim().isEmpty()) {
+            callback.onError("Execution time must be selected");
+            return false;
+        }
+        return true;
     }
 }

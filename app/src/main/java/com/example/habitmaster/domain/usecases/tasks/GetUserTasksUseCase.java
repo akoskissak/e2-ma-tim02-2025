@@ -1,7 +1,5 @@
 package com.example.habitmaster.domain.usecases.tasks;
 
-import android.util.Log;
-
 import com.example.habitmaster.data.dtos.TaskInstanceDTO;
 import com.example.habitmaster.data.repositories.CategoryRepository;
 import com.example.habitmaster.data.repositories.TaskInstanceRepository;
@@ -190,17 +188,12 @@ public class GetUserTasksUseCase {
         return dtos;
     }
 
-    public TaskInstanceDTO findTaskInstanceById(String taskId) {
-        String userId = userRepository.currentUid();
+    public TaskInstanceDTO findTaskInstanceByIdAndDate(String taskInstanceId) {
+        var instance = taskInstanceRepo.findById(taskInstanceId);
+        if (instance == null) return null;
 
-        Task task = taskRepo.findUserTaskById(userId, taskId);
+        Task task = taskRepo.findTaskById(instance.getTaskId());
         if (task == null) return null;
-
-        List<TaskInstance> instances = taskInstanceRepo.getByTaskIds(List.of(taskId));
-        if (instances.isEmpty()) return null; // TODO: Handle null return
-
-        // 3. For one-time tasks, take the first instance
-        TaskInstance instance = instances.get(0);
 
         return new TaskInstanceDTO(
                 instance.getId(),
