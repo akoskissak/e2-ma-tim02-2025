@@ -34,10 +34,10 @@ public class FirebaseTaskInstanceRepository {
     }
 
 
-    public void deleteFutureTaskInstances(String taskId) {
+    public void deleteFutureTaskInstances(String taskId, LocalDate date) {
         firestore.collection("taskInstances")
                 .whereEqualTo("taskId", taskId)
-                .whereGreaterThanOrEqualTo("date", LocalDate.now().toString())
+                .whereGreaterThanOrEqualTo("date", date.toString())
                 .whereNotEqualTo("status", TaskStatus.COMPLETED.name())
                 .get()
                 .addOnSuccessListener(querySnapshot -> {

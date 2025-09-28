@@ -87,9 +87,9 @@ public class TaskTabFragment extends Fragment {
             taskService.getOneTimeTasks(LocalDate.now(), new ICallback<List<TaskInstanceDTO>>() {
                 @Override
                 public void onSuccess(List<TaskInstanceDTO> tasks) {
-                    adapter = new TasksAdapter(tasks, task -> {
+                    adapter = new TasksAdapter(tasks, dto -> {
                         Intent intent = new Intent(getContext(), TaskDetailActivity.class);
-                        intent.putExtra(TaskDetailActivity.EXTRA_TASK, task);
+                        intent.putExtra(TaskDetailActivity.EXTRA_TASK_INSTANCE_ID, dto.getId());
                         startActivity(intent);
                     });
                     recyclerView.setAdapter(adapter);
@@ -121,7 +121,7 @@ public class TaskTabFragment extends Fragment {
                 .setItems(dates, (dialog, which) -> {
                     TaskInstanceDTO clickedInstance = instancesForTask.get(which);
                     Intent intent = new Intent(getContext(), TaskDetailActivity.class);
-                    intent.putExtra(TaskDetailActivity.EXTRA_TASK, clickedInstance);
+                    intent.putExtra(TaskDetailActivity.EXTRA_TASK_INSTANCE_ID, clickedInstance.getId());
                     startActivity(intent);
                 })
                 .setNegativeButton("Cancel", null)

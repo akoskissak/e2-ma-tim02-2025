@@ -16,13 +16,24 @@ public class FirebaseTaskRepository {
         firestore.collection("tasks")
                 .document(task.getId())
                 .set(task)
-                .addOnFailureListener(Throwable::printStackTrace);;
+                .addOnFailureListener(Throwable::printStackTrace);
+        ;
     }
 
     public void update(@NonNull Task task) {
         firestore.collection("tasks")
                 .document(task.getId())
                 .set(task)
+                .addOnFailureListener(Throwable::printStackTrace);
+    }
+
+    public void deleteTask(@NonNull String taskId) {
+        firestore.collection("tasks")
+                .document(taskId)
+                .delete()
+                .addOnSuccessListener(aVoid -> {
+                    System.out.println("Task deleted successfully: " + taskId);
+                })
                 .addOnFailureListener(Throwable::printStackTrace);
     }
 }

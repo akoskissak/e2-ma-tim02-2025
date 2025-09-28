@@ -56,9 +56,9 @@ public class TaskCalendarFragment extends Fragment {
         recyclerView = view.findViewById(R.id.recyclerViewTasks);
 
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
-        tasksAdapter = new TasksAdapter(filteredTasks, task -> {
+        tasksAdapter = new TasksAdapter(filteredTasks, dto -> {
             Intent intent = new Intent(getContext(), TaskDetailActivity.class);
-            intent.putExtra(TaskDetailActivity.EXTRA_TASK, task);
+            intent.putExtra(TaskDetailActivity.EXTRA_TASK_INSTANCE_ID, dto.getId());
             startActivity(intent);
         });
         recyclerView.setAdapter(tasksAdapter);

@@ -5,7 +5,6 @@ import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteStatement;
-import android.util.Log;
 
 import com.example.habitmaster.data.database.DatabaseHelper;
 import com.example.habitmaster.domain.models.TaskInstance;
@@ -187,11 +186,11 @@ public class TaskInstanceRepository {
         return instance;
     }
 
-    public boolean deleteFutureTaskInstances(String taskId) {
+    public boolean deleteFutureTaskInstances(String taskId, LocalDate date) {
         try (SQLiteDatabase db = dbHelper.getWritableDatabase()) {
 
             String whereClause = "taskId = ? AND date >= ? AND status != ?";
-            String[] whereArgs = new String[]{taskId, LocalDate.now().toString(), TaskStatus.COMPLETED.name()};
+            String[] whereArgs = new String[]{taskId, date.toString(), TaskStatus.COMPLETED.name()};
 
             int rowsDeleted = db.delete(DatabaseHelper.T_TASK_INSTANCES, whereClause, whereArgs);
 

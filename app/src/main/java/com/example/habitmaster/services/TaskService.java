@@ -64,7 +64,7 @@ public class TaskService {
         this.createTaskUseCase = new CreateTaskUseCase(localRepo, remoteRepo, userRepo, userLevelProgressRepo, localTaskInstanceRepo, remoteInstanceRepo);
         this.getUserTasksUseCase = new GetUserTasksUseCase(localRepo, localTaskInstanceRepo, userRepo, categoryRepo);
         this.updateTaskUseCase = new UpdateTaskUseCase(localRepo, localTaskInstanceRepo, userLevelProgressRepository, remoteRepo, remoteInstanceRepo, context);
-        this.deleteTaskUseCase = new DeleteTaskUseCase(localTaskInstanceRepo, remoteInstanceRepo);
+        this.deleteTaskUseCase = new DeleteTaskUseCase(context);
         this.addUserXpUseCase = new AddUserXpUseCase(new UserLocalRepository(context), new FirebaseUserRepository(context));
         this.getUserLevelStartDateUseCase = new GetUserLevelStartDateUseCase(context);
         this.allianceService = new AllianceService(context);
@@ -111,8 +111,8 @@ public class TaskService {
         });
     }
 
-    public TaskInstanceDTO getTaskById(String id) {
-        return getUserTasksUseCase.findTaskInstanceById(id);
+    public TaskInstanceDTO getTaskInstanceByIdAndDate(String id) {
+        return getUserTasksUseCase.findTaskInstanceByIdAndDate(id);
     }
 
     public void updateTaskInfo(TaskInstanceDTO dto, ICallback<TaskInstanceDTO> callback) {
@@ -136,8 +136,8 @@ public class TaskService {
         });
     }
 
-    public void deleteTask(String taskId, Callback callback) {
-        deleteTaskUseCase.execute(taskId, new DeleteTaskUseCase.Callback() {
+    public void deleteTaskInstances(String taskInstanceId, String taskId, LocalDate date, Callback callback) {
+        deleteTaskUseCase.execute(taskInstanceId, taskId, date, new DeleteTaskUseCase.Callback() {
             @Override
             public void onSuccess() {
                 callback.onSuccess();
@@ -150,8 +150,8 @@ public class TaskService {
         });
     }
 
-    public void updateTaskStatus(String userId, String taskInstanceId, TaskStatus newStatus, Callback callback) {
-        updateTaskUseCase.updateTaskInstanceStatus(taskInstanceId, newStatus, new UpdateTaskUseCase.Callback() {
+    public void updateTaskStatus(String userId, TaskInstanceDTO dto, TaskStatus newStatus, Callback callback) {
+        updateTaskUseCase.updateTaskInstanceStatus(dto, newStatus, new UpdateTaskUseCase.Callback() {
             @Override
             public void onSuccess() {
                 callback.onSuccess();
@@ -165,7 +165,7 @@ public class TaskService {
     }
 
     public void completeTask(String userId, TaskInstanceDTO dto, Callback callback) {
-        updateTaskStatus(userId, dto.getId(), TaskStatus.COMPLETED, new Callback() {
+        updateTaskStatus(userId, dto, TaskStatus.COMPLETED, new Callback() {
             @Override
             public void onSuccess() {
                 if (dto.getDifficulty() == TaskDifficulty.EASY && dto.getImportance() == TaskImportance.NORMAL) {
