@@ -1,5 +1,7 @@
 package com.example.habitmaster.data.firebases;
 
+import android.util.Log;
+
 import com.example.habitmaster.domain.models.AllianceMessage;
 import com.example.habitmaster.services.ICallback;
 import com.example.habitmaster.services.ICallbackVoid;
@@ -80,13 +82,17 @@ public class FirebaseAllianceChatRepository {
         if (missionStartDateTime.toLocalDate().isEqual(today)) {
             // Misija je danas – prozor je od startDateTime do danas + startTime
             windowStart = missionStartDateTime;
-            windowEnd = today.atTime(missionStartTime);
+            windowEnd = today.atTime(LocalTime.now());
+            Log.d("CHAT", "today: start: " + windowStart.toString() + ", end: " + windowEnd.toString());
         } else {
             // Misija je pre danas – prozor je od juče u startTime do danas u startTime
+            Log.d("CHAT", "not today");
             if (missionStartTime.isAfter(LocalTime.now())) {
+                Log.d("CHAT", "after now");
                 windowStart = today.minusDays(1).atTime(missionStartTime);
                 windowEnd = today.atTime(missionStartTime);
             } else {
+                Log.d("CHAT", "before now");
                 // Ako je missionStartTime <= now => prozor je od danas(missionStartTime) do sutra(missionStartTime)
                 windowStart = today.atTime(missionStartTime);
                 windowEnd = today.plusDays(1).atTime(missionStartTime);
@@ -96,6 +102,8 @@ public class FirebaseAllianceChatRepository {
         // Konverzija u java.util.Date za Firestore
         Date startDate = Date.from(windowStart.atZone(ZoneId.systemDefault()).toInstant());
         Date endDate = Date.from(windowEnd.atZone(ZoneId.systemDefault()).toInstant());
+        Log.d("CHAT", "startDate: " + startDate.toString());
+        Log.d("CHAT", "endDate: " + endDate.toString());
 
         db.collection("alliances")
                 .document(allianceId)

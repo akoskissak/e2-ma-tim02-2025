@@ -1,12 +1,14 @@
 package com.example.habitmaster.domain.usecases.alliances.userMissions;
 
 import android.content.Context;
+import android.util.Log;
 
 import com.example.habitmaster.data.firebases.FirebaseAllianceMissionRepository;
 import com.example.habitmaster.data.firebases.FirebaseAllianceUserMissionRepository;
 import com.example.habitmaster.data.repositories.AllianceMissionRepository;
 import com.example.habitmaster.data.repositories.AllianceRepository;
 import com.example.habitmaster.data.repositories.AllianceUserMissionRepository;
+import com.example.habitmaster.domain.models.Alliance;
 import com.example.habitmaster.domain.models.AllianceUserMission;
 
 import java.util.concurrent.ExecutorService;
@@ -30,14 +32,19 @@ public class CheckUnresolvedTasksUseCase {
 
     public void execute(String userId) {
         executorService.execute(() -> {
-            var alliance = localAllianceRepo.getAllianceByUserId(userId);
+            Alliance alliance;
+            alliance = localAllianceRepo.getAllianceByUserId(userId);
+            if (alliance == null) {
+                alliance = localAllianceRepo.getAllianceByLeaderId(userId);
+            }
+
             if (alliance != null) {
                 var ongoingMission = localMissionRepo.getOngoingByAllianceId(alliance.getId());
                 if (ongoingMission != null) {
                     var userMission = localUserMissionRepo.getByUserIdAndMissionId(userId, ongoingMission.getId());
                     if (userMission != null) {
                         if (userMission.isNoUnresolvedTasks()) {
-                            userMission.setNoUnresolvedTasks(true);
+                            userMission.setNoUnresolvedTasks(false);
                             userMission.calculateTotalDamage();
                             localUserMissionRepo.update(userMission);
                             remoteUserMissionRepo.update(userMission);

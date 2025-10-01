@@ -47,7 +47,7 @@ public class MembersProgressAdapter extends RecyclerView.Adapter<MembersProgress
         String username = userMap.getOrDefault(mission.getUserId(), "Unknown");
 
         holder.tvUsername.setText(username);
-        holder.tvTotalDamage.setText(String.format("%d dmg", mission.getTotalDamage()));
+        holder.tvTotalDamage.setText(String.format("%d dmg", mission.calculateTotalDamage()));
 
         holder.btnMoreInfo.setOnClickListener(v -> {
             if (listener != null) {

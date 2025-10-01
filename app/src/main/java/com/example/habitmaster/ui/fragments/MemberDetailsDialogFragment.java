@@ -52,8 +52,8 @@ public class MemberDetailsDialogFragment extends DialogFragment {
         if (mission != null) {
             tvShopPurchases.setText("Shop purchases: " + mission.getShopPurchases() + "/5");
             tvBossHits.setText("Boss fight hits: " + mission.getBossFightHits() + "/10");
-            tvSolvedTasks.setText("Solved tasks: " + mission.getSolvedTasks() + "/10");
-            tvSolvedOtherTasks.setText("Solved other tasks: " + mission.getSolvedOtherTasks() + "/6");
+            tvSolvedTasks.setText("Solved easier tasks: " + mission.getSolvedTasks() + "/10");
+            tvSolvedOtherTasks.setText("Solved harder tasks: " + mission.getSolvedOtherTasks() + "/6");
             tvNoUnresolvedTasks.setText("No unresolved tasks: " + (mission.isNoUnresolvedTasks() ? "Yes (+10 HP)" : "No"));
             tvMessagesSentDays.setText("Messages sent days: " + mission.getMessagesSentDays());
             tvTotalDamage.setText("Total damage: " + mission.getTotalDamage());
