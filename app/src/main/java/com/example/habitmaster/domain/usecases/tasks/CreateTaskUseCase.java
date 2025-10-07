@@ -113,36 +113,43 @@ public class CreateTaskUseCase {
             e.printStackTrace();
         }
 
-        int createdCount = localRepo.getTasksCountByDifficultyAndImportance(difficulty, importance);
-        int xpValue;
-
-        if (difficulty == TaskDifficulty.VERY_EASY
-                && importance == TaskImportance.NORMAL
-                && createdCount >= 5) {
-            xpValue = 0;
-        } else if (difficulty == TaskDifficulty.EASY
-                && importance == TaskImportance.IMPORTANT
-                && createdCount >= 5) {
-            xpValue = 0;
-        } else if (difficulty == TaskDifficulty.HARD
-                && importance == TaskImportance.EXTREMELY_IMPORTANT
-                && createdCount >= 2) {
-            xpValue = 0;
-        } else if (difficulty == TaskDifficulty.EXTREMELY_HARD
-                && createdCount >= 1) {
-            xpValue = 0;
-        } else if (importance == TaskImportance.SPECIAL
-                && createdCount > 1) {
-            xpValue = 0;
-        } else {
-            xpValue = 0;
-        }
+        int createdCount;
 
         String userId = userRepository.currentUid();
         String id = UUID.randomUUID().toString();
         Task task = new Task(id, userId, name, description, categoryId, frequency, repeatInterval, startDate, endDate, executionTime, difficulty, importance);
         UserLevelProgress progress = userLevelProgressRepository.getUserLevelProgress(userId);
         task.calculateXp(progress);
+
+        if (difficulty == TaskDifficulty.VERY_EASY
+                && importance == TaskImportance.NORMAL) {
+            createdCount = localInstanceRepo.countTasksByDifficultyImportanceAndPeriod(difficulty, importance, LocalDate.now(), LocalDate.now());
+            if (createdCount >= 5) {
+                task.setXpValue(0);
+            }
+        } else if (difficulty == TaskDifficulty.EASY
+                && importance == TaskImportance.IMPORTANT) {
+            createdCount = localInstanceRepo.countTasksByDifficultyImportanceAndPeriod(difficulty, importance, LocalDate.now(), LocalDate.now());
+            if (createdCount >= 5) {
+                task.setXpValue(0);
+            }
+        } else if (difficulty == TaskDifficulty.HARD
+                && importance == TaskImportance.EXTREMELY_IMPORTANT) {
+            createdCount = localInstanceRepo.countTasksByDifficultyImportanceAndPeriod(difficulty, importance, LocalDate.now(), LocalDate.now());
+            if (createdCount >= 2) {
+                task.setXpValue(0);
+            }
+        } else if (difficulty == TaskDifficulty.EXTREMELY_HARD) {
+            createdCount = localInstanceRepo.countTasksByDifficultyImportanceAndPeriod(difficulty, importance, LocalDate.now().minusWeeks(1), LocalDate.now());
+            if (createdCount >= 1) {
+                task.setXpValue(0);
+            }
+        } else if (importance == TaskImportance.SPECIAL) {
+            createdCount = localInstanceRepo.countTasksByDifficultyImportanceAndPeriod(difficulty, importance, LocalDate.now().minusMonths(1), LocalDate.now());
+            if (createdCount >= 1) {
+                task.setXpValue(0);
+            }
+        }
 
         try {
             localRepo.insert(task);

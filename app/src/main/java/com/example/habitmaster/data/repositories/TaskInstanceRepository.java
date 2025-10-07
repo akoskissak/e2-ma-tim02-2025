@@ -7,6 +7,8 @@ import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteStatement;
 
 import com.example.habitmaster.data.database.DatabaseHelper;
+import com.example.habitmaster.domain.models.TaskDifficulty;
+import com.example.habitmaster.domain.models.TaskImportance;
 import com.example.habitmaster.domain.models.TaskInstance;
 import com.example.habitmaster.domain.models.TaskStatus;
 
@@ -366,4 +368,39 @@ public class TaskInstanceRepository {
 
         return instances;
     }
+
+    public int countTasksByDifficultyImportanceAndPeriod(TaskDifficulty difficulty, TaskImportance importance, LocalDate startDate, LocalDate endDate) {
+        SQLiteDatabase db = null;
+        Cursor cursor = null;
+        int count = 0;
+
+        try {
+            db = dbHelper.getReadableDatabase();
+
+            String query = "SELECT COUNT(DISTINCT ti.id) " +
+                    "FROM " + DatabaseHelper.T_TASKS + " t " +
+                    "JOIN " + DatabaseHelper.T_TASK_INSTANCES + " ti ON t.id = ti.taskId " +
+                    "WHERE t.difficulty = ? " +
+                    "AND t.importance = ? " +
+                    "AND ti.createdAt BETWEEN ? AND ?";
+
+            String[] args = {
+                    difficulty.name(),
+                    importance.name(),
+                    startDate.toString(),
+                    endDate.toString()
+            };
+
+            cursor = db.rawQuery(query, args);
+            if (cursor.moveToFirst()) {
+                count = cursor.getInt(0);
+            }
+        } finally {
+            if (cursor != null) cursor.close();
+            if (db != null) db.close();
+        }
+
+        return count;
+    }
+
 }

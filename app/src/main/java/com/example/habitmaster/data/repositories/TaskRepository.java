@@ -25,20 +25,6 @@ public class TaskRepository {
         this.dbHelper = new DatabaseHelper(context);
     }
 
-    public int getTasksCountByDifficultyAndImportance(@NonNull Enum difficulty, @NonNull Enum importance) {
-        SQLiteDatabase db = dbHelper.getReadableDatabase();
-        String query = "SELECT COUNT(*) FROM tasks WHERE difficulty=? AND importance=?";
-        Cursor cursor = db.rawQuery(query, new String[]{difficulty.name(), importance.name()});
-        int count = 0;
-        if (cursor.moveToFirst()) {
-            count = cursor.getInt(0);
-        }
-        cursor.close();
-        db.close();
-        return count;
-    }
-
-
     public void insert(Task task) {
         SQLiteDatabase db = dbHelper.getWritableDatabase();
         ContentValues values = new ContentValues();
