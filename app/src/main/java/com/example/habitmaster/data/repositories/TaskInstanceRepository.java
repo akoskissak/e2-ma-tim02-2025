@@ -369,7 +369,7 @@ public class TaskInstanceRepository {
         return instances;
     }
 
-    public int countTasksByDifficultyImportanceAndPeriod(TaskDifficulty difficulty, TaskImportance importance, LocalDate startDate, LocalDate endDate) {
+    public int countTasksByDifficultyAndPeriod(String userId, TaskDifficulty difficulty, LocalDate startDate, LocalDate endDate) {
         SQLiteDatabase db = null;
         Cursor cursor = null;
         int count = 0;
@@ -380,12 +380,44 @@ public class TaskInstanceRepository {
             String query = "SELECT COUNT(DISTINCT ti.id) " +
                     "FROM " + DatabaseHelper.T_TASKS + " t " +
                     "JOIN " + DatabaseHelper.T_TASK_INSTANCES + " ti ON t.id = ti.taskId " +
-                    "WHERE t.difficulty = ? " +
-                    "AND t.importance = ? " +
+                    "WHERE t.userId = ? AND t.difficulty = ? " +
                     "AND ti.createdAt BETWEEN ? AND ?";
 
             String[] args = {
+                    userId,
                     difficulty.name(),
+                    startDate.toString(),
+                    endDate.toString()
+            };
+
+            cursor = db.rawQuery(query, args);
+            if (cursor.moveToFirst()) {
+                count = cursor.getInt(0);
+            }
+        } finally {
+            if (cursor != null) cursor.close();
+            if (db != null) db.close();
+        }
+
+        return count;
+    }
+
+    public int countTasksByImportanceAndPeriod(String userId, TaskImportance importance, LocalDate startDate, LocalDate endDate) {
+        SQLiteDatabase db = null;
+        Cursor cursor = null;
+        int count = 0;
+
+        try {
+            db = dbHelper.getReadableDatabase();
+
+            String query = "SELECT COUNT(DISTINCT ti.id) " +
+                    "FROM " + DatabaseHelper.T_TASKS + " t " +
+                    "JOIN " + DatabaseHelper.T_TASK_INSTANCES + " ti ON t.id = ti.taskId " +
+                    "WHERE t.userId = ? AND t.importance = ? " +
+                    "AND ti.createdAt BETWEEN ? AND ?";
+
+            String[] args = {
+                    userId,
                     importance.name(),
                     startDate.toString(),
                     endDate.toString()

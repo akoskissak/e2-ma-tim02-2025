@@ -1,6 +1,7 @@
 package com.example.habitmaster.domain.usecases.tasks;
 
 import android.content.Context;
+import android.util.Log;
 
 import com.example.habitmaster.data.firebases.FirebaseTaskInstanceRepository;
 import com.example.habitmaster.data.firebases.FirebaseTaskRepository;
@@ -113,43 +114,65 @@ public class CreateTaskUseCase {
             e.printStackTrace();
         }
 
-        int createdCount;
 
         String userId = userRepository.currentUid();
         String id = UUID.randomUUID().toString();
         Task task = new Task(id, userId, name, description, categoryId, frequency, repeatInterval, startDate, endDate, executionTime, difficulty, importance);
         UserLevelProgress progress = userLevelProgressRepository.getUserLevelProgress(userId);
         task.calculateXp(progress);
+        Log.d("TASK XP", "execute: " + task.getXpValue());
 
+        int createdCount;
         if (difficulty == TaskDifficulty.VERY_EASY
-                && importance == TaskImportance.NORMAL) {
-            createdCount = localInstanceRepo.countTasksByDifficultyImportanceAndPeriod(difficulty, importance, LocalDate.now(), LocalDate.now());
+                || difficulty == TaskDifficulty.EASY) {
+            createdCount = localInstanceRepo.countTasksByDifficultyAndPeriod(userId, difficulty, LocalDate.now(), LocalDate.now());
             if (createdCount >= 5) {
-                task.setXpValue(0);
-            }
-        } else if (difficulty == TaskDifficulty.EASY
-                && importance == TaskImportance.IMPORTANT) {
-            createdCount = localInstanceRepo.countTasksByDifficultyImportanceAndPeriod(difficulty, importance, LocalDate.now(), LocalDate.now());
-            if (createdCount >= 5) {
-                task.setXpValue(0);
-            }
-        } else if (difficulty == TaskDifficulty.HARD
-                && importance == TaskImportance.EXTREMELY_IMPORTANT) {
-            createdCount = localInstanceRepo.countTasksByDifficultyImportanceAndPeriod(difficulty, importance, LocalDate.now(), LocalDate.now());
-            if (createdCount >= 2) {
-                task.setXpValue(0);
-            }
-        } else if (difficulty == TaskDifficulty.EXTREMELY_HARD) {
-            createdCount = localInstanceRepo.countTasksByDifficultyImportanceAndPeriod(difficulty, importance, LocalDate.now().minusWeeks(1), LocalDate.now());
-            if (createdCount >= 1) {
-                task.setXpValue(0);
-            }
-        } else if (importance == TaskImportance.SPECIAL) {
-            createdCount = localInstanceRepo.countTasksByDifficultyImportanceAndPeriod(difficulty, importance, LocalDate.now().minusMonths(1), LocalDate.now());
-            if (createdCount >= 1) {
-                task.setXpValue(0);
+                task.decreaseDifficultyXp(progress);
+                Log.d("TASK XP", "difficulty: " + task.getXpValue());
             }
         }
+
+        if (difficulty == TaskDifficulty.HARD) {
+            createdCount = localInstanceRepo.countTasksByDifficultyAndPeriod(userId, difficulty, LocalDate.now(), LocalDate.now());
+            if (createdCount >= 2) {
+                task.decreaseDifficultyXp(progress);
+                Log.d("TASK XP", "difficulty: " + task.getXpValue());
+            }
+        }
+
+        if (difficulty == TaskDifficulty.EXTREMELY_HARD) {
+            createdCount = localInstanceRepo.countTasksByDifficultyAndPeriod(userId, difficulty, LocalDate.now().minusWeeks(1), LocalDate.now());
+            if (createdCount >= 1) {
+                task.decreaseDifficultyXp(progress);
+                Log.d("TASK XP", "difficulty: " + task.getXpValue());
+            }
+        }
+
+        if (importance == TaskImportance.NORMAL
+                || importance == TaskImportance.IMPORTANT) {
+            createdCount = localInstanceRepo.countTasksByImportanceAndPeriod(userId, importance, LocalDate.now(), LocalDate.now());
+            if (createdCount >= 5) {
+                task.decreaseImportanceXp(progress);
+                Log.d("TASK XP", "decreaseImportant: " + task.getXpValue());
+            }
+        }
+
+        if (importance == TaskImportance.EXTREMELY_IMPORTANT) {
+            createdCount = localInstanceRepo.countTasksByImportanceAndPeriod(userId, importance, LocalDate.now(), LocalDate.now());
+            if (createdCount >= 2) {
+                task.decreaseImportanceXp(progress);
+                Log.d("TASK XP", "decreaseImportant: " + task.getXpValue());
+            }
+        }
+
+        if (importance == TaskImportance.SPECIAL) {
+            createdCount = localInstanceRepo.countTasksByImportanceAndPeriod(userId, importance, LocalDate.now().minusMonths(1), LocalDate.now());
+            if (createdCount >= 1) {
+                task.decreaseImportanceXp(progress);
+                Log.d("TASK XP", "decreaseImportant: " + task.getXpValue());
+            }
+        }
+        Log.d("TASK XP", "execute: " + task.getXpValue());
 
         try {
             localRepo.insert(task);

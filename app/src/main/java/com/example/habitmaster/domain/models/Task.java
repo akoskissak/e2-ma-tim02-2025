@@ -139,6 +139,20 @@ public class Task {
         this.xpValue = this.difficulty.getXpValue(progress) + this.importance.getXpValue(progress);
     }
 
+    public void decreaseImportanceXp(UserLevelProgress progress) {
+        if (progress == null) {
+            throw new IllegalArgumentException("User progress cannot be null");
+        }
+        this.xpValue -= this.importance.getXpValue(progress);
+    }
+
+    public void decreaseDifficultyXp(UserLevelProgress progress) {
+        if (progress == null) {
+            throw new IllegalArgumentException("User progress cannot be null");
+        }
+        this.xpValue -= this.difficulty.getXpValue(progress);
+    }
+
     public LocalTime getExecutionTime() {
         return executionTime;
     }
