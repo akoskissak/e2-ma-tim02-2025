@@ -1,7 +1,7 @@
 {
   "users": [
     {
-      "id": "GOWbqfnBqoNpcvMffRCJinjfc5o2",
+      "id": "KaZ3eKS4Y6eYyqmMgYTgr6HhDcA3",
       "email": "demo1@example.com",
       "username": "demo1",
       "avatarName": "avatar3",
@@ -18,7 +18,7 @@
       "badges": ""
     },
     {
-      "id": "7f5QMmPdu2TzSRMlVKI9gdBSREH2",
+      "id": "ZKhwKUzD8gQbxW8lsUdED3Mj06Z2",
       "email": "demo2@example.com",
       "username": "demo2",
       "avatarName": "avatar4",
@@ -38,37 +38,37 @@
   "categories": [
     {
       "id": "c1a2b3d4-e5f6-7890-abcd-111111111111",
-      "userId": "GOWbqfnBqoNpcvMffRCJinjfc5o2",
+      "userId": "KaZ3eKS4Y6eYyqmMgYTgr6HhDcA3",
       "name": "Study",
       "color": -65536
     },
     {
       "id": "c2a2b3d4-e5f6-7890-abcd-222222222222",
-      "userId": "GOWbqfnBqoNpcvMffRCJinjfc5o2",
+      "userId": "KaZ3eKS4Y6eYyqmMgYTgr6HhDcA3",
       "name": "Entertainment",
       "color": -16711936
     },
     {
       "id": "c3a2b3d4-e5f6-7890-abcd-333333333333",
-      "userId": "GOWbqfnBqoNpcvMffRCJinjfc5o2",
+      "userId": "KaZ3eKS4Y6eYyqmMgYTgr6HhDcA3",
       "name": "Training",
       "color": -16776961
     },
     {
       "id": "c4a2b3d4-e5f6-7890-abcd-444444444444",
-      "userId": "7f5QMmPdu2TzSRMlVKI9gdBSREH2",
+      "userId": "ZKhwKUzD8gQbxW8lsUdED3Mj06Z2",
       "name": "Appointments",
       "color": -256
     },
     {
       "id": "c5a2b3d4-e5f6-7890-abcd-555555555555",
-      "userId": "7f5QMmPdu2TzSRMlVKI9gdBSREH2",
+      "userId": "ZKhwKUzD8gQbxW8lsUdED3Mj06Z2",
       "name": "Shopping",
       "color": -16711936
     },
     {
       "id": "c6a2b3d4-e5f6-7890-abcd-666666666666",
-      "userId": "7f5QMmPdu2TzSRMlVKI9gdBSREH2",
+      "userId": "ZKhwKUzD8gQbxW8lsUdED3Mj06Z2",
       "name": "Fitness",
       "color": -16776961
     }

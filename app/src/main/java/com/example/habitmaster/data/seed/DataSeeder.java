@@ -75,9 +75,9 @@ public class DataSeeder {
 
     private void seedSQLite(SeedData seedData) {
         // Users
-        for (User u : seedData.users) {
-            userLocalRepo.insert(u);
-        }
+//        for (User u : seedData.users) {
+//            userLocalRepo.insert(u);
+//        }
 
         // Categories
         if (seedData.categories != null) {
