@@ -19,6 +19,7 @@ import com.example.habitmaster.services.UserService;
 import com.example.habitmaster.ui.adapters.MembersProgressAdapter;
 import com.example.habitmaster.ui.fragments.MemberDetailsDialogFragment;
 
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -29,7 +30,7 @@ public class AllianceMissionProgressActivity extends AppCompatActivity {
     public static final String BOSS_MAX_HP = "boss_max_hp";
     public static final String BOSS_CURRENT_HP = "boss_current_hp";
     ProgressBar progressAllianceBar;
-    TextView tvProgressText;
+    TextView tvProgressText, tvMissionEndTime;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -38,6 +39,7 @@ public class AllianceMissionProgressActivity extends AppCompatActivity {
 
         progressAllianceBar = findViewById(R.id.progressBarAlliance);
         tvProgressText = findViewById(R.id.tvProgressText);
+        tvMissionEndTime = findViewById(R.id.tvMissionEndTime);
 
         String missionId = getIntent().getStringExtra(ALLIANCE_MISSION_ID);
 
@@ -64,8 +66,8 @@ public class AllianceMissionProgressActivity extends AppCompatActivity {
                         recyclerView.setLayoutManager(new LinearLayoutManager(AllianceMissionProgressActivity.this));
 
                         MembersProgressAdapter adapter = new MembersProgressAdapter(
-                                allianceUserMissions,   // lista misija iz baze
-                                userIdToUsernameMap,    // npr. { "u1" -> "Marko", "u2" -> "Jelena" }
+                                allianceUserMissions,
+                                userIdToUsernameMap,
                                 (username, mission) -> {
                                     MemberDetailsDialogFragment dialog = MemberDetailsDialogFragment.newInstance(username, mission);
                                     dialog.show(getSupportFragmentManager(), "memberDetails");
@@ -98,6 +100,10 @@ public class AllianceMissionProgressActivity extends AppCompatActivity {
 
                 progressAllianceBar.setProgress(bossCurrentHp / bossMaxHp);
                 tvProgressText.setText(String.format("%d/%d dmg", bossMaxHp - bossCurrentHp, bossMaxHp));
+
+                DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MMMM dd, yyyy HH:mm");
+                tvMissionEndTime.setText(String.format("Mission ends on: %s", result.getEndDateTime().format(formatter)));
+
             }
 
             @Override

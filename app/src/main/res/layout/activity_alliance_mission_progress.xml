@@ -42,6 +42,15 @@
             android:textStyle="bold"/>
     </FrameLayout>
 
+    <TextView
+        android:id="@+id/tvMissionEndTime"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Mission ends on:"
+        android:textSize="14sp"
+        android:layout_marginBottom="8sp"
+        android:layout_gravity="center"/>
+
 
     <TextView
         android:id="@+id/tvMembersProgressTitle"
